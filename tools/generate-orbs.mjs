@@ -1,9 +1,19 @@
-import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const sourceOrbs = "/tmp/shadercn/registry/components/orbs";
+// Override with SHADERCN_DIR=/path/to/shadercn-checkout to sync from another clone.
+const sourceOrbs = join(
+  process.env.SHADERCN_DIR ?? "/tmp/shadercn",
+  "registry/components/orbs",
+);
+if (!existsSync(sourceOrbs)) {
+  console.error(
+    `shadercn sources not found at ${sourceOrbs}. Clone https://github.com/shadcn-labs/shadercn and set SHADERCN_DIR.`,
+  );
+  process.exit(1);
+}
 const destOrbs = join(root, "src/components/orbs");
 
 const NAMES = {
@@ -47,7 +57,12 @@ const slugs = readdirSync(sourceOrbs)
   .sort();
 
 mkdirSync(destOrbs, { recursive: true });
-cpSync(join(sourceOrbs, "renderer.ts"), join(destOrbs, "renderer.ts"));
+// renderer.ts is maintained here, not copied: shaderng shares one GPU device and one frame
+// loop across every mounted orb, which the upstream per-canvas renderer does not do. Diff
+// upstream's renderer.ts by hand when syncing.
+if (existsSync(join(sourceOrbs, "renderer.ts"))) {
+  console.log("skipping renderer.ts (maintained locally); diff upstream manually if needed");
+}
 
 const catalog = [];
 const loaderLines = [];
