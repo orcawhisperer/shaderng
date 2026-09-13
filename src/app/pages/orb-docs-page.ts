@@ -134,11 +134,17 @@ export class OrbDocsPage {
       const slug = this.slug();
       let cancelled = false;
       this.variant.set(null);
-      void loadOrb(slug).then((entry) => {
-        if (!cancelled) {
-          this.variant.set(entry.variant);
-        }
-      });
+      void loadOrb(slug)
+        .then((entry) => {
+          if (!cancelled) {
+            this.variant.set(entry.variant);
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            console.error(`[shadercn-angular] failed to load ${slug} docs`, error);
+          }
+        });
       onCleanup(() => {
         cancelled = true;
       });

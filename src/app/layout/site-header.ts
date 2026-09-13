@@ -1,5 +1,7 @@
-import { Component, inject } from "@angular/core";
-import { RouterLink, RouterLinkActive } from "@angular/router";
+import { Component, inject, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/router";
+import { filter } from "rxjs";
 
 import { ThemeService } from "@/lib/theme";
 
@@ -39,6 +41,23 @@ const NAV = [
           </nav>
 
           <div class="ml-auto flex items-center gap-1">
+            <button
+              class="hover:bg-muted inline-flex size-8 items-center justify-center rounded-md lg:hidden"
+              type="button"
+              (click)="menuOpen.set(!menuOpen())"
+              [attr.aria-expanded]="menuOpen()"
+              [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'"
+            >
+              @if (menuOpen()) {
+                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              } @else {
+                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              }
+            </button>
             <a
               class="text-muted-foreground hover:text-foreground hidden rounded-md px-3 py-1.5 text-sm sm:inline"
               href="https://github.com/shadcn-labs/shadercn"
@@ -84,10 +103,37 @@ const NAV = [
           </div>
         </div>
       </div>
+      @if (menuOpen()) {
+        <nav class="border-border bg-background border-t px-4 py-3 lg:hidden">
+          <div class="flex flex-col gap-1">
+            @for (item of nav; track item.href) {
+              <a
+                [routerLink]="item.href"
+                routerLinkActive="bg-muted text-foreground"
+                [routerLinkActiveOptions]="{ exact: item.href === '/docs' }"
+                class="text-muted-foreground hover:text-foreground rounded-md px-3 py-2 text-sm"
+                (click)="menuOpen.set(false)"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </div>
+        </nav>
+      }
     </header>
   `,
 })
 export class SiteHeader {
   protected readonly nav = NAV;
   protected readonly theme = inject(ThemeService);
+  protected readonly menuOpen = signal(false);
+
+  constructor() {
+    inject(Router)
+      .events.pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.menuOpen.set(false));
+  }
 }

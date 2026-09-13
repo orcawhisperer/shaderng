@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   input,
+  linkedSignal,
   signal,
 } from "@angular/core";
 import { Router } from "@angular/router";
@@ -83,20 +84,22 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
           <div class="absolute inset-x-3 bottom-3 flex items-center gap-2 lg:inset-x-4 lg:bottom-4">
             <select
               class="bg-background h-8 w-24 rounded-md border px-2 text-sm lg:w-28"
-              [value]="slug()"
               (change)="selectOrb($any($event.target).value)"
             >
               @for (item of catalog; track item.slug) {
-                <option [value]="item.slug">{{ item.title }}</option>
+                <option [value]="item.slug" [selected]="item.slug === slug()">
+                  {{ item.title }}
+                </option>
               }
             </select>
             <select
               class="bg-background h-8 w-28 rounded-md border px-2 text-sm lg:w-32"
-              [value]="state()"
               (change)="selectState($any($event.target).value)"
             >
               @for (value of states; track value) {
-                <option [value]="value">{{ labels[value] }}</option>
+                <option [value]="value" [selected]="value === state()">
+                  {{ labels[value] }}
+                </option>
               }
             </select>
             <div class="ml-auto flex items-center gap-2">
@@ -257,8 +260,8 @@ export class OrbPlayground {
   protected readonly labels = STATE_LABELS;
   protected readonly format = formatControlValue;
 
-  protected readonly slug = signal<string>(ORB_SLUGS[0]);
-  protected readonly state = signal<OrbState>("idle");
+  protected readonly slug = linkedSignal(() => this.initialSlug());
+  protected readonly state = linkedSignal(() => this.initialState());
   protected readonly size = signal(420);
   protected readonly paused = signal(false);
   protected readonly panelOpen = signal(false);
@@ -302,7 +305,6 @@ export class OrbPlayground {
     effect((onCleanup) => {
       const slug = this.slug();
       let cancelled = false;
-      this.entry.set(null);
       this.loadError.set(null);
       void loadOrb(slug)
         .then((loaded) => {
@@ -317,6 +319,7 @@ export class OrbPlayground {
             return;
           }
           console.error(`[shadercn-angular] failed to load ${slug}`, error);
+          this.entry.set(null);
           this.loadError.set(
             error instanceof Error ? error.message : `Failed to load ${slug}`,
           );
@@ -325,11 +328,7 @@ export class OrbPlayground {
         cancelled = true;
       });
     });
-  }
 
-  ngOnInit() {
-    this.slug.set(this.initialSlug());
-    this.state.set(this.initialState());
     const max = Math.max(120, window.innerWidth - 96);
     this.size.update((prev) => Math.min(prev, max));
   }
