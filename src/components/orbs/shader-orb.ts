@@ -19,6 +19,7 @@ import type {
   OrbColorValues,
   OrbDrive,
   OrbParamValues,
+  OrbPreset,
   OrbState,
   OrbVariant,
 } from "@/components/orbs/renderer";
@@ -68,8 +69,8 @@ export interface ShaderOrbFallbackContext {
   template: `
     <div
       [class]="cn('shader-orb-root', className())"
-      [style.width.px]="size()"
-      [style.height.px]="size()"
+      [style.width.px]="resolvedSize()"
+      [style.height.px]="resolvedSize()"
       [style]="style()"
     >
       @if (!unsupported()) {
@@ -91,9 +92,11 @@ export interface ShaderOrbFallbackContext {
             />
           } @else {
             <div class="shader-orb-fallback" [style.--orb-tint]="tint()" aria-hidden="true"></div>
-            <p class="shader-orb-message text-muted-foreground" role="status">
-              {{ errorMessage() ?? WEBGPU_HELP }}
-            </p>
+            @if (fallbackMessage()) {
+              <p class="shader-orb-message text-muted-foreground" role="status">
+                {{ errorMessage() ?? WEBGPU_HELP }}
+              </p>
+            }
           }
         </div>
       }
@@ -160,7 +163,9 @@ export interface ShaderOrbFallbackContext {
 })
 export class ShaderOrb {
   readonly variant = input.required<OrbVariant>();
-  readonly state = input<OrbState>("idle");
+  /** A saved look; explicit inputs override it and `params` / `colors` merge on top of it. */
+  readonly preset = input<OrbPreset | undefined>(undefined);
+  readonly state = input<OrbState | undefined>(undefined);
   readonly size = input<number | undefined>(undefined);
   readonly params = input<OrbParamValues | undefined>(undefined);
   readonly colors = input<OrbColorValues | undefined>(undefined);
@@ -185,11 +190,15 @@ export class ShaderOrb {
   readonly pauseOffscreen = input(true);
   readonly respectReducedMotion = input(true);
   readonly maxDpr = input(2);
+  /** Cap on paints per second; `0` paints every frame. */
+  readonly maxFps = input(0);
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
   /** Set by the `<orb-xx>` wrappers from their own `<ng-template shaderOrbFallback>` child. */
   readonly fallback = input<TemplateRef<ShaderOrbFallbackContext> | undefined>(undefined);
+  /** Show the reason under the built-in fallback orb; backgrounds turn this off. */
+  readonly fallbackMessage = input(true);
 
   private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>("canvas");
   private readonly projectedFallback = contentChild(ShaderOrbFallback);
@@ -206,16 +215,29 @@ export class ShaderOrb {
   protected readonly unsupported = signal(!hasWebGPU());
   protected readonly WEBGPU_HELP = WEBGPU_HELP;
   protected readonly cn = cn;
+  protected readonly resolvedState = computed(() => this.state() ?? this.preset()?.state ?? "idle");
+  protected readonly resolvedSize = computed(() => this.size() ?? this.preset()?.size);
+  private readonly resolvedParams = computed<OrbParamValues | undefined>(() => {
+    const fromPreset = this.preset()?.params;
+    const explicit = this.params();
+    return fromPreset || explicit ? { ...fromPreset, ...explicit } : undefined;
+  });
+  private readonly resolvedColors = computed<OrbColorValues | undefined>(() => {
+    const fromPreset = this.preset()?.colors;
+    const explicit = this.colors();
+    return fromPreset || explicit ? { ...fromPreset, ...explicit } : undefined;
+  });
+  private readonly resolvedVolumes = computed(() => this.volumes() ?? this.preset()?.volumes);
   /** The orb's first color (usually `tint`) after `colors` overrides, for the CSS fallback. */
   protected readonly tint = computed(() => {
     const first = this.variant().colors[0];
     if (!first) {
       return "#8b8ba3";
     }
-    return this.colors()?.[first.key] ?? first.default;
+    return this.resolvedColors()?.[first.key] ?? first.default;
   });
   protected readonly label = computed(
-    () => this.ariaLabel() ?? `${this.variant().label} shader orb, ${this.state()}`,
+    () => this.ariaLabel() ?? `${this.variant().label} shader orb, ${this.resolvedState()}`,
   );
   /** The audio source in effect: `audio` wins, then `listen` means the microphone. */
   private readonly audioSource = computed<OrbAudioSource | undefined>(
@@ -227,14 +249,14 @@ export class ShaderOrb {
   constructor() {
     effect(() => {
       const listening = this.audioSource() !== undefined;
-      this.drive.state = this.state();
-      this.drive.params = this.params();
-      this.drive.colors = this.colors();
+      this.drive.state = this.resolvedState();
+      this.drive.params = this.resolvedParams();
+      this.drive.colors = this.resolvedColors();
       this.drive.statePresets = this.statePresets();
       this.drive.stateColors = this.stateColors();
       this.drive.stateVolumes = this.stateVolumes();
       if (!listening) {
-        this.drive.volumes = this.volumes();
+        this.drive.volumes = this.resolvedVolumes();
       }
       const reduce = this.respectReducedMotion() && this.reducedMotion();
       // Live audio is content the visitor asked for; reduced motion only stops the idle loop.
@@ -278,7 +300,7 @@ export class ShaderOrb {
         this.audioError.set(null);
         dispose?.();
         // Volumes fall back to `volumes` / synthesized values once the source is gone.
-        this.drive.volumes = untracked(() => this.volumes());
+        this.drive.volumes = untracked(() => this.resolvedVolumes());
       });
     });
 
@@ -286,6 +308,7 @@ export class ShaderOrb {
       const canvas = this.canvasRef()?.nativeElement;
       const variant = this.variant();
       const maxDpr = this.maxDpr();
+      const maxFps = this.maxFps();
       const pauseOffscreen = this.pauseOffscreen();
       if (!canvas) {
         return;
@@ -304,6 +327,7 @@ export class ShaderOrb {
         canvas,
         drive: () => this.drive,
         maxDpr,
+        maxFps,
         onError: (error) => report("stopped rendering", error),
         onFirstFrame: () => this.painted.set(true),
         pauseOffscreen,

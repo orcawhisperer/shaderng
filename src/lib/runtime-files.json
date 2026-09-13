@@ -5,6 +5,7 @@
     "src/components/orbs/canvas.ts",
     "src/components/orbs/orb-base.ts",
     "src/components/orbs/shader-orb.ts",
+    "src/components/orbs/shader-background.ts",
     "src/lib/audio-drive.ts",
     "src/lib/mic-drive.ts",
     "src/lib/reduced-motion.ts",

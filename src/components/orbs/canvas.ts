@@ -1,10 +1,12 @@
-export { ShaderOrb } from "@/components/orbs/shader-orb";
+export { ShaderOrb, ShaderOrbFallback } from "@/components/orbs/shader-orb";
+export { ShaderBackground, type ShaderBackgroundFit } from "@/components/orbs/shader-background";
 export type {
   OrbColorDef,
   OrbColorValues,
   OrbDrive,
   OrbParamDef,
   OrbParamValues,
+  OrbPreset,
   OrbState,
   OrbUniformStruct,
   OrbVariant,
