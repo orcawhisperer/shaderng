@@ -73,6 +73,7 @@ export const RUNTIME_PATHS = [
   "src/components/orbs/canvas.ts",
   "src/components/orbs/orb-base.ts",
   "src/components/orbs/shader-orb.ts",
+  "src/lib/audio-drive.ts",
   "src/lib/mic-drive.ts",
   "src/lib/reduced-motion.ts",
   "src/lib/site.ts",

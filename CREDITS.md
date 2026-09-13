@@ -10,7 +10,8 @@
 
 ## Original to shaderng
 
-- `[listen]` — microphone-reactive `volumes` (not in shadercn)
+- `[audio]` / `[listen]` — `volumes` measured from the microphone, a `MediaStream`, an audio element, or a Web Audio node (not in shadercn)
+- One shared WebGPU device and frame loop across every mounted orb
 - TypeGPU transform that works with Angular’s esbuild compiler (`tools/typegpu.esbuild.ts`)
 - `prefers-reduced-motion` pause on `<shader-orb>`
 
