@@ -12,7 +12,9 @@ import { ORB_CATALOG } from "@/lib/orb-catalog";
       <h1 class="text-3xl font-semibold tracking-tight">Components</h1>
       <p class="text-muted-foreground text-lg">
         {{ catalog.length }} GPU-powered animated orbs. Open any orb for a live preview, inputs, and
-        copy-paste usage.
+        copy-paste usage. After
+        <code class="bg-muted rounded px-1 py-0.5 text-base">ng add shaderng</code>, each one is a
+        single <code class="bg-muted rounded px-1 py-0.5 text-base">ng g shaderng:orb</code> away.
       </p>
       <div class="grid gap-3 sm:grid-cols-2">
         @for (orb of catalog; track orb.slug) {

@@ -1,6 +1,16 @@
 # shaderng
 
-Unofficial Angular port of [shadercn](https://github.com/shadcn-labs/shadercn): copy-paste WebGPU shader orbs built on [vgpu](https://vgpu.labs.vercel.dev/) and [TypeGPU](https://typegpu.com/).
+[![npm](https://img.shields.io/npm/v/shaderng)](https://www.npmjs.com/package/shaderng)
+[![CI](https://github.com/orcawhisperer/shaderng/actions/workflows/ci.yml/badge.svg)](https://github.com/orcawhisperer/shaderng/actions/workflows/ci.yml)
+
+Unofficial Angular port of [shadercn](https://github.com/shadcn-labs/shadercn): WebGPU shader orbs built on [vgpu](https://vgpu.labs.vercel.dev/) and [TypeGPU](https://typegpu.com/), installed into your project with one command.
+
+```bash
+ng add shaderng              # runtime + orb-01
+ng g shaderng:orb orb-07     # more orbs; --list shows all 33
+```
+
+Docs and playground: <https://shaderng.vercel.app>
 
 The name is **shaderng** (`shader` + Angular’s `ng`), not `shadercn-ng` or `shadercn-angular`. Those read like a dump of the React repo. This is still a port — the GPU programs are not ours.
 
