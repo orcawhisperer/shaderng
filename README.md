@@ -122,6 +122,8 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 | --- | --- |
 | `npm start` | Dev server on port 4200 |
 | `npm test` | Unit tests (Vitest) |
+| `npm run typecheck` | `tsc --noEmit` for app and spec configs |
+| `npm run format` / `format:check` | Prettier (upstream `gpu.ts` / `meta.ts` are ignored) |
 | `npm run build` | Production build |
 | `npm run build:pages` | GitHub Pages build |
 | `npm run generate:orbs` | Regenerate Angular wrappers from shadercn sources |

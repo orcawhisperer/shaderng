@@ -1,0 +1,10 @@
+# Upstream shadercn files, kept byte-for-byte so `npm run generate:orbs` stays a clean diff.
+src/components/orbs/*/gpu.ts
+src/components/orbs/*/meta.ts
+
+# Build output and caches
+dist
+.angular
+coverage
+node_modules
+package-lock.json
