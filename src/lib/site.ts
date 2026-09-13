@@ -3,6 +3,7 @@ export const SITE = {
   log: "shaderng",
   tagline: "GPU shader components for Angular",
   github: "https://github.com/orcawhisperer/shadercn-angular",
+  url: "https://shaderng.vercel.app",
   original: "https://github.com/shadcn-labs/shadercn",
   originalName: "shadercn",
   xordev: "https://x.com/XorDev",

@@ -3,14 +3,16 @@ import { RouterLink } from "@angular/router";
 
 import { HomeShowcase } from "@/app/orbs/home-showcase";
 import { CopyButton } from "@/app/ui/copy-button";
+import { LogoMark } from "@/app/ui/logo-mark";
 import { SITE } from "@/lib/site";
 
 @Component({
   selector: "app-home-page",
-  imports: [HomeShowcase, CopyButton, RouterLink],
+  imports: [HomeShowcase, CopyButton, LogoMark, RouterLink],
   template: `
     <section class="container-wrapper relative">
       <div class="container flex flex-col items-center gap-4 py-16 text-center md:py-20 lg:py-24">
+        <app-logo-mark className="size-12" />
         <p class="text-muted-foreground text-sm font-medium tracking-wide uppercase">
           Angular · WebGPU · TypeGPU
         </p>

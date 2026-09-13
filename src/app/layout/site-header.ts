@@ -3,8 +3,9 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { filter } from "rxjs";
 
-import { ThemeService } from "@/lib/theme";
+import { LogoMark } from "@/app/ui/logo-mark";
 import { SITE } from "@/lib/site";
+import { ThemeService } from "@/lib/theme";
 
 const NAV = [
   { href: "/docs", label: "Docs" },
@@ -14,17 +15,18 @@ const NAV = [
 
 @Component({
   selector: "app-site-header",
-  imports: [RouterLink, RouterLinkActive],
+  imports: [LogoMark, RouterLink, RouterLinkActive],
   template: `
     <header class="bg-background sticky top-0 z-50 w-full border-b border-border/60">
       <div class="container-wrapper px-4 xl:px-6">
         <div class="relative flex h-(--header-height) items-center gap-3">
-          <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
-            <span
-              class="bg-foreground text-background flex size-6 items-center justify-center rounded-md text-[11px] font-semibold"
-              >ng</span
-            >
-            <span>shader<span class="text-muted-foreground font-normal">ng</span></span>
+          <a
+            routerLink="/"
+            class="flex items-center gap-2 font-semibold tracking-tight"
+            aria-label="shaderng home"
+          >
+            <app-logo-mark />
+            <span>shaderng</span>
           </a>
 
           <nav class="ml-4 hidden items-center gap-1 lg:flex">
