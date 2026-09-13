@@ -70,6 +70,18 @@ import { orbInstallCommand } from "@/lib/snippet";
           </div>
         </section>
 
+        <section class="space-y-3">
+          <h2 class="text-xl font-semibold">Without WebGPU</h2>
+          <p class="text-muted-foreground text-sm">
+            Safari, Firefox and browsers without hardware acceleration get a CSS orb in the tint
+            colour at once, with no failed init to wait for. Replace it with an
+            <code class="bg-muted rounded px-1 py-0.5">ng-template shaderOrbFallback</code>; the
+            template receives the reason as its implicit value and the tint as
+            <code class="bg-muted rounded px-1 py-0.5">tint</code>:
+          </p>
+          <app-code-block [code]="fallbackSnippet" />
+        </section>
+
         @if (variant(); as v) {
           <section class="space-y-3">
             <h2 class="text-xl font-semibold">Shader params</h2>
@@ -163,6 +175,21 @@ export class Example {}`;
     { name: "respectReducedMotion", type: "boolean", fallback: "true" },
     { name: "maxDpr", type: "number", fallback: "2" },
   ];
+
+  protected readonly fallbackSnippet = `import { Orb01 } from "@/components/orbs/orb-01";
+import { ShaderOrbFallback } from "@/components/orbs/shader-orb";
+
+@Component({
+  imports: [Orb01, ShaderOrbFallback],
+  template: \`
+    <orb-01 state="idle">
+      <ng-template shaderOrbFallback let-message let-tint="tint">
+        <img src="/orb-01-poster.png" alt="" width="280" height="280" />
+      </ng-template>
+    </orb-01>
+  \`,
+})
+export class Hero {}`;
 
   constructor() {
     effect((onCleanup) => {

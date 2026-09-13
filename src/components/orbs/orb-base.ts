@@ -1,4 +1,4 @@
-import { Directive, input } from "@angular/core";
+import { contentChild, Directive, input } from "@angular/core";
 
 import type {
   OrbColorValues,
@@ -6,6 +6,7 @@ import type {
   OrbState,
   OrbVariant,
 } from "@/components/orbs/renderer";
+import { ShaderOrbFallback } from "@/components/orbs/shader-orb";
 import type { OrbAudioSource } from "@/lib/audio-drive";
 
 @Directive()
@@ -35,6 +36,9 @@ export abstract class OrbBase {
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
+
+  /** `<ng-template shaderOrbFallback>` placed inside the orb tag; forwarded to `<shader-orb>`. */
+  readonly fallbackTemplate = contentChild(ShaderOrbFallback);
 }
 
 export const ORB_TEMPLATE = `
@@ -57,5 +61,6 @@ export const ORB_TEMPLATE = `
   [className]="className()"
   [style]="style()"
   [ariaLabel]="ariaLabel()"
+  [fallback]="fallbackTemplate()?.template"
 />
 `;

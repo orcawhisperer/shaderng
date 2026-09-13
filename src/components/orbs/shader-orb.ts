@@ -1,11 +1,16 @@
+import { NgTemplateOutlet } from "@angular/common";
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
+  Directive,
   effect,
   ElementRef,
+  inject,
   input,
   signal,
+  TemplateRef,
   untracked,
   viewChild,
 } from "@angular/core";
@@ -26,9 +31,40 @@ import { cn } from "@/lib/utils";
 const WEBGPU_HELP =
   "WebGPU is not available in this browser. Try Chrome or Edge 113+ with hardware acceleration.";
 
+/** Cheap synchronous check; `requestAdapter()` can still fail later, which `onError` covers. */
+export const hasWebGPU = (): boolean => typeof navigator !== "undefined" && "gpu" in navigator;
+
+/**
+ * Marks the template shown instead of the canvas when WebGPU is missing or fails:
+ *
+ * ```html
+ * <orb-01>
+ *   <ng-template shaderOrbFallback let-message let-tint="tint">
+ *     <img src="/orb-01-poster.png" alt="" />
+ *   </ng-template>
+ * </orb-01>
+ * ```
+ *
+ * A template rather than `<ng-content>` because the generated `<orb-xx>` wrappers sit between
+ * you and `<shader-orb>`, and re-projected content always counts as "provided", which would
+ * suppress the built-in fallback.
+ */
+@Directive({ selector: "ng-template[shaderOrbFallback]" })
+export class ShaderOrbFallback {
+  readonly template = inject<TemplateRef<ShaderOrbFallbackContext>>(TemplateRef);
+}
+
+export interface ShaderOrbFallbackContext {
+  /** Why the canvas is not showing. */
+  $implicit: string;
+  /** The orb's first color after `colors` overrides. */
+  tint: string;
+}
+
 @Component({
   selector: "shader-orb",
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NgTemplateOutlet],
   template: `
     <div
       [class]="cn('relative', className())"
@@ -36,23 +72,67 @@ const WEBGPU_HELP =
       [style.height.px]="size()"
       [style]="style()"
     >
-      <canvas
-        #canvas
-        class="block size-full transition-opacity duration-300"
-        role="img"
-        [style.opacity]="painted() ? 1 : 0"
-        [attr.aria-label]="label()"
-        [attr.aria-busy]="painted() ? null : true"
-      ></canvas>
-      @if (errorMessage()) {
-        <p
-          class="text-muted-foreground absolute inset-0 flex items-center justify-center p-4 text-center text-sm"
-          role="status"
+      @if (!unsupported()) {
+        <canvas
+          #canvas
+          class="block size-full transition-opacity duration-300"
+          role="img"
+          [style.opacity]="painted() ? 1 : 0"
+          [attr.aria-label]="label()"
+          [attr.aria-busy]="painted() ? null : true"
+        ></canvas>
+      }
+      @if (unsupported() || errorMessage()) {
+        <div
+          class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center"
+          role="img"
+          [attr.aria-label]="label()"
         >
-          {{ errorMessage() }}
-        </p>
+          @if (fallbackTemplate(); as template) {
+            <ng-container
+              [ngTemplateOutlet]="template"
+              [ngTemplateOutletContext]="{ $implicit: errorMessage() ?? WEBGPU_HELP, tint: tint() }"
+            />
+          } @else {
+            <div class="shader-orb-fallback" [style.--orb-tint]="tint()" aria-hidden="true"></div>
+            <p class="text-muted-foreground text-xs" role="status">
+              {{ errorMessage() ?? WEBGPU_HELP }}
+            </p>
+          }
+        </div>
       }
     </div>
+  `,
+  styles: `
+    .shader-orb-fallback {
+      --orb-tint: #8b8ba3;
+      width: 62%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at 36% 32%,
+        color-mix(in srgb, var(--orb-tint) 55%, white) 0%,
+        var(--orb-tint) 38%,
+        color-mix(in srgb, var(--orb-tint) 45%, black) 100%
+      );
+      box-shadow:
+        0 0 48px color-mix(in srgb, var(--orb-tint) 45%, transparent),
+        inset 0 -12px 32px color-mix(in srgb, black 35%, transparent);
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .shader-orb-fallback {
+        animation: shader-orb-breathe 4s ease-in-out infinite;
+      }
+    }
+    @keyframes shader-orb-breathe {
+      0%,
+      100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.04);
+      }
+    }
   `,
 })
 export class ShaderOrb {
@@ -85,12 +165,32 @@ export class ShaderOrb {
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
+  /** Set by the `<orb-xx>` wrappers from their own `<ng-template shaderOrbFallback>` child. */
+  readonly fallback = input<TemplateRef<ShaderOrbFallbackContext> | undefined>(undefined);
 
   private readonly canvasRef = viewChild<ElementRef<HTMLCanvasElement>>("canvas");
+  private readonly projectedFallback = contentChild(ShaderOrbFallback);
+  protected readonly fallbackTemplate = computed(
+    () => this.fallback() ?? this.projectedFallback()?.template,
+  );
   private readonly reducedMotion = prefersReducedMotion();
   protected readonly painted = signal(false);
+  /** Rendering failed or stopped: the canvas is replaced by the fallback. */
   protected readonly errorMessage = signal<string | null>(null);
+  /** The audio source failed; the orb keeps rendering on synthesized volumes. */
+  protected readonly audioError = signal<string | null>(null);
+  /** No `navigator.gpu` at all: show the fallback at once instead of after a failed init. */
+  protected readonly unsupported = signal(!hasWebGPU());
+  protected readonly WEBGPU_HELP = WEBGPU_HELP;
   protected readonly cn = cn;
+  /** The orb's first color (usually `tint`) after `colors` overrides, for the CSS fallback. */
+  protected readonly tint = computed(() => {
+    const first = this.variant().colors[0];
+    if (!first) {
+      return "#8b8ba3";
+    }
+    return this.colors()?.[first.key] ?? first.default;
+  });
   protected readonly label = computed(
     () => this.ariaLabel() ?? `${this.variant().label} shader orb, ${this.state()}`,
   );
@@ -138,7 +238,7 @@ export class ShaderOrb {
           dispose = stop;
         })
         .catch((error: unknown) => {
-          if (stopped || untracked(() => this.errorMessage())) {
+          if (stopped) {
             return;
           }
           const message =
@@ -148,10 +248,11 @@ export class ShaderOrb {
                 ? "Microphone permission was denied"
                 : "Audio source failed";
           console.error(`[${SITE.log}] audio drive failed:`, error);
-          this.errorMessage.set(message);
+          this.audioError.set(message);
         });
       onCleanup(() => {
         stopped = true;
+        this.audioError.set(null);
         dispose?.();
         // Volumes fall back to `volumes` / synthesized values once the source is gone.
         this.drive.volumes = untracked(() => this.volumes());
