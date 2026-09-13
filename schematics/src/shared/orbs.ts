@@ -1,6 +1,7 @@
 import { SchematicsException, type SchematicContext, type Tree } from "@angular-devkit/schematics";
 import { join } from "node:path";
 
+import { lockfileFor, packageVersion, recordFiles, writeLockfile } from "./lockfile";
 import { availableOrbs, copyDirectory, ORBS_DIR, type CopyResult } from "./package-files";
 import { joinPath, type ResolvedProject } from "./workspace";
 
@@ -58,6 +59,10 @@ export const copyOrbs = (
     }
   }
   if (total.written.length > 0) {
+    const lock = lockfileFor(tree, resolved);
+    lock.version = packageVersion();
+    recordFiles(tree, lock, total.written);
+    writeLockfile(tree, resolved, lock);
     context.logger.warn(LICENSE_NOTICE);
   }
   return total;

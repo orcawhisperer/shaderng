@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { freshAppTree, runner } from "../testing/workspace";
+import { freshAppTree, readJson, runner } from "../testing/workspace";
 
 const withRuntime = async () => {
   const testRunner = runner();
@@ -51,5 +51,68 @@ describe("ng g shaderng:orb", () => {
     const result = await testRunner.runSchematic("orb", { list: true }, tree);
     assert.equal(result.getDir("src/components/orbs").subdirs.length, 0);
     assert.ok(messages.some((message) => message.includes("orb-33")));
+  });
+});
+
+describe("ng g shaderng:orb --preset", () => {
+  const link =
+    "https://shaderng.vercel.app/playground?orb=orb-07&state=speaking&size=320&p=twist:2.5,tilt:-0.4,nope:1&c=tint:ff8800&v=0.4,0.9";
+
+  it("writes <name>.preset.ts next to the orb, installing the orb if needed", async () => {
+    const { testRunner, tree } = await withRuntime();
+    const messages: string[] = [];
+    testRunner.logger.subscribe((entry) => messages.push(entry.message));
+    const result = await testRunner.runSchematic("orb", { preset: link, name: "hero-glow" }, tree);
+    assert.ok(result.exists("src/components/orbs/orb-07/gpu.ts"));
+    const source = result.readText("src/components/orbs/orb-07/hero-glow.preset.ts");
+    assert.match(source, /export const orb07HeroGlow: OrbPreset = \{/);
+    assert.match(source, /state: "speaking",/);
+    assert.match(source, /size: 320,/);
+    assert.match(source, /twist: 2\.5,/);
+    assert.match(source, /tilt: -0\.4,/);
+    assert.match(source, /tint: "#ff8800",/);
+    assert.match(source, /volumes: \{ input: 0\.4, output: 0\.9 \}/);
+    assert.doesNotMatch(source.slice(source.indexOf("export const")), /nope/);
+    assert.ok(messages.some((message) => message.includes("params.nope")));
+    const lock = readJson<{ files: Record<string, string> }>(result, "shaderng.json");
+    assert.ok(lock.files["src/components/orbs/orb-07/hero-glow.preset.ts"]);
+  });
+
+  it("accepts a bare query string and defaults the name to look", async () => {
+    const { testRunner, tree } = await withRuntime();
+    const result = await testRunner.runSchematic(
+      "orb",
+      { orbs: "orb-01", preset: "state=thinking&p=speed:2" },
+      tree,
+    );
+    assert.match(
+      result.readText("src/components/orbs/orb-01/look.preset.ts"),
+      /export const orb01Look: OrbPreset/,
+    );
+  });
+
+  it("refuses an existing preset file unless --force is passed", async () => {
+    const { testRunner, tree } = await withRuntime();
+    const first = await testRunner.runSchematic("orb", { preset: link }, tree);
+    await assert.rejects(
+      testRunner.runSchematic("orb", { preset: link }, first),
+      /already exists; pass --force/,
+    );
+  });
+
+  it("rejects bad names, empty looks and ambiguous orbs", async () => {
+    const { testRunner, tree } = await withRuntime();
+    await assert.rejects(
+      testRunner.runSchematic("orb", { preset: link, name: "Hero Glow" }, tree),
+      /Preset name/,
+    );
+    await assert.rejects(
+      testRunner.runSchematic("orb", { orbs: "orb-01", preset: "orb=orb-01" }, tree),
+      /Nothing to save/,
+    );
+    await assert.rejects(
+      testRunner.runSchematic("orb", { orbs: "orb-01,orb-02", preset: link }, tree),
+      /exactly one orb/,
+    );
   });
 });

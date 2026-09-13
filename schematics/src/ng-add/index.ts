@@ -8,11 +8,13 @@ import {
 } from "@schematics/angular/utility";
 
 import { copyOrbs, orbClassName, orbTargetDir, parseOrbSelection } from "../shared/orbs";
+import { lockfileFor, packageVersion, recordFiles, writeLockfile } from "../shared/lockfile";
 import {
   copyDirectory,
   readVersions,
   RUNTIME_SOURCE_DIR,
   RUNTIME_TOOLS_DIR,
+  transformForProject,
   type CopyResult,
 } from "../shared/package-files";
 import { declaresPaths, ensurePathAlias, PATH_ALIAS } from "../shared/tsconfig";
@@ -45,19 +47,17 @@ const copyRuntime =
     const source = copyDirectory(tree, RUNTIME_SOURCE_DIR, resolved.sourceRoot, { overwrite });
     const tools = copyDirectory(tree, RUNTIME_TOOLS_DIR, joinPath(resolved.root, "tools"), {
       overwrite,
-      // The plugin resolves "@/..." imports itself; point it at this project's sourceRoot.
-      transform: (path, content) =>
-        path.endsWith("typegpu.esbuild.ts") && resolved.sourceRoot !== "src"
-          ? content.replace(
-              'const SOURCE_ROOT = "src";',
-              `const SOURCE_ROOT = "${resolved.sourceRoot}";`,
-            )
-          : content,
+      transform: transformForProject(resolved.sourceRoot),
     });
     const total: CopyResult = {
       written: [...source.written, ...tools.written],
       skipped: [...source.skipped, ...tools.skipped],
     };
+    const lock = lockfileFor(tree, resolved);
+    lock.version = packageVersion();
+    lock.sourceRoot = resolved.sourceRoot;
+    recordFiles(tree, lock, total.written);
+    writeLockfile(tree, resolved, lock);
     context.logger.info(
       `Runtime: ${total.written.length} file(s) written to ${resolved.sourceRoot}/.`,
     );

@@ -8,10 +8,15 @@
       "private": true
     },
     "orb": {
-      "description": "Copy one or more shader orbs into the project.",
+      "description": "Copy one or more shader orbs into the project, or save a playground look as a preset.",
       "factory": "./orb/index#orb",
       "schema": "./orb/schema.json",
       "aliases": ["orbs"]
+    },
+    "update": {
+      "description": "Refresh the copied shaderng runtime and orb files that the project has not edited.",
+      "factory": "./update/index#update",
+      "schema": "./update/schema.json"
     }
   }
 }

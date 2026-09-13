@@ -6,7 +6,7 @@
   "properties": {
     "orbs": {
       "type": "string",
-      "description": "Comma-separated orb slugs (orb-01 … orb-33, or just the number), or \"all\".",
+      "description": "Comma-separated orb slugs (orb-01 \u2026 orb-33, or just the number), or \"all\".",
       "$default": {
         "$source": "argv",
         "index": 0
@@ -28,6 +28,15 @@
       "type": "boolean",
       "description": "Print the available orbs and exit without copying anything.",
       "default": false
+    },
+    "preset": {
+      "type": "string",
+      "description": "A playground link (or its query string) whose look is saved next to the orb as <name>.preset.ts. Names the orb when --orbs is omitted."
+    },
+    "name": {
+      "type": "string",
+      "description": "File and export name for --preset: <name>.preset.ts exporting orbXX<Name>. Defaults to \"look\".",
+      "default": "look"
     }
   },
   "required": []
