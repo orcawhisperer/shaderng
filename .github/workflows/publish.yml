@@ -2,9 +2,11 @@ name: Publish shaderng to npm
 
 # Publishes the `ng add` package (schematics/) built into dist/schematics.
 # Trigger by pushing a tag that matches schematics/package.json, e.g. `git tag v0.1.0 && git push --tags`,
-# or run it by hand with a dry run first. Authentication uses npm trusted publishing (OIDC), which
-# needs this workflow registered once on npmjs.com under the package's "Trusted publisher" settings;
-# alternatively set an NPM_TOKEN repository secret and it is used instead.
+# or run it by hand: "Run workflow" on main with "dry-run" unticked publishes the version on main.
+# Authentication uses npm trusted publishing (OIDC): this workflow file (publish.yml) is registered on
+# npmjs.com under the package's "Trusted publisher" settings, the job requests an id-token, and npm
+# exchanges it for a short-lived publish credential. No npm token is stored anywhere. Trusted
+# publishing needs npm 11.5.1 or later, which Node 22 does not bundle, so npm is upgraded first.
 
 on:
   push:
@@ -31,6 +33,10 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
       - run: npm ci
+      - name: Upgrade npm for trusted publishing (needs 11.5.1+)
+        run: |
+          npm install -g npm@latest
+          npm --version
       - name: Check the tag matches the package version
         if: github.ref_type == 'tag'
         run: |
@@ -46,8 +52,6 @@ jobs:
       - name: Publish
         if: github.ref_type == 'tag' || inputs.dry-run == false
         run: npm publish ./dist/schematics --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Dry run
         if: github.ref_type != 'tag' && inputs.dry-run != false
         run: npm publish ./dist/schematics --access public --dry-run
