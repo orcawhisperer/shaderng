@@ -3,6 +3,7 @@ import { Component, computed, signal } from "@angular/core";
 import { OrbPreview } from "@/app/orbs/orb-preview";
 import { CopyButton } from "@/app/ui/copy-button";
 import { ORB_CATALOG } from "@/lib/orb-catalog";
+import { orbInstallCommand } from "@/lib/snippet";
 import { cn } from "@/lib/utils";
 
 @Component({
@@ -27,15 +28,19 @@ import { cn } from "@/lib/utils";
           <span class="text-sm font-semibold">Components</span>
         </div>
         <div class="hidden items-center justify-end px-4 py-3 sm:flex">
-          <app-copy-button [value]="installCommand()">
-            <span class="max-w-[28rem] truncate">{{ installCommand() }}</span>
+          <app-copy-button label="Copy install command" [value]="installCommand()">
+            <span class="max-w-[28rem] truncate font-mono text-xs">{{ installCommand() }}</span>
           </app-copy-button>
         </div>
       </div>
 
       <div class="border-b px-4 py-3 sm:hidden">
-        <app-copy-button className="w-full justify-start" [value]="installCommand()">
-          <span class="min-w-0 truncate">{{ installCommand() }}</span>
+        <app-copy-button
+          className="w-full justify-start"
+          label="Copy install command"
+          [value]="installCommand()"
+        >
+          <span class="min-w-0 truncate font-mono text-xs">{{ installCommand() }}</span>
         </app-copy-button>
       </div>
 
@@ -55,14 +60,14 @@ import { cn } from "@/lib/utils";
                 type="button"
                 class="flex flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-left transition-colors"
                 [class]="
-                  item.slug === slug()
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-muted/60'
+                  item.slug === slug() ? 'bg-accent text-accent-foreground' : 'hover:bg-muted/60'
                 "
                 (click)="slug.set(item.slug)"
               >
                 <span class="text-sm font-medium">{{ item.title }}</span>
-                <span class="text-muted-foreground line-clamp-1 text-xs">{{ item.description }}</span>
+                <span class="text-muted-foreground line-clamp-1 text-xs">{{
+                  item.description
+                }}</span>
               </button>
             } @empty {
               <p class="text-muted-foreground px-2 py-6 text-center text-sm">No orbs found.</p>
@@ -71,10 +76,7 @@ import { cn } from "@/lib/utils";
         </aside>
 
         <div class="h-[60vh] overflow-hidden">
-          <app-orb-preview
-            className="h-full min-h-0 rounded-none border-0 p-0"
-            [slug]="slug()"
-          />
+          <app-orb-preview className="h-full min-h-0 rounded-none border-0 p-0" [slug]="slug()" />
         </div>
       </div>
     </div>
@@ -98,7 +100,5 @@ export class HomeShowcase {
     );
   });
 
-  protected readonly installCommand = computed(
-    () => `npm i vgpu typegpu && copy ${this.slug()} into src/components/orbs`,
-  );
+  protected readonly installCommand = computed(() => orbInstallCommand(this.slug()));
 }

@@ -13,7 +13,7 @@ if (ng.status !== 0) {
   process.exit(ng.status ?? 1);
 }
 
-const browser = path.join("dist", "shadercn-angular", "browser");
+const browser = path.join("dist", "shaderng", "browser");
 copyFileSync(path.join(browser, "index.html"), path.join(browser, "404.html"));
 writeFileSync(path.join(browser, ".nojekyll"), "");
 console.log(`GitHub Pages build ready at ${browser} (base href ${baseHref})`);

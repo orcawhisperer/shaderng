@@ -22,17 +22,39 @@ import { SITE } from "@/lib/site";
         <h2 class="text-xl font-semibold">XorDev</h2>
         <p class="text-muted-foreground">
           Every orb GPU program is based on original shader work by
-          <a class="text-foreground underline underline-offset-4" [href]="site.xordev" rel="noreferrer" target="_blank">XorDev</a>,
-          used with permission. Keep the copyright notice in each
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.xordev"
+            rel="noreferrer"
+            target="_blank"
+            >XorDev</a
+          >, used with permission. Keep the copyright notice in each
           <code class="bg-muted rounded px-1 py-0.5 text-sm">gpu.ts</code> file.
         </p>
+        <div class="border-border bg-muted/40 rounded-xl border p-4 text-sm">
+          <p class="font-medium">The shaders are not MIT.</p>
+          <p class="text-muted-foreground mt-1">
+            Each <code class="bg-muted rounded px-1 py-0.5">gpu.ts</code> is
+            <strong class="text-foreground"
+              >non-commercial use only, with attribution to XorDev</strong
+            >. The MIT license covers the runtime, presets, Angular wrappers, and this site, not the
+            shader programs. Copying an orb into your app copies that restriction. Commercial use
+            needs XorDev’s permission.
+          </p>
+        </div>
       </section>
 
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">shadercn / Shadcn Labs</h2>
         <p class="text-muted-foreground">
           The React registry, copy-paste orb layout, renderer, presets, and site structure come from
-          <a class="text-foreground underline underline-offset-4" [href]="site.original" rel="noreferrer" target="_blank">{{ site.originalName }}</a>
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.original"
+            rel="noreferrer"
+            target="_blank"
+            >{{ site.originalName }}</a
+          >
           by Shadcn Labs (MIT). {{ site.name }} would not exist without that work.
         </p>
       </section>
@@ -41,9 +63,21 @@ import { SITE } from "@/lib/site";
         <h2 class="text-xl font-semibold">vgpu and TypeGPU</h2>
         <p class="text-muted-foreground">
           Runtime rendering uses
-          <a class="text-foreground underline underline-offset-4" [href]="site.vgpu" rel="noreferrer" target="_blank">vgpu</a>
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.vgpu"
+            rel="noreferrer"
+            target="_blank"
+            >vgpu</a
+          >
           and typed GPU functions from
-          <a class="text-foreground underline underline-offset-4" [href]="site.typegpu" rel="noreferrer" target="_blank">TypeGPU</a>.
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.typegpu"
+            rel="noreferrer"
+            target="_blank"
+            >TypeGPU</a
+          >.
         </p>
       </section>
 
@@ -51,7 +85,13 @@ import { SITE } from "@/lib/site";
         <h2 class="text-xl font-semibold">Angular</h2>
         <p class="text-muted-foreground">
           The component wrappers, docs, playground, and GitHub Pages site are built with
-          <a class="text-foreground underline underline-offset-4" [href]="site.angular" rel="noreferrer" target="_blank">Angular</a>
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.angular"
+            rel="noreferrer"
+            target="_blank"
+            >Angular</a
+          >
           22 (standalone components, signal inputs, zoneless change detection).
         </p>
       </section>
@@ -63,8 +103,14 @@ import { SITE } from "@/lib/site";
             <code class="bg-muted rounded px-1 py-0.5 text-sm">[listen]</code>
             — microphone-reactive input/output volumes (not in shadercn)
           </li>
-          <li>A TypeGPU esbuild intercept so Angular actually transforms <code class="bg-muted rounded px-1 py-0.5 text-sm">gpu.ts</code></li>
-          <li>Prefers-reduced-motion pause on <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code></li>
+          <li>
+            A TypeGPU esbuild intercept so Angular actually transforms
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">gpu.ts</code>
+          </li>
+          <li>
+            Prefers-reduced-motion pause on
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code>
+          </li>
         </ul>
       </section>
 
@@ -83,11 +129,21 @@ import { SITE } from "@/lib/site";
               @for (orb of orbs; track orb.slug) {
                 <tr class="border-t">
                   <td class="px-3 py-2 font-mono text-xs">
-                    <a class="underline underline-offset-2" [routerLink]="['/docs/components', orb.slug]">{{ orb.title }}</a>
+                    <a
+                      class="underline underline-offset-2"
+                      [routerLink]="['/docs/components', orb.slug]"
+                      >{{ orb.title }}</a
+                    >
                   </td>
                   <td class="px-3 py-2">{{ orb.name }}</td>
                   <td class="px-3 py-2">
-                    <a class="underline underline-offset-2" [href]="site.xordev" rel="noreferrer" target="_blank">XorDev</a>
+                    <a
+                      class="underline underline-offset-2"
+                      [href]="site.xordev"
+                      rel="noreferrer"
+                      target="_blank"
+                      >XorDev</a
+                    >
                   </td>
                 </tr>
               }

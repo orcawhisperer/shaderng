@@ -9,7 +9,9 @@ describe("SITE", () => {
 
   it("exposes copyable clone commands", () => {
     expect(CLONE_OPTIONS.map((option) => option.id)).toEqual(["https", "ssh", "url"]);
-    expect(CLONE_OPTIONS[0].command).toBe("git clone https://github.com/orcawhisperer/shaderng.git");
+    expect(CLONE_OPTIONS[0].command).toBe(
+      "git clone https://github.com/orcawhisperer/shaderng.git",
+    );
     expect(CLONE_OPTIONS[1].command).toBe("git clone git@github.com:orcawhisperer/shaderng.git");
     expect(CLONE_OPTIONS[2].command).toBe(SITE.cloneHttps);
   });

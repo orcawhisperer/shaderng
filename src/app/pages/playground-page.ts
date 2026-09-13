@@ -3,8 +3,8 @@ import { toSignal } from "@angular/core/rxjs-interop";
 import { ActivatedRoute } from "@angular/router";
 
 import { OrbPlayground } from "@/app/orbs/orb-playground";
-import { ORB_SLUGS, ORB_STATE_VALUES } from "@/lib/orb-catalog";
-import type { OrbState } from "@/components/orbs/renderer";
+import { ORB_STATES, type OrbState } from "@/components/orbs/renderer";
+import { ORB_SLUGS, isOrbSlug } from "@/lib/orb-catalog";
 
 @Component({
   selector: "app-playground-page",
@@ -23,13 +23,12 @@ export class PlaygroundPage {
     initialValue: this.route.snapshot.queryParamMap,
   });
 
-  protected readonly slug = computed(
-    () => ORB_SLUGS.find((value) => value === this.query()?.get("orb")) ?? ORB_SLUGS[0],
-  );
+  protected readonly slug = computed(() => {
+    const orb = this.query()?.get("orb");
+    return isOrbSlug(orb) ? orb : ORB_SLUGS[0];
+  });
 
   protected readonly state = computed(
-    () =>
-      (ORB_STATE_VALUES.find((value) => value === this.query()?.get("state")) ??
-        "idle") as OrbState,
+    () => ORB_STATES.find((value) => value === this.query()?.get("state")) ?? ("idle" as OrbState),
   );
 }

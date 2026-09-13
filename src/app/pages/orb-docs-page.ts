@@ -6,8 +6,9 @@ import { map } from "rxjs";
 import { OrbPreview } from "@/app/orbs/orb-preview";
 import { CodeBlock } from "@/app/ui/code-block";
 import type { OrbVariant } from "@/components/orbs/renderer";
-import { ORB_CATALOG_MAP, ORB_SLUGS, type OrbSlug } from "@/lib/orb-catalog";
+import { ORB_CATALOG_MAP, isOrbSlug } from "@/lib/orb-catalog";
 import { loadOrb } from "@/lib/orb-loaders";
+import { orbInstallCommand } from "@/lib/snippet";
 
 @Component({
   selector: "app-orb-docs-page",
@@ -27,6 +28,18 @@ import { loadOrb } from "@/lib/orb-loaders";
         </div>
 
         <app-orb-preview [slug]="orb.slug" />
+
+        <section class="space-y-3">
+          <h2 class="text-xl font-semibold">Install</h2>
+          <p class="text-muted-foreground text-sm">
+            Needs the shared runtime from the
+            <a class="text-foreground underline underline-offset-4" routerLink="/docs/installation"
+              >installation guide</a
+            >
+            once; then one command per orb.
+          </p>
+          <app-code-block [code]="install()" />
+        </section>
 
         <section class="space-y-3">
           <h2 class="text-xl font-semibold">Usage</h2>
@@ -90,7 +103,13 @@ import { loadOrb } from "@/lib/orb-loaders";
 
         <p class="text-muted-foreground text-sm">
           Based on original work by
-          <a class="text-foreground underline underline-offset-4" href="https://x.com/XorDev" rel="noreferrer" target="_blank">XorDev</a>.
+          <a
+            class="text-foreground underline underline-offset-4"
+            href="https://x.com/XorDev"
+            rel="noreferrer"
+            target="_blank"
+            >XorDev</a
+          >.
         </p>
       </article>
     } @else {
@@ -109,7 +128,7 @@ export class OrbDocsPage {
 
   protected readonly item = computed(() => {
     const slug = this.slug();
-    return ORB_SLUGS.includes(slug as OrbSlug) ? ORB_CATALOG_MAP[slug as OrbSlug] : null;
+    return isOrbSlug(slug) ? ORB_CATALOG_MAP[slug] : null;
   });
 
   protected readonly className = computed(() => `Orb${(this.item()?.slug ?? "orb-01").slice(-2)}`);
@@ -125,6 +144,8 @@ export class OrbDocsPage {
 })
 export class Example {}`;
   });
+
+  protected readonly install = computed(() => orbInstallCommand(this.item()?.slug ?? "orb-01"));
 
   protected readonly componentInputs = [
     { name: "state", type: '"idle" | "thinking" | "speaking"', fallback: '"idle"' },
@@ -143,6 +164,9 @@ export class Example {}`;
       const slug = this.slug();
       let cancelled = false;
       this.variant.set(null);
+      if (!isOrbSlug(slug)) {
+        return;
+      }
       void loadOrb(slug)
         .then((entry) => {
           if (!cancelled) {

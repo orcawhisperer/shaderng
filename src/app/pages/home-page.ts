@@ -24,12 +24,25 @@ import { SITE } from "@/lib/site";
           {{ site.name }} is a copy-paste WebGPU orb kit for Angular.
           <br class="hidden sm:block" />
           GPU programs from
-          <a class="text-foreground underline underline-offset-4" [href]="site.original" rel="noreferrer" target="_blank">{{ site.originalName }}</a>,
-          based on
-          <a class="text-foreground underline underline-offset-4" [href]="site.xordev" rel="noreferrer" target="_blank">XorDev</a>.
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.original"
+            rel="noreferrer"
+            target="_blank"
+            >{{ site.originalName }}</a
+          >, based on
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.xordev"
+            rel="noreferrer"
+            target="_blank"
+            >XorDev</a
+          >.
         </p>
 
-        <div class="bg-code text-code-foreground relative mt-4 w-full max-w-xl overflow-hidden rounded-lg text-left text-sm">
+        <div
+          class="bg-code text-code-foreground relative mt-4 w-full max-w-xl overflow-hidden rounded-lg text-left text-sm"
+        >
           <pre class="px-4 py-3.5 font-mono">
             <code class="text-muted-foreground">
               <span class="select-none">$ </span>npm i vgpu typegpu
@@ -96,15 +109,18 @@ export class HomePage {
   protected readonly originals = [
     {
       title: "Listen",
-      description: "A [listen] input drives orb volumes from the microphone. shadercn does not have this.",
+      description:
+        "A [listen] input drives orb volumes from the microphone. shadercn does not have this.",
     },
     {
       title: "Angular TypeGPU",
-      description: "gpu.ts is transformed in the Angular esbuild pipeline, which otherwise swallows unplugin-typegpu.",
+      description:
+        "gpu.ts is transformed in the Angular esbuild pipeline, which otherwise swallows unplugin-typegpu.",
     },
     {
       title: "Reduced motion",
-      description: "Orbs pause when the OS asks for prefers-reduced-motion, unless you are using Listen.",
+      description:
+        "Orbs pause when the OS asks for prefers-reduced-motion, unless you are using Listen.",
     },
   ];
 }

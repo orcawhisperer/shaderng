@@ -2,7 +2,7 @@ import type { Type } from "@angular/core";
 
 import type { OrbBase } from "@/components/orbs/orb-base";
 import type { OrbVariant } from "@/components/orbs/renderer";
-import type { OrbSlug } from "@/lib/orb-catalog";
+import { isOrbSlug, type OrbSlug } from "@/lib/orb-catalog";
 
 export interface OrbEntry {
   Component: Type<OrbBase>;
@@ -178,9 +178,8 @@ export const ORB_LOADERS: Record<OrbSlug, () => Promise<OrbEntry>> = {
 };
 
 export const loadOrb = (slug: string): Promise<OrbEntry> => {
-  const loader = ORB_LOADERS[slug as OrbSlug];
-  if (!loader) {
-    return ORB_LOADERS["orb-01"]();
+  if (!isOrbSlug(slug)) {
+    return Promise.reject(new Error(`Unknown orb "${slug}"`));
   }
-  return loader();
+  return ORB_LOADERS[slug]();
 };

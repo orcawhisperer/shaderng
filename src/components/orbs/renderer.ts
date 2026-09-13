@@ -1,5 +1,5 @@
 import { d } from "typegpu";
-import type { Effect, Gpu } from "vgpu";
+import type { Effect, Gpu, Surface } from "vgpu";
 import { clock, effect, frameLoop, init, surface, Uniform } from "vgpu";
 
 /* ---------------------------------- schema --------------------------------- */
@@ -29,9 +29,7 @@ export interface OrbBaseUniforms {
  * the shader through its bind group layout, the scene through
  * {@link d.memoryLayoutOf} to place each field's bytes.
  */
-export type OrbUniformStruct = d.WgslStruct<
-  OrbBaseUniforms & Record<string, d.AnyWgslData>
->;
+export type OrbUniformStruct = d.WgslStruct<OrbBaseUniforms & Record<string, d.AnyWgslData>>;
 
 export interface OrbParamDef {
   key: string;
@@ -83,7 +81,7 @@ export interface OrbDrive {
 }
 
 export const defaultValuesFor = (
-  variant: OrbVariant
+  variant: OrbVariant,
 ): {
   params: Record<string, number>;
   colors: Record<string, string>;
@@ -153,12 +151,12 @@ const floatSlot = (
   schema: OrbUniformStruct,
   field: string,
   expected: "f32" | "vec3f",
-  label: string
+  label: string,
 ): number => {
   const declared = schema.propTypes[field];
   if (declared?.type !== expected) {
     throw new Error(
-      `${label}: uniform struct needs '${field}: ${expected}', found ${declared?.type ?? "nothing"}`
+      `${label}: uniform struct needs '${field}: ${expected}', found ${declared?.type ?? "nothing"}`,
     );
   }
 
@@ -176,19 +174,13 @@ const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 /** Where a state's synthesized [input, output] volumes sit at `t` seconds. */
 const targetVolumes = (state: OrbState, t: number): [number, number] => {
   if (state === "speaking") {
-    return [
-      clamp01(0.65 + Math.sin(t * 4.8) * 0.22),
-      clamp01(0.75 + Math.sin(t * 3.6) * 0.22),
-    ];
+    return [clamp01(0.65 + Math.sin(t * 4.8) * 0.22), clamp01(0.75 + Math.sin(t * 3.6) * 0.22)];
   }
 
   if (state === "thinking") {
     const base = 0.38 + 0.07 * Math.sin(t * 0.7);
     const wander = 0.05 * Math.sin(t * 2.1) * Math.sin(t * 0.37 + 1.2);
-    return [
-      clamp01(base + wander),
-      clamp01(0.48 + 0.12 * Math.sin(t * 1.05 + 0.6)),
-    ];
+    return [clamp01(base + wander), clamp01(0.48 + 0.12 * Math.sin(t * 1.05 + 0.6))];
   }
 
   return [0, 0.3];
@@ -230,7 +222,7 @@ export const createOrbScene = (
   gpu: Gpu,
   variant: OrbVariant,
   res: readonly [number, number],
-  drive: OrbDrive
+  drive: OrbDrive,
 ): OrbScene => {
   const schema = variant.uniforms;
   const words = new Float32Array(uniformBytes(schema) / F32_BYTES);
@@ -253,14 +245,10 @@ export const createOrbScene = (
   const resSlot = baseSlot("res");
 
   const paramSlots = new Int32Array(
-    variant.params.map((p) =>
-      floatSlot(schema, `p_${p.key}`, "f32", variant.key)
-    )
+    variant.params.map((p) => floatSlot(schema, `p_${p.key}`, "f32", variant.key)),
   );
   const colorSlots = new Int32Array(
-    variant.colors.map((c) =>
-      floatSlot(schema, `c_${c.key}`, "vec3f", variant.key)
-    )
+    variant.colors.map((c) => floatSlot(schema, `c_${c.key}`, "vec3f", variant.key)),
   );
 
   // Colour state lives in `words` itself; only the springs' velocities are aside.
@@ -322,16 +310,12 @@ export const createOrbScene = (
   };
 
   const stepParams = (dt: number, live: OrbDrive) => {
-    const preset =
-      live.statePresets?.[live.state] ?? variant.statePresets?.[live.state];
+    const preset = live.statePresets?.[live.state] ?? variant.statePresets?.[live.state];
 
     for (let i = 0; i < variant.params.length; i += 1) {
       const def = variant.params[i];
       const explicit = live.params?.[def.key];
-      const target =
-        typeof explicit === "number"
-          ? explicit
-          : (preset?.[def.key] ?? def.default);
+      const target = typeof explicit === "number" ? explicit : (preset?.[def.key] ?? def.default);
 
       springStep(paramCur[i], paramVel[i], target, dt);
       paramCur[i] = springOut.x;
@@ -347,25 +331,15 @@ export const createOrbScene = (
   };
 
   const stepColors = (dt: number, live: OrbDrive) => {
-    const stateColor =
-      live.stateColors?.[live.state] ?? variant.stateColors?.[live.state];
+    const stateColor = live.stateColors?.[live.state] ?? variant.stateColors?.[live.state];
 
     for (let i = 0; i < variant.colors.length; i += 1) {
       const def = variant.colors[i];
       const at = colorSlots[i];
-      writeHex(
-        live.colors?.[def.key] ?? stateColor?.[def.key] ?? def.default,
-        colorTarget,
-        0
-      );
+      writeHex(live.colors?.[def.key] ?? stateColor?.[def.key] ?? def.default, colorTarget, 0);
       for (let channel = 0; channel < 3; channel += 1) {
         const velAt = i * 3 + channel;
-        springStep(
-          words[at + channel],
-          colorVel[velAt],
-          colorTarget[channel],
-          dt
-        );
+        springStep(words[at + channel], colorVel[velAt], colorTarget[channel], dt);
         words[at + channel] = springOut.x;
         colorVel[velAt] = springOut.v;
       }
@@ -393,6 +367,143 @@ export const createOrbScene = (
   };
 };
 
+/* -------------------------------- shared gpu ------------------------------- */
+
+/**
+ * How long the shared device outlives its last orb. Long enough that swapping
+ * the orb in a gallery (dispose, then create in the same tick) does not pay for
+ * a fresh adapter request; short enough that a page with no orbs holds nothing.
+ */
+const HOST_IDLE_MS = 250;
+
+const isDeviceGone = (error: unknown): boolean => {
+  const code = (error as { code?: unknown } | null)?.code;
+  return (
+    code === "VGPU-DEVICE-LOST" || code === "VGPU-DEVICE-DISPOSED" || code === "VGPU-GPU-DISPOSED"
+  );
+};
+
+interface HostEntry {
+  readonly output: Surface;
+  readonly scene: OrbScene;
+  readonly drive: () => OrbDrive;
+  readonly visible: () => boolean;
+  readonly onFirstFrame?: () => void;
+  readonly onError: (error: unknown) => void;
+  painted: boolean;
+}
+
+/**
+ * One WebGPU device shared by every mounted orb, driven by a single frame loop
+ * that encodes one pass per visible canvas into the same command buffer. Each
+ * orb still owns its surface, uniform buffer and springs; only the device, the
+ * pipeline cache and the clock are shared. A throwing entry is removed on its
+ * own so it cannot take the other orbs down with it.
+ */
+class OrbHost {
+  private readonly entries = new Set<HostEntry>();
+  private readonly timeline;
+  private loop: { stop(): void } | undefined;
+
+  constructor(
+    readonly gpu: Gpu,
+    private readonly onDeviceGone: (host: OrbHost) => void,
+  ) {
+    this.timeline = clock(gpu);
+  }
+
+  add(entry: HostEntry) {
+    this.entries.add(entry);
+    this.loop ??= frameLoop(this.gpu, (frame) => this.tick(frame));
+  }
+
+  remove(entry: HostEntry) {
+    this.entries.delete(entry);
+    if (this.entries.size === 0) {
+      this.loop?.stop();
+      this.loop = undefined;
+    }
+  }
+
+  dispose() {
+    this.loop?.stop();
+    this.loop = undefined;
+    this.entries.clear();
+    this.gpu.dispose();
+  }
+
+  private tick(frame: { pass(target: Surface, effect: Effect): void }) {
+    const dt = Math.min(this.timeline.deltaTime, MAX_STEP);
+    for (const entry of [...this.entries]) {
+      try {
+        const live = entry.drive();
+        if (live.paused || !entry.visible()) {
+          continue;
+        }
+        entry.scene.advance(dt, live);
+        frame.pass(entry.output, entry.scene.shader);
+        if (!entry.painted) {
+          entry.painted = true;
+          entry.onFirstFrame?.();
+        }
+      } catch (error) {
+        this.remove(entry);
+        if (isDeviceGone(error)) {
+          this.onDeviceGone(this);
+        }
+        entry.onError(error);
+      }
+    }
+  }
+}
+
+let hostPromise: Promise<OrbHost> | undefined;
+let hostRefs = 0;
+let hostTeardown: ReturnType<typeof setTimeout> | undefined;
+
+const acquireHost = (): Promise<OrbHost> => {
+  hostRefs += 1;
+  clearTimeout(hostTeardown);
+  if (!hostPromise) {
+    const pending: Promise<OrbHost> = init().then(
+      (gpu) =>
+        // A lost device is retired so the next orb requests a fresh one.
+        new OrbHost(gpu, () => {
+          if (hostPromise === pending) {
+            hostPromise = undefined;
+          }
+        }),
+      (error: unknown) => {
+        if (hostPromise === pending) {
+          hostPromise = undefined;
+        }
+        throw error;
+      },
+    );
+    hostPromise = pending;
+  }
+  return hostPromise;
+};
+
+const releaseHost = () => {
+  hostRefs = Math.max(0, hostRefs - 1);
+  if (hostRefs > 0) {
+    return;
+  }
+  clearTimeout(hostTeardown);
+  hostTeardown = setTimeout(() => {
+    if (hostRefs > 0) {
+      return;
+    }
+    const retiring = hostPromise;
+    hostPromise = undefined;
+    void retiring?.then(
+      (host) => host.dispose(),
+      () => undefined,
+    );
+  }, HOST_IDLE_MS);
+};
+
 /* --------------------------------- renderer -------------------------------- */
 
 export interface OrbRendererOptions {
@@ -404,11 +515,14 @@ export interface OrbRendererOptions {
   /** Skip frames while the canvas is scrolled out of view. */
   readonly pauseOffscreen?: boolean;
   readonly onFirstFrame?: () => void;
+  /** Called when the orb stops rendering after it had started: a lost device or a failed pass. */
+  readonly onError?: (error: unknown) => void;
 }
 
 /**
- * Owns one WebGPU device for one canvas: surface, scene, and frame loop. `ready`
- * rejects when initialization fails; `dispose` is idempotent and safe mid-init.
+ * Attaches one canvas to the shared WebGPU device: surface, scene and a slot in
+ * the shared frame loop. `ready` rejects when the device or the scene cannot be
+ * created; `dispose` is idempotent and safe mid-init.
  */
 export const createOrbRenderer = ({
   canvas,
@@ -417,10 +531,11 @@ export const createOrbRenderer = ({
   maxDpr = 2,
   pauseOffscreen = true,
   onFirstFrame,
+  onError,
 }: OrbRendererOptions) => {
   let disposed = false;
-  let gpu: Gpu | undefined;
-  let loop: { stop(): void } | undefined;
+  let host: OrbHost | undefined;
+  let entry: HostEntry | undefined;
   let unsubscribeResize: (() => void) | undefined;
   let observer: IntersectionObserver | undefined;
   let visible = true;
@@ -432,46 +547,53 @@ export const createOrbRenderer = ({
     disposed = true;
     observer?.disconnect();
     unsubscribeResize?.();
-    loop?.stop();
-    gpu?.dispose();
+    if (entry) {
+      host?.remove(entry);
+      entry.scene.dispose();
+      entry.output.dispose();
+    }
+    releaseHost();
   };
 
   const ready = (async () => {
-    const nextGpu = await init();
+    let nextHost: OrbHost;
+    try {
+      nextHost = await acquireHost();
+    } catch (error) {
+      disposed = true;
+      releaseHost();
+      throw error;
+    }
     if (disposed) {
-      nextGpu.dispose();
       return;
     }
+    host = nextHost;
 
-    gpu = nextGpu;
     try {
-      const output = surface(gpu, canvas, { dpr: [1, maxDpr] });
-      const timeline = clock(gpu);
-      const scene = createOrbScene(gpu, variant, output.size, drive());
+      const output = surface(host.gpu, canvas, { dpr: [1, maxDpr] });
+      const scene = createOrbScene(host.gpu, variant, output.size, drive());
       unsubscribeResize = output.onResize(() => scene.resize(output.size));
 
       if (pauseOffscreen && typeof IntersectionObserver !== "undefined") {
         observer = new IntersectionObserver((entries) => {
-          visible = entries.some((entry) => entry.isIntersecting);
+          visible = entries.some((item) => item.isIntersecting);
         });
         observer.observe(canvas);
       }
 
-      let painted = false;
-      loop = frameLoop(gpu, (frame) => {
-        const live = drive();
-        if (live.paused || !visible) {
-          return;
-        }
-
-        scene.advance(Math.min(timeline.deltaTime, MAX_STEP), live);
-        frame.pass(output, scene.shader);
-
-        if (!painted) {
-          painted = true;
-          onFirstFrame?.();
-        }
-      });
+      entry = {
+        drive,
+        onError: (error) => {
+          dispose();
+          onError?.(error);
+        },
+        onFirstFrame,
+        output,
+        painted: false,
+        scene,
+        visible: () => visible,
+      };
+      host.add(entry);
     } catch (error) {
       dispose();
       throw error;

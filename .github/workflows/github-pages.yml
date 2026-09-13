@@ -41,7 +41,7 @@ jobs:
         run: npm run build:pages
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: dist/shadercn-angular/browser
+          path: dist/shaderng/browser
 
   deploy:
     needs: build

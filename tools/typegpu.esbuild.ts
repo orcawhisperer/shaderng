@@ -48,7 +48,8 @@ const plugin: Plugin = {
     });
 
     build.onLoad({ filter: /.*/, namespace: "typegpu-gpu" }, async (args) => {
-      const sourcePath = (args.pluginData as { gpuTs?: string } | undefined)?.gpuTs ?? `${args.path}.ts`;
+      const sourcePath =
+        (args.pluginData as { gpuTs?: string } | undefined)?.gpuTs ?? `${args.path}.ts`;
       const source = await readFile(sourcePath, "utf8");
       const result = transformSync(source, {
         babelrc: false,

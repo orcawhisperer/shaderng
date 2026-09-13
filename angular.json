@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "shadercn-angular": {
+    "shaderng": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -57,10 +57,10 @@
           "builder": "@angular-builders/custom-esbuild:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "shadercn-angular:build:production"
+              "buildTarget": "shaderng:build:production"
             },
             "development": {
-              "buildTarget": "shadercn-angular:build:development"
+              "buildTarget": "shaderng:build:development"
             }
           },
           "defaultConfiguration": "development"
