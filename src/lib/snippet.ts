@@ -79,6 +79,13 @@ export const ngAddCommand = (): string => `ng add ${NG_ADD_PACKAGE}`;
 
 export const ngGenerateOrbCommand = (slug: string): string => `ng g ${NG_ADD_PACKAGE}:orb ${slug}`;
 
+/** Writes the look behind a playground link into the project as `<name>.preset.ts`. */
+export const ngPresetCommand = (slug: string, shareUrl: string, name = "look"): string =>
+  `${ngGenerateOrbCommand(slug)} --preset "${shareUrl}" --name ${name}`;
+
+/** Refreshes the copied runtime and orb files after the package itself was updated. */
+export const ngUpdateCommand = (): string => `ng update ${NG_ADD_PACKAGE}`;
+
 /**
  * A runnable shell command that fetches one orb folder from GitHub with degit,
  * which downloads a subdirectory without cloning the whole repository.

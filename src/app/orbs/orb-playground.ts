@@ -18,7 +18,12 @@ import { loadOrb, type OrbEntry } from "@/lib/orb-loaders";
 import { ORB_CATALOG, ORB_SLUGS } from "@/lib/orb-catalog";
 import { applyShare, encodeShare, type PlaygroundShare } from "@/lib/playground-url";
 import { SITE } from "@/lib/site";
-import { buildAngularSnippet, formatControlValue, type SnippetDraft } from "@/lib/snippet";
+import {
+  buildAngularSnippet,
+  formatControlValue,
+  ngPresetCommand,
+  type SnippetDraft,
+} from "@/lib/snippet";
 
 /** Slider drags fire many times a second; the URL only needs the resting value. */
 const URL_SYNC_MS = 200;
@@ -124,6 +129,12 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
               </button>
               <app-copy-button label="Copy link to this look" [value]="shareUrl()">
                 Copy link
+              </app-copy-button>
+              <app-copy-button
+                label="Copy the ng generate command that saves this look as a preset"
+                [value]="presetCommand()"
+              >
+                Copy preset command
               </app-copy-button>
               <app-copy-button variant="default" [value]="snippet()">Copy template</app-copy-button>
             </div>
@@ -333,6 +344,9 @@ export class OrbPlayground {
       state: this.state(),
     });
   });
+
+  /** `ng g shaderng:orb <slug> --preset "<link>"`: the look as a `.preset.ts` in a project. */
+  protected readonly presetCommand = computed(() => ngPresetCommand(this.slug(), this.shareUrl()));
 
   protected readonly shareUrl = computed(() => {
     const query = this.shareQuery();
