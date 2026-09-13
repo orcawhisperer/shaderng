@@ -128,4 +128,7 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 
 ## License
 
-[MIT](LICENSE). Keep the XorDev notices in `gpu.ts` files.
+Two licenses apply. Read both before shipping.
+
+- **MIT** ([LICENSE](LICENSE)) — the runtime (`renderer.ts`), orb presets, Angular wrappers, docs site, esbuild intercept, `[listen]`, and reduced-motion handling.
+- **Non-commercial, attribution required** — every `src/components/orbs/*/gpu.ts`. Those are XorDev’s shaders, ported with permission. The header in each file is the license: *“Non-commercial use only, with attribution to XorDev; keep this notice with the file.”* Copying an orb into your app copies that restriction. Commercial use of the shader programs needs XorDev’s permission.

@@ -26,6 +26,16 @@ import { SITE } from "@/lib/site";
           used with permission. Keep the copyright notice in each
           <code class="bg-muted rounded px-1 py-0.5 text-sm">gpu.ts</code> file.
         </p>
+        <div class="border-border bg-muted/40 rounded-xl border p-4 text-sm">
+          <p class="font-medium">The shaders are not MIT.</p>
+          <p class="text-muted-foreground mt-1">
+            Each <code class="bg-muted rounded px-1 py-0.5">gpu.ts</code> is
+            <strong class="text-foreground">non-commercial use only, with attribution to XorDev</strong>.
+            The MIT license covers the runtime, presets, Angular wrappers, and this site, not the
+            shader programs. Copying an orb into your app copies that restriction. Commercial use
+            needs XorDev’s permission.
+          </p>
+        </div>
       </section>
 
       <section class="space-y-3">

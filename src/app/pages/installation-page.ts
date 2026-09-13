@@ -1,4 +1,5 @@
 import { Component } from "@angular/core";
+import { RouterLink } from "@angular/router";
 
 import { CloneOptions } from "@/app/ui/clone-options";
 import { CodeBlock } from "@/app/ui/code-block";
@@ -6,7 +7,7 @@ import { SITE } from "@/lib/site";
 
 @Component({
   selector: "app-installation-page",
-  imports: [CloneOptions, CodeBlock],
+  imports: [CloneOptions, CodeBlock, RouterLink],
   template: `
     <article class="mx-auto max-w-3xl space-y-8">
       <p class="text-muted-foreground text-sm">Docs</p>
@@ -27,6 +28,18 @@ import { SITE } from "@/lib/site";
           Copy HTTPS, SSH, or the raw git URL.
         </p>
         <app-clone-options />
+      </section>
+
+      <section class="border-border bg-muted/40 space-y-2 rounded-xl border p-4 text-sm">
+        <p class="font-medium">Before you copy anything: two licenses.</p>
+        <p class="text-muted-foreground">
+          The runtime, presets, and Angular wrappers are MIT. Every
+          <code class="bg-muted rounded px-1 py-0.5">gpu.ts</code> is XorDev’s shader, ported with
+          permission, and is <strong class="text-foreground">non-commercial use only, with attribution</strong>.
+          Keep the header notice in the file. Commercial use of the shader programs needs XorDev’s
+          permission. Details on the
+          <a class="text-foreground underline underline-offset-4" routerLink="/docs/credits">credits page</a>.
+        </p>
       </section>
 
       <section class="space-y-3">

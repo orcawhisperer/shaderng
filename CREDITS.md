@@ -2,7 +2,7 @@
 
 **shaderng** is an unofficial Angular port of [shadercn](https://github.com/shadcn-labs/shadercn). Give credit in this order:
 
-1. **[XorDev](https://x.com/XorDev)** — original shader work for all 33 orbs, used with permission. Keep the copyright notice in every `gpu.ts` file.
+1. **[XorDev](https://x.com/XorDev)** — original shader work for all 33 orbs, used with permission. Every `gpu.ts` is **non-commercial use only, with attribution**; keep the notice in the file. The MIT license in this repo does not cover the shader programs.
 2. **[shadercn](https://github.com/shadcn-labs/shadercn) / Shadcn Labs** — React registry, renderer, orb presets, and copy-paste component model (MIT).
 3. **[vgpu](https://vgpu.labs.vercel.dev/)** — WebGPU shader runtime.
 4. **[TypeGPU](https://typegpu.com/)** — typed `"use gpu"` functions.

@@ -23,8 +23,20 @@ SOFTWARE.
 
 ---
 
-GPU programs, renderer, and orb presets originate from shadercn (Shadcn Labs, MIT)
-and are based on original shader work by XorDev, used with permission.
+## Scope of the MIT license
 
-The Angular wrappers, docs site, TypeGPU esbuild intercept, microphone `[listen]`
-drive, and reduced-motion handling are original to shaderng.
+The MIT license above covers the shadercn runtime (`renderer.ts`), orb presets
+(`meta.ts`), the Angular wrappers, docs site, TypeGPU esbuild intercept,
+microphone `[listen]` drive, and reduced-motion handling.
+
+## Shader programs (`src/components/orbs/*/gpu.ts`) are NOT MIT
+
+Every `gpu.ts` file is based on original shader work by XorDev
+(https://x.com/XorDev), ported with the author's permission. Those files carry
+their own terms in the header notice:
+
+    Non-commercial use only, with attribution to XorDev; keep this notice with
+    the file.
+
+If you copy an orb into your project you take that restriction with it. For
+commercial use of the shader programs, obtain permission from XorDev.
