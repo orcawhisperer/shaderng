@@ -20,7 +20,7 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "plugins": ["tools/typegpu.esbuild.ts"],
-            "allowedCommonJsDependencies": ["typegpu", "vgpu"],
+            "allowedCommonJsDependencies": ["typegpu", "vgpu", "@vercel/analytics"],
             "assets": [
               {
                 "glob": "**/*",
