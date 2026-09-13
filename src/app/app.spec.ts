@@ -33,4 +33,15 @@ describe("App", () => {
     );
     expect(ngBadge).toBeUndefined();
   });
+
+  it("should link GitHub to the shaderng repo", async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const github = Array.from(compiled.querySelectorAll("header a")).find(
+      (el) => el.textContent?.trim() === "GitHub",
+    ) as HTMLAnchorElement | undefined;
+    expect(github).toBeTruthy();
+    expect(github?.getAttribute("href")).toBe("https://github.com/orcawhisperer/shaderng");
+  });
 });

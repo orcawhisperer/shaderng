@@ -1,7 +1,12 @@
 import { Component } from "@angular/core";
 
+import { CloneOptions } from "@/app/ui/clone-options";
+import { CodeBlock } from "@/app/ui/code-block";
+import { SITE } from "@/lib/site";
+
 @Component({
   selector: "app-installation-page",
+  imports: [CloneOptions, CodeBlock],
   template: `
     <article class="mx-auto max-w-3xl space-y-8">
       <p class="text-muted-foreground text-sm">Docs</p>
@@ -15,6 +20,16 @@ import { Component } from "@angular/core";
       </p>
 
       <section class="space-y-3">
+        <h2 class="text-xl font-semibold">Clone</h2>
+        <p class="text-muted-foreground">
+          Source lives at
+          <a class="text-foreground underline underline-offset-4" [href]="site.github" rel="noreferrer" target="_blank">{{ site.github }}</a>.
+          Copy HTTPS, SSH, or the raw git URL.
+        </p>
+        <app-clone-options />
+      </section>
+
+      <section class="space-y-3">
         <h2 class="text-xl font-semibold">Prerequisites</h2>
         <ul class="text-muted-foreground list-disc space-y-1 pl-5">
           <li>Angular 22 with the application builder (esbuild)</li>
@@ -25,8 +40,7 @@ import { Component } from "@angular/core";
 
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">1. Install dependencies</h2>
-        <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>npm i vgpu typegpu
-npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild</code></pre>
+        <app-code-block [code]="installDeps" />
       </section>
 
       <section class="space-y-3">
@@ -36,10 +50,7 @@ npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @an
           that must be transformed at build time. Point the Angular application builder at
           <code class="bg-muted rounded px-1 py-0.5 text-sm">tools/typegpu.esbuild.ts</code>.
         </p>
-        <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>"builder": "@angular-builders/custom-esbuild:application",
-"options": {{ '{' }}
-  "plugins": ["tools/typegpu.esbuild.ts"]
-{{ '}' }}</code></pre>
+        <app-code-block [code]="esbuildPlugin" />
       </section>
 
       <section class="space-y-3">
@@ -56,13 +67,7 @@ npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @an
 
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">4. Use it</h2>
-        <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>import {{ '{' }} Orb01 {{ '}' }} from "@/components/orbs/orb-01";
-
-&#64;Component({{ '{' }}
-  imports: [Orb01],
-  template: \`&lt;orb-01 [size]="280" state="idle" /&gt;\`,
-{{ '}' }})
-export class Hero {{ '{' }}{{ '}' }}</code></pre>
+        <app-code-block [code]="usage" />
       </section>
 
       <section class="space-y-3">
@@ -71,9 +76,25 @@ export class Hero {{ '{' }}{{ '}' }}</code></pre>
           shadercn feeds voice levels as <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>.
           shaderng adds a microphone listener that writes those volumes for you:
         </p>
-        <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>&lt;orb-01 state="speaking" [listen]="true" /&gt;</code></pre>
+        <app-code-block [code]="listenSnippet" />
       </section>
     </article>
   `,
 })
-export class InstallationPage {}
+export class InstallationPage {
+  protected readonly site = SITE;
+  protected readonly installDeps = `npm i vgpu typegpu
+npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild`;
+  protected readonly esbuildPlugin = `"builder": "@angular-builders/custom-esbuild:application",
+"options": {
+  "plugins": ["tools/typegpu.esbuild.ts"]
+}`;
+  protected readonly usage = `import { Orb01 } from "@/components/orbs/orb-01";
+
+@Component({
+  imports: [Orb01],
+  template: \`<orb-01 [size]="280" state="idle" />\`,
+})
+export class Hero {}`;
+  protected readonly listenSnippet = `<orb-01 state="speaking" [listen]="true" />`;
+}

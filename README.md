@@ -34,6 +34,8 @@ Also original here: the TypeGPU esbuild intercept Angular needs, and `prefers-re
 ## Quick start
 
 ```bash
+git clone https://github.com/orcawhisperer/shaderng.git
+cd shaderng
 npm install
 npm start
 ```
@@ -72,7 +74,7 @@ Drive states (`idle`, `thinking`, `speaking`) ease the shader uniforms. Override
 
 ## GitHub Pages
 
-1. Rename the GitHub repository to **`shaderng`** if you want `https://<user>.github.io/shaderng/`.
+1. Use GitHub repository **`shaderng`** for `https://<user>.github.io/shaderng/`.
 2. Settings → Pages → Source: **GitHub Actions**.
 3. Merge to `main` (or run the **GitHub Pages** workflow). The action sets `<base href>` from the repo name and copies `index.html` to `404.html` so Angular routes work.
 

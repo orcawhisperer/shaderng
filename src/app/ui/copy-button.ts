@@ -5,7 +5,12 @@ import { cn } from "@/lib/utils";
 @Component({
   selector: "app-copy-button",
   template: `
-    <button type="button" [class]="buttonClass()" (click)="copy()">
+    <button
+      type="button"
+      [class]="buttonClass()"
+      [attr.aria-label]="copied() ? 'Copied' : label()"
+      (click)="copy()"
+    >
       @if (copied()) {
         <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -21,6 +26,7 @@ export class CopyButton {
   readonly value = input.required<string>();
   readonly className = input<string>("");
   readonly variant = input<"default" | "outline">("outline");
+  readonly label = input<string>("Copy");
   protected readonly copied = signal(false);
   private timer: ReturnType<typeof setTimeout> | undefined;
 

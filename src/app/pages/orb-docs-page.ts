@@ -4,13 +4,14 @@ import { ActivatedRoute, RouterLink } from "@angular/router";
 import { map } from "rxjs";
 
 import { OrbPreview } from "@/app/orbs/orb-preview";
+import { CodeBlock } from "@/app/ui/code-block";
 import type { OrbVariant } from "@/components/orbs/renderer";
 import { ORB_CATALOG_MAP, ORB_SLUGS, type OrbSlug } from "@/lib/orb-catalog";
 import { loadOrb } from "@/lib/orb-loaders";
 
 @Component({
   selector: "app-orb-docs-page",
-  imports: [OrbPreview, RouterLink],
+  imports: [OrbPreview, CodeBlock, RouterLink],
   template: `
     @if (item(); as orb) {
       <article class="mx-auto max-w-3xl space-y-8">
@@ -29,13 +30,7 @@ import { loadOrb } from "@/lib/orb-loaders";
 
         <section class="space-y-3">
           <h2 class="text-xl font-semibold">Usage</h2>
-          <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>import {{ '{' }} {{ className() }} {{ '}' }} from "@/components/orbs/{{ orb.slug }}";
-
-&#64;Component({{ '{' }}
-  imports: [{{ className() }}],
-  template: \`&lt;{{ orb.slug }} [size]="280" state="idle" /&gt;\`,
-{{ '}' }})
-export class Example {{ '{' }}{{ '}' }}</code></pre>
+          <app-code-block [code]="usage()" />
         </section>
 
         <section class="space-y-3">
@@ -118,6 +113,18 @@ export class OrbDocsPage {
   });
 
   protected readonly className = computed(() => `Orb${(this.item()?.slug ?? "orb-01").slice(-2)}`);
+
+  protected readonly usage = computed(() => {
+    const slug = this.item()?.slug ?? "orb-01";
+    const className = this.className();
+    return `import { ${className} } from "@/components/orbs/${slug}";
+
+@Component({
+  imports: [${className}],
+  template: \`<${slug} [size]="280" state="idle" />\`,
+})
+export class Example {}`;
+  });
 
   protected readonly componentInputs = [
     { name: "state", type: '"idle" | "thinking" | "speaking"', fallback: '"idle"' },

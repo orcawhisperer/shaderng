@@ -2,13 +2,14 @@ import { Component } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
 import { HomeShowcase } from "@/app/orbs/home-showcase";
+import { CloneOptions } from "@/app/ui/clone-options";
 import { CopyButton } from "@/app/ui/copy-button";
 import { LogoMark } from "@/app/ui/logo-mark";
 import { SITE } from "@/lib/site";
 
 @Component({
   selector: "app-home-page",
-  imports: [HomeShowcase, CopyButton, LogoMark, RouterLink],
+  imports: [HomeShowcase, CloneOptions, CopyButton, LogoMark, RouterLink],
   template: `
     <section class="container-wrapper relative">
       <div class="container flex flex-col items-center gap-4 py-16 text-center md:py-20 lg:py-24">
@@ -36,6 +37,7 @@ import { SITE } from "@/lib/site";
           </pre>
           <app-copy-button
             className="absolute top-2 right-2 size-7 px-0"
+            label="Copy install command"
             value="npm i vgpu typegpu"
           >
             <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,6 +49,11 @@ import { SITE } from "@/lib/site";
               />
             </svg>
           </app-copy-button>
+        </div>
+
+        <div class="mt-4 w-full max-w-xl">
+          <p class="text-muted-foreground mb-2 text-left text-sm">Clone the repo</p>
+          <app-clone-options />
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
