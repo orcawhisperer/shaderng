@@ -40,6 +40,8 @@ export abstract class OrbInputs {
   readonly respectReducedMotion = input(true);
   readonly maxDpr = input(2);
   readonly maxFps = input(0);
+  readonly trackPointer = input(true);
+  readonly mouse = input<{ x: number; y: number } | undefined>(undefined);
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
@@ -72,6 +74,8 @@ export const ORB_TEMPLATE = `
   [respectReducedMotion]="respectReducedMotion()"
   [maxDpr]="maxDpr()"
   [maxFps]="maxFps()"
+  [trackPointer]="trackPointer()"
+  [mouse]="mouse()"
   [className]="className()"
   [style]="style()"
   [ariaLabel]="ariaLabel()"

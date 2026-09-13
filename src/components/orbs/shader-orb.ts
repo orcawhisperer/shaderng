@@ -69,8 +69,8 @@ export interface ShaderOrbFallbackContext {
   template: `
     <div
       [class]="cn('shader-orb-root', className())"
-      [style.width.px]="resolvedSize()"
-      [style.height.px]="resolvedSize()"
+      [style.width.px]="width() ?? resolvedSize()"
+      [style.height.px]="height() ?? resolvedSize()"
       [style]="style()"
     >
       @if (!unsupported()) {
@@ -192,6 +192,13 @@ export class ShaderOrb {
   readonly maxDpr = input(2);
   /** Cap on paints per second; `0` paints every frame. */
   readonly maxFps = input(0);
+  /** Follow the pointer over the canvas into the shader's `mouse` uniform. */
+  readonly trackPointer = input(true);
+  /** Pointer position in canvas uv space (0..1, top-left origin); overrides tracking. */
+  readonly mouse = input<{ x: number; y: number } | undefined>(undefined);
+  /** Rectangular canvases (fields, `fit="fill"` backgrounds); default to `size` for both. */
+  readonly width = input<number | undefined>(undefined);
+  readonly height = input<number | undefined>(undefined);
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
@@ -261,6 +268,7 @@ export class ShaderOrb {
       const reduce = this.respectReducedMotion() && this.reducedMotion();
       // Live audio is content the visitor asked for; reduced motion only stops the idle loop.
       this.drive.paused = this.paused() || (reduce && !listening);
+      this.drive.mouse = this.mouse();
     });
 
     effect((onCleanup) => {
@@ -310,6 +318,7 @@ export class ShaderOrb {
       const maxDpr = this.maxDpr();
       const maxFps = this.maxFps();
       const pauseOffscreen = this.pauseOffscreen();
+      const trackPointer = this.trackPointer();
       if (!canvas) {
         return;
       }
@@ -331,6 +340,7 @@ export class ShaderOrb {
         onError: (error) => report("stopped rendering", error),
         onFirstFrame: () => this.painted.set(true),
         pauseOffscreen,
+        trackPointer,
         variant,
       });
 

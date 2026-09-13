@@ -1,7 +1,8 @@
 # shaderng
 
-GPU shader orbs for Angular 22, installed with `ng add`. An unofficial Angular port of
-[shadercn](https://github.com/shadcn-labs/shadercn); shaders by [XorDev](https://x.com/XorDev).
+GPU shader orbs and rectangular fields for Angular 22, installed with `ng add`. An unofficial
+Angular port of [shadercn](https://github.com/shadcn-labs/shadercn); orb shaders by
+[XorDev](https://x.com/XorDev). Fields are original to shaderng and MIT-licensed.
 
 Docs and live playground: <https://shaderng.vercel.app>
 
@@ -28,6 +29,8 @@ Add more orbs later:
 ng g shaderng:orb orb-12
 ng g shaderng:orb 12,13,14
 ng g shaderng:orb --list
+ng g shaderng:field aurora
+ng g shaderng:field --list
 ```
 
 Save a look from the [playground](https://shaderng.vercel.app/playground) ("Copy preset command"):
@@ -75,7 +78,15 @@ As a background:
 ```
 
 `ShaderBackground` (from `@/components/orbs/shader-background`) fills its positioned parent, crops
-(`cover`) or fits (`contain`) the orb, and paints at 30 fps unless `maxFps` says otherwise.
+(`cover`) or fits (`contain`) the orb, or `fill`s the rectangle for a field, and paints at 30 fps
+unless `maxFps` says otherwise.
+
+```html
+<section class="relative h-80">
+  <field-aurora state="thinking" />
+  <h1 class="relative">Hello</h1>
+</section>
+```
 
 ## Requirements
 
@@ -85,7 +96,7 @@ As a background:
 
 ## Licenses
 
-The runtime, presets and Angular wrappers are MIT. Every `gpu.ts` is XorDev's shader, ported
-with permission, and is **non-commercial use only, with attribution**. Keep the header notice in
-each `gpu.ts`; commercial use of the shader programs needs XorDev's permission. See
+The runtime, presets, fields and Angular wrappers are MIT. Every orb `gpu.ts` is XorDev's shader,
+ported with permission, and is **non-commercial use only, with attribution**. Keep the header
+notice in each orb `gpu.ts`; commercial use of those programs needs XorDev's permission. See
 <https://shaderng.vercel.app/docs/credits>.

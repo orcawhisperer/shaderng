@@ -111,6 +111,11 @@ import { SITE } from "@/lib/site";
             Prefers-reduced-motion pause on
             <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code>
           </li>
+          <li>
+            Five
+            <a routerLink="/docs/fields" class="underline underline-offset-4">fields</a>
+            — rectangular MIT shaders (aurora, flow, grid, waves, caustics), not ports
+          </li>
         </ul>
       </section>
 

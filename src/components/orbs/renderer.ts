@@ -90,6 +90,11 @@ export interface OrbDrive {
   stateColors?: Partial<Record<OrbState, Record<string, string>>>;
   stateVolumes?: Partial<Record<OrbState, { input?: number; output?: number }>>;
   volumes?: { input?: number; output?: number };
+  /**
+   * Pointer position in canvas uv space, (0,0) top-left to (1,1) bottom-right, eased before
+   * it reaches the shader. Unset means the renderer's own pointer tracking, or the centre.
+   */
+  mouse?: { x: number; y: number };
   paused?: boolean;
 }
 
@@ -180,6 +185,7 @@ const floatSlot = (
 
 const PARAM_EASE = 4;
 const VOLUME_EASE = 12;
+const MOUSE_EASE = 8;
 const MAX_STEP = 0.05;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -220,6 +226,8 @@ export interface OrbScene {
   /** Eases one step toward `drive` and writes the frame's uniforms. */
   advance(dt: number, drive: OrbDrive): void;
   resize(res: readonly [number, number]): void;
+  /** Where the pointer is over the canvas, in uv space; the shader sees an eased version. */
+  pointer(x: number, y: number): void;
   dispose(): void;
 }
 
@@ -256,6 +264,7 @@ export const createOrbScene = (
   const inputSlot = baseSlot("inputVol");
   const outputSlot = baseSlot("outputVol");
   const resSlot = baseSlot("res");
+  const mouseSlot = baseSlot("mouse");
 
   const paramSlots = new Int32Array(
     variant.params.map((p) => floatSlot(schema, `p_${p.key}`, "f32", variant.key)),
@@ -292,9 +301,15 @@ export const createOrbScene = (
   let speed = 0.1;
   let speedVel = 0;
 
+  // The pointer rests at the centre until something moves it.
+  const mouseTarget = { x: 0.5, y: 0.5 };
+  const mouse = { x: 0.5, y: 0.5 };
+
   words[inputSlot] = volume.in;
   words[outputSlot] = volume.out;
   words[animSlot] = anim;
+  words[mouseSlot] = mouse.x;
+  words[mouseSlot + 1] = mouse.y;
   const [initialWidth, initialHeight] = res;
   words[resSlot] = initialWidth;
   words[resSlot + 1] = initialHeight;
@@ -320,6 +335,14 @@ export const createOrbScene = (
     words[animSlot] = anim;
     words[inputSlot] = volume.in;
     words[outputSlot] = volume.out;
+
+    const targetX = live.mouse?.x ?? mouseTarget.x;
+    const targetY = live.mouse?.y ?? mouseTarget.y;
+    const kMouse = 1 - Math.exp(-dt * MOUSE_EASE);
+    mouse.x += (targetX - mouse.x) * kMouse;
+    mouse.y += (targetY - mouse.y) * kMouse;
+    words[mouseSlot] = mouse.x;
+    words[mouseSlot + 1] = mouse.y;
   };
 
   const stepParams = (dt: number, live: OrbDrive) => {
@@ -369,6 +392,10 @@ export const createOrbScene = (
     },
     dispose() {
       uniform.destroy();
+    },
+    pointer(x, y) {
+      mouseTarget.x = x;
+      mouseTarget.y = y;
     },
     resize(next) {
       const [width, height] = next;
@@ -544,6 +571,11 @@ export interface OrbRendererOptions {
   readonly maxFps?: number;
   /** Skip frames while the canvas is scrolled out of view. */
   readonly pauseOffscreen?: boolean;
+  /**
+   * Follow the pointer over the canvas and expose it to the shader as `mouse`. Listens on the
+   * window, so it works for backgrounds that do not take pointer events themselves.
+   */
+  readonly trackPointer?: boolean;
   readonly onFirstFrame?: () => void;
   /** Called when the orb stops rendering after it had started: a lost device or a failed pass. */
   readonly onError?: (error: unknown) => void;
@@ -561,6 +593,7 @@ export const createOrbRenderer = ({
   maxDpr = 2,
   maxFps,
   pauseOffscreen = true,
+  trackPointer = true,
   onFirstFrame,
   onError,
 }: OrbRendererOptions) => {
@@ -568,6 +601,7 @@ export const createOrbRenderer = ({
   let host: OrbHost | undefined;
   let entry: HostEntry | undefined;
   let unsubscribeResize: (() => void) | undefined;
+  let unsubscribePointer: (() => void) | undefined;
   let observer: IntersectionObserver | undefined;
   let visible = true;
 
@@ -578,6 +612,7 @@ export const createOrbRenderer = ({
     disposed = true;
     observer?.disconnect();
     unsubscribeResize?.();
+    unsubscribePointer?.();
     if (entry) {
       host?.remove(entry);
       entry.scene.dispose();
@@ -604,6 +639,23 @@ export const createOrbRenderer = ({
       const output = surface(host.gpu, canvas, { dpr: [1, maxDpr] });
       const scene = createOrbScene(host.gpu, variant, output.size, drive());
       unsubscribeResize = output.onResize(() => scene.resize(output.size));
+
+      if (trackPointer && typeof window !== "undefined") {
+        const onMove = (event: PointerEvent) => {
+          if (!visible) {
+            return;
+          }
+          const rect = canvas.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            scene.pointer(
+              (event.clientX - rect.left) / rect.width,
+              (event.clientY - rect.top) / rect.height,
+            );
+          }
+        };
+        window.addEventListener("pointermove", onMove, { passive: true });
+        unsubscribePointer = () => window.removeEventListener("pointermove", onMove);
+      }
 
       if (pauseOffscreen && typeof IntersectionObserver !== "undefined") {
         observer = new IntersectionObserver((entries) => {

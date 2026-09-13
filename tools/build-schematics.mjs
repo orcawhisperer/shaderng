@@ -36,7 +36,7 @@ for (const file of ["collection.json", "package.json", "README.md"]) {
   cpSync(join(source, file), join(out, file));
 }
 cpSync(join(root, "LICENSE"), join(out, "LICENSE"));
-for (const schematic of ["ng-add", "orb", "update"]) {
+for (const schematic of ["ng-add", "orb", "field", "update"]) {
   cpSync(join(source, "src", schematic, "schema.json"), join(out, schematic, "schema.json"));
 }
 cpSync(
@@ -65,6 +65,16 @@ for (const slug of slugs) {
   cpSync(join(orbsDir, slug), join(filesOut, "orbs", slug), { recursive: true });
 }
 
+const fieldsDir = join(root, "src/components/fields");
+const fieldSlugs = existsSync(fieldsDir)
+  ? readdirSync(fieldsDir)
+      .filter((name) => existsSync(join(fieldsDir, name, "meta.ts")))
+      .sort()
+  : [];
+for (const slug of fieldSlugs) {
+  cpSync(join(fieldsDir, slug), join(filesOut, "fields", slug), { recursive: true });
+}
+
 const pick = (names) =>
   Object.fromEntries(
     names.map((name) => {
@@ -87,6 +97,6 @@ writeFileSync(
 const pkg = readJson(join(out, "package.json"));
 console.log(
   `built ${pkg.name}@${pkg.version} -> dist/schematics (${slugs.length} orbs, ${
-    runtime.source.length + runtime.tools.length
-  } runtime files)`,
+    fieldSlugs.length
+  } fields, ${runtime.source.length + runtime.tools.length} runtime files)`,
 );

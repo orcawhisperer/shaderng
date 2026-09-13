@@ -1,8 +1,12 @@
+import { FIELD_CATALOG, FIELD_SLUGS, isFieldSlug } from "./field-catalog";
+import { loadField } from "./field-loaders";
 import { ORB_CATALOG, ORB_SLUGS, isOrbSlug } from "./orb-catalog";
 import { loadOrb } from "./orb-loaders";
 import {
   buildAngularSnippet,
+  fieldInstallCommand,
   ngAddCommand,
+  ngGenerateFieldCommand,
   ngGenerateOrbCommand,
   ngPresetCommand,
   ngUpdateCommand,
@@ -37,6 +41,28 @@ describe("orb catalog", () => {
 
   it("rejects unknown orbs instead of falling back", async () => {
     await expect(loadOrb("orb-99")).rejects.toThrow('Unknown orb "orb-99"');
+  });
+});
+
+describe("field catalog", () => {
+  it("ships five original fields", () => {
+    expect(FIELD_SLUGS).toEqual(["aurora", "flow", "grid", "waves", "caustics"]);
+    expect(FIELD_CATALOG).toHaveLength(5);
+  });
+
+  it("describes every field", () => {
+    const blank = FIELD_CATALOG.filter((item) => !item.description.trim());
+    expect(blank.map((item) => item.slug)).toEqual([]);
+  });
+
+  it("narrows slugs", () => {
+    expect(isFieldSlug("aurora")).toBe(true);
+    expect(isFieldSlug("orb-01")).toBe(false);
+    expect(isFieldSlug(undefined)).toBe(false);
+  });
+
+  it("rejects unknown fields instead of falling back", async () => {
+    await expect(loadField("nebula")).rejects.toThrow('Unknown field "nebula"');
   });
 });
 
@@ -127,5 +153,9 @@ describe("install commands", () => {
     );
     expect(ngPresetCommand("orb-07", "?p=a:1", "hero")).toContain("--name hero");
     expect(ngUpdateCommand()).toBe("ng update shaderng");
+    expect(ngGenerateFieldCommand("aurora")).toBe("ng g shaderng:field aurora");
+    expect(fieldInstallCommand("aurora")).toBe(
+      "npx degit orcawhisperer/shaderng/src/components/fields/aurora src/components/fields/aurora",
+    );
   });
 });

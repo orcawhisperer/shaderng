@@ -13,6 +13,7 @@ export const FILES_ROOT = join(PACKAGE_ROOT, "files");
 export const RUNTIME_SOURCE_DIR = join(FILES_ROOT, "runtime", "src");
 export const RUNTIME_TOOLS_DIR = join(FILES_ROOT, "runtime", "tools");
 export const ORBS_DIR = join(FILES_ROOT, "orbs");
+export const FIELDS_DIR = join(FILES_ROOT, "fields");
 
 export interface PackageVersions {
   dependencies: Record<string, string>;
@@ -101,5 +102,15 @@ export const availableOrbs = (): string[] => {
   }
   return readdirSync(ORBS_DIR)
     .filter((name) => /^orb-\d{2}$/.test(name) && statSync(join(ORBS_DIR, name)).isDirectory())
+    .sort();
+};
+
+/** Slugs of the fields bundled with this package, e.g. `aurora`, `flow`. */
+export const availableFields = (): string[] => {
+  if (!existsSync(FIELDS_DIR)) {
+    return [];
+  }
+  return readdirSync(FIELDS_DIR)
+    .filter((name) => statSync(join(FIELDS_DIR, name)).isDirectory())
     .sort();
 };

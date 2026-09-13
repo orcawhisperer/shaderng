@@ -5,15 +5,23 @@ import { HomeShowcase } from "@/app/orbs/home-showcase";
 import { CloneOptions } from "@/app/ui/clone-options";
 import { CopyButton } from "@/app/ui/copy-button";
 import { LogoMark } from "@/app/ui/logo-mark";
+import { auroraField } from "@/components/fields/aurora";
+import { ShaderBackground } from "@/components/orbs/shader-background";
 import { SITE } from "@/lib/site";
 import { ngAddCommand } from "@/lib/snippet";
 
 @Component({
   selector: "app-home-page",
-  imports: [HomeShowcase, CloneOptions, CopyButton, LogoMark, RouterLink],
+  imports: [HomeShowcase, CloneOptions, CopyButton, LogoMark, RouterLink, ShaderBackground],
   template: `
-    <section class="container-wrapper relative">
-      <div class="container flex flex-col items-center gap-4 py-16 text-center md:py-20 lg:py-24">
+    <section class="container-wrapper relative overflow-hidden">
+      <shader-background [variant]="aurora" fit="fill" state="thinking" />
+      <div
+        class="from-background/80 via-background/70 to-background pointer-events-none absolute inset-0 bg-gradient-to-b"
+      ></div>
+      <div
+        class="relative container flex flex-col items-center gap-4 py-16 text-center md:py-20 lg:py-24"
+      >
         <app-logo-mark className="size-12" />
         <p class="text-muted-foreground text-sm font-medium tracking-wide uppercase">
           Angular · WebGPU · TypeGPU
@@ -107,11 +115,17 @@ import { ngAddCommand } from "@/lib/snippet";
 export class HomePage {
   protected readonly site = SITE;
   protected readonly ngAdd = ngAddCommand();
+  protected readonly aurora = auroraField;
   protected readonly originals = [
     {
       title: "ng add",
       description:
         "ng add shaderng installs the runtime, wires the TypeGPU esbuild plugin and copies the orbs you pick. ng g shaderng:orb adds more.",
+    },
+    {
+      title: "Fields",
+      description:
+        "Five original MIT shaders drawn for rectangles, not spheres. <field-aurora> and friends fill a hero; the pointer leans them, the voice swells them. ng g shaderng:field.",
     },
     {
       title: "Backgrounds and presets",

@@ -79,6 +79,10 @@ export const ngAddCommand = (): string => `ng add ${NG_ADD_PACKAGE}`;
 
 export const ngGenerateOrbCommand = (slug: string): string => `ng g ${NG_ADD_PACKAGE}:orb ${slug}`;
 
+/** The schematic that copies a rectangular field, e.g. `ng g shaderng:field aurora`. */
+export const ngGenerateFieldCommand = (slug: string): string =>
+  `ng g ${NG_ADD_PACKAGE}:field ${slug}`;
+
 /** Writes the look behind a playground link into the project as `<name>.preset.ts`. */
 export const ngPresetCommand = (slug: string, shareUrl: string, name = "look"): string =>
   `${ngGenerateOrbCommand(slug)} --preset "${shareUrl}" --name ${name}`;
@@ -92,6 +96,9 @@ export const ngUpdateCommand = (): string => `ng update ${NG_ADD_PACKAGE}`;
  */
 export const orbInstallCommand = (slug: string): string =>
   `npx degit ${repoSlug()}/src/components/orbs/${slug} src/components/orbs/${slug}`;
+
+export const fieldInstallCommand = (slug: string): string =>
+  `npx degit ${repoSlug()}/src/components/fields/${slug} src/components/fields/${slug}`;
 
 /** The one-time commands that fetch the shared runtime files. */
 export const runtimeInstallCommands = (): string =>

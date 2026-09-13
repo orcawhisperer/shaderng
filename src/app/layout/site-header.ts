@@ -9,7 +9,8 @@ import { ThemeService } from "@/lib/theme";
 
 const NAV = [
   { href: "/docs", label: "Docs" },
-  { href: "/docs/components", label: "Components" },
+  { href: "/docs/components", label: "Orbs" },
+  { href: "/docs/fields", label: "Fields" },
   { href: "/playground", label: "Playground" },
 ];
 

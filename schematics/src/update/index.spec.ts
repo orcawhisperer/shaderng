@@ -95,6 +95,20 @@ describe("ng g shaderng:update", () => {
     assert.match(result.readText(RENDERER), /createOrbRenderer/);
   });
 
+  it("refreshes installed fields only", async () => {
+    const { testRunner, tree } = await installed("");
+    const withField = await testRunner.runSchematic("field", { fields: "aurora" }, tree);
+    withField.overwrite("src/components/fields/aurora/meta.ts", "// stale meta\n");
+    const lock = readJson<Lockfile>(withField, "shaderng.json");
+    lock.files["src/components/fields/aurora/meta.ts"] = fingerprint("// stale meta\n");
+    withField.overwrite("shaderng.json", JSON.stringify(lock));
+    const messages = logged(testRunner);
+    const result = await testRunner.runSchematic("update", {}, withField);
+    assert.match(result.readText("src/components/fields/aurora/meta.ts"), /auroraField/);
+    assert.ok(!result.exists("src/components/fields/flow/meta.ts"));
+    assert.ok(!messages.some((message) => /non-commercial/i.test(message)));
+  });
+
   it("refreshes installed orbs only", async () => {
     const { testRunner, tree } = await installed("orb-01");
     tree.overwrite("src/components/orbs/orb-01/meta.ts", "// stale meta\n");

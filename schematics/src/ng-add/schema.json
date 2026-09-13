@@ -17,6 +17,12 @@
       "default": "orb-01",
       "x-prompt": "Which orbs should be copied now? (comma-separated slugs like orb-01,orb-07, \"all\", or leave empty)"
     },
+    "fields": {
+      "type": "string",
+      "description": "Comma-separated field slugs to copy right away (aurora, flow, grid, waves, caustics), \"all\", or empty for none.",
+      "default": "",
+      "x-prompt": "Which fields should be copied now? (aurora, flow, grid, waves, caustics, \"all\", or leave empty)"
+    },
     "force": {
       "type": "boolean",
       "description": "Overwrite runtime files and orbs that already exist in the project.",
