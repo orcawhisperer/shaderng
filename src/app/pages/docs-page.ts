@@ -80,5 +80,10 @@ export class DocsPage {
       description:
         "The full shadercn orb set, from Dispersion to Abyss, with the original GPU shaders.",
     },
+    {
+      title: "5 fields",
+      description:
+        "Original MIT backgrounds drawn for rectangles. The pointer leans them; the voice swells them.",
+    },
   ];
 }

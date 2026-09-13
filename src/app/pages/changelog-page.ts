@@ -39,6 +39,16 @@ import { SITE } from "@/lib/site";
             Instant fallback where WebGPU is missing, shareable playground links, per-route titles
           </li>
           <li>
+            0.3.0: five original MIT
+            <a routerLink="/docs/fields" class="underline underline-offset-4">fields</a>
+            (aurora, flow, grid, waves, caustics) drawn for rectangles, not spheres;
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">ng g shaderng:field</code>; eased
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">mouse</code> uniform from the window
+            pointer; <code class="bg-muted rounded px-1 py-0.5 text-sm">fit="fill"</code> and a
+            lower default DPR on
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-background&gt;</code>
+          </li>
+          <li>
             0.2.0:
             <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-background&gt;</code>
             (any orb as a full-bleed, 30 fps background with

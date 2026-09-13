@@ -8,6 +8,7 @@ Unofficial Angular port of [shadercn](https://github.com/shadcn-labs/shadercn): 
 ```bash
 ng add shaderng              # runtime + orb-01
 ng g shaderng:orb orb-07     # more orbs; --list shows all 33
+ng g shaderng:field aurora   # rectangular MIT backgrounds
 ng update shaderng           # later: refresh the copied files you have not edited
 ```
 
@@ -38,9 +39,14 @@ shadercn feeds voice levels through `volumes`. shaderng measures them from live 
 
 `[audio]` accepts `"microphone" | MediaStream | AudioNode | HTMLMediaElement`; `[listen]` is shorthand for the microphone. Sources you pass in are never stopped or closed by the orb.
 
-Also original here: `<shader-background>` (any orb as a full-bleed page or hero background), `[preset]` looks saved straight from the playground, one shared WebGPU device and frame loop for every mounted orb, the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
+Also original here: five **fields** (aurora, flow, grid, waves, caustics) drawn for rectangles and MIT-licensed, `<shader-background>` (any orb or field as a full-bleed page or hero background), `[preset]` looks saved straight from the playground, an eased `mouse` uniform from the window pointer, one shared WebGPU device and frame loop for every mounted shader, the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
 
 ```html
+<section class="relative h-80">
+  <field-aurora state="thinking" />
+  <h1 class="relative">Hello</h1>
+</section>
+
 <section class="relative">
   <shader-background [variant]="orb12Orb" state="thinking" fit="cover" [scale]="1.2" />
   <h1 class="relative">Hello</h1>
@@ -53,11 +59,12 @@ Also original here: `<shader-background>` (any orb as a full-bleed page or hero 
 ## Features
 
 - **33 orb shaders** — the full shadercn set, from Dispersion to Abyss
+- **5 field shaders** — original MIT backgrounds drawn for rectangles, not spheres
 - **Angular 22** — standalone components, signal inputs, zoneless change detection
 - **WebGPU** — the original `renderer.ts` scene loop, wrapped as `<shader-orb>`
 - **Typed inputs** — `state`, `size`, `params`, `colors`, `preset`, `audio` / `listen`, volumes, DPR and `maxFps`
-- **Backgrounds** — `<shader-background>` fits or covers any box at 30 fps, no shader changes
-- **Docs + playground** — live previews, credits, per-orb prop tables
+- **Backgrounds** — `<shader-background>` covers, contains or fills any box at 30 fps
+- **Docs + playground** — live previews, credits, per-orb and per-field prop tables
 
 ## Quick start
 
@@ -130,6 +137,7 @@ npx vercel --prod
 ng add shaderng                        # runtime + orb-01
 ng add shaderng --orbs orb-01,orb-07   # pick orbs; "all" for all 33; "" for runtime only
 ng g shaderng:orb 12                   # add more later; --list prints them
+ng g shaderng:field aurora             # rectangular MIT background; --list prints them
 ng g shaderng:orb orb-07 --preset "https://shaderng.vercel.app/playground?orb=orb-07&state=speaking&p=twist:2.5" --name hero
 ng update shaderng                     # after npm i -D shaderng@latest: refresh untouched files
 ```
@@ -140,7 +148,7 @@ ng update shaderng                     # after npm i -D shaderng@latest: refresh
 
 Every file the schematics write is recorded with a hash in `shaderng.json`. `ng update shaderng` (or `ng g shaderng:update` at any time) replaces the files you have not edited, adds new ones, and lists the edited ones instead of overwriting them; `--force` takes everything. Projects installed before the lockfile existed are recognised from the published hashes in `schematics/src/update/known-hashes.json`; regenerate an entry for a new release with `node tools/hash-package-files.mjs <unpacked>/files <version>`.
 
-The package lives in [`schematics/`](schematics) and is built into `dist/schematics` by `npm run build:schematics` from the same source files this site ships, so an upstream sync flows into the next publish. `npm run pack:schematics` produces a tarball you can `ng add ./dist/shaderng-0.2.0.tgz` locally.
+The package lives in [`schematics/`](schematics) and is built into `dist/schematics` by `npm run build:schematics` from the same source files this site ships, so an upstream sync flows into the next publish. `npm run pack:schematics` produces a tarball you can `ng add ./dist/shaderng-0.3.0.tgz` locally.
 
 Releasing: bump `version` in `schematics/package.json`, merge, then `git tag v<version> && git push origin v<version>`. The [publish workflow](.github/workflows/publish.yml) tests, packs and runs `npm publish --provenance`, authenticating through npm trusted publishing (GitHub OIDC; the workflow is registered on npmjs.com, no token stored). "Run workflow" on `main` with dry-run unticked publishes the version on `main` without a tag.
 
@@ -150,9 +158,10 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 
 - `renderer.ts` — WebGPU scene, springs, and the shared device + frame loop (shaderng-maintained fork of shadercn's)
 - `shader-orb.ts` — canvas host, `[audio]`, `[preset]`, reduced-motion, `shaderOrbFallback`
-- `shader-background.ts` — `<shader-background>`: an orb sized and clipped to fill its parent
+- `shader-background.ts` — `<shader-background>`: an orb or field sized to fill its parent (`cover` / `contain` / `fill`)
 - `canvas.ts` — public types
 - `orb-base.ts` — shared inputs
+- `field-base.ts` — `<field-xx>` wrappers, `fit="fill"`
 - `src/lib/audio-drive.ts` — volume measurement for any audio source
 
 ## Syncing with shadercn
@@ -175,10 +184,11 @@ The **Sync shadercn upstream** workflow runs weekly (and on demand) and opens a 
 | `npm run test:schematics`         | Run the schematic tests against the built package    |
 | `npm run pack:schematics`         | Build and `npm pack` the package into `dist/`        |
 | `npm run generate:orbs`           | Regenerate orbs from `$SHADERCN_DIR` (see above)     |
+| `npm run check:shaders`           | Compile every orb and field with Dawn (null backend) |
 
 ## License
 
 Two licenses apply. Read both before shipping.
 
-- **MIT** ([LICENSE](LICENSE)) — the runtime (`renderer.ts`), orb presets, Angular wrappers, docs site, esbuild intercept, `[listen]`, and reduced-motion handling.
+- **MIT** ([LICENSE](LICENSE)) — the runtime (`renderer.ts`), orb presets, Angular wrappers, docs site, esbuild intercept, `[listen]`, reduced-motion handling, and every `src/components/fields/*/gpu.ts`.
 - **Non-commercial, attribution required** — every `src/components/orbs/*/gpu.ts`. Those are XorDev’s shaders, ported with permission. The header in each file is the license: _“Non-commercial use only, with attribution to XorDev; keep this notice with the file.”_ Copying an orb into your app copies that restriction. Commercial use of the shader programs needs XorDev’s permission.

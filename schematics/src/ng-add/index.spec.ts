@@ -30,6 +30,8 @@ describe("ng add shaderng", () => {
       "src/components/orbs/canvas.ts",
       "src/components/orbs/orb-base.ts",
       "src/components/orbs/shader-orb.ts",
+      "src/components/orbs/shader-background.ts",
+      "src/components/fields/field-base.ts",
       "src/lib/audio-drive.ts",
       "src/lib/mic-drive.ts",
       "src/lib/reduced-motion.ts",
@@ -174,6 +176,12 @@ describe("ng add shaderng", () => {
       run({}, freshAppTree({ "angular.json": angular })),
       /needs the esbuild application builder/,
     );
+  });
+
+  it("copies named fields when --fields is set", async () => {
+    const tree = await run({ orbs: "", fields: "aurora" });
+    assert.ok(tree.exists("src/components/fields/aurora/gpu.ts"));
+    assert.ok(!tree.exists("src/components/fields/flow/gpu.ts"));
   });
 
   it("refuses a library project", async () => {

@@ -28,6 +28,8 @@ jobs:
         run: npm run typecheck
       - name: Test
         run: npm test -- --watch=false
+      - name: Shaders
+        run: npm run check:shaders
       - name: Schematics
         run: npm run test:schematics
       - name: Build

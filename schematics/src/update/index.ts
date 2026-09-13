@@ -20,7 +20,9 @@ import {
 } from "../shared/lockfile";
 import { LICENSE_NOTICE } from "../shared/orbs";
 import {
+  availableFields,
   availableOrbs,
+  FIELDS_DIR,
   FILES_ROOT,
   listFiles,
   ORBS_DIR,
@@ -61,6 +63,11 @@ const packageFiles = (tree: Tree, resolved: ResolvedProject): string[] => {
   for (const slug of availableOrbs()) {
     if (tree.exists(joinPath(resolved.sourceRoot, "components/orbs", slug, `${slug}.ts`))) {
       files.push(...listFiles(join(ORBS_DIR, slug)).map((rel) => `orbs/${slug}/${rel}`));
+    }
+  }
+  for (const slug of availableFields()) {
+    if (tree.exists(joinPath(resolved.sourceRoot, "components/fields", slug, `${slug}.ts`))) {
+      files.push(...listFiles(join(FIELDS_DIR, slug)).map((rel) => `fields/${slug}/${rel}`));
     }
   }
   return files;

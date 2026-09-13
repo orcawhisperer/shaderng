@@ -74,6 +74,7 @@ import { loadOrb } from "@/lib/orb-loaders";
           >
             <option value="cover">cover</option>
             <option value="contain">contain</option>
+            <option value="fill">fill</option>
           </select>
         </label>
         <label class="flex flex-col gap-1">
@@ -136,7 +137,12 @@ import { loadOrb } from "@/lib/orb-loaders";
           <a class="text-foreground underline underline-offset-4" routerLink="/docs/components"
             >component page</a
           >
-          for the full table.
+          for the full table. Rectangular fields live under
+          <a class="text-foreground underline underline-offset-4" routerLink="/docs/fields"
+            >/docs/fields</a
+          >
+          and already wrap this component with
+          <code class="bg-muted rounded px-1 py-0.5">fit="fill"</code>.
         </p>
       </section>
 
@@ -164,7 +170,8 @@ export class BackgroundPage {
     {
       name: "fit",
       default: '"cover"',
-      notes: "cover fills the box and crops the orb's edges; contain fits the whole orb inside.",
+      notes:
+        "cover fills the box and crops the orb; contain fits the whole orb; fill gives the shader the whole rectangle (fields).",
     },
     {
       name: "scale",
@@ -182,7 +189,7 @@ export class BackgroundPage {
   protected readonly usage = computed(() => {
     const slug = this.slug();
     const name = `orb${slug.slice(-2)}Orb`;
-    const fit = this.fit() === "cover" ? "" : `\n      fit="contain"`;
+    const fit = this.fit() === "cover" ? "" : `\n      fit="${this.fit()}"`;
     const scale = this.scale() === 1 ? "" : `\n      [scale]="${this.scale()}"`;
     return `import { ${name} } from "@/components/orbs/${slug}";
 import { ShaderBackground } from "@/components/orbs/shader-background";

@@ -6,6 +6,7 @@ import { CodeBlock } from "@/app/ui/code-block";
 import { SITE } from "@/lib/site";
 import {
   ngAddCommand,
+  ngGenerateFieldCommand,
   ngGenerateOrbCommand,
   ngPresetCommand,
   ngUpdateCommand,
@@ -50,7 +51,7 @@ import {
       <section class="border-border bg-muted/40 space-y-2 rounded-xl border p-4 text-sm">
         <p class="font-medium">Before you copy anything: two licenses.</p>
         <p class="text-muted-foreground">
-          The runtime, presets, and Angular wrappers are MIT. Every
+          The runtime, presets, fields, and Angular wrappers are MIT. Every orb
           <code class="bg-muted rounded px-1 py-0.5">gpu.ts</code> is XorDev’s shader, ported with
           permission, and is
           <strong class="text-foreground">non-commercial use only, with attribution</strong>. Keep
@@ -134,7 +135,18 @@ import {
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">5. Update</h2>
+        <h2 class="text-xl font-semibold">5. Add a field</h2>
+        <p class="text-muted-foreground">
+          Fields are rectangular shaders, original to shaderng and MIT-licensed. They fill a hero or
+          a page instead of drawing a sphere. Copy one after
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">ng add</code>:
+        </p>
+        <app-code-block [code]="generateField" />
+        <app-code-block [code]="fieldUsage" />
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold">6. Update</h2>
         <p class="text-muted-foreground">
           The copied files are yours to edit, and updates respect that.
           <code class="bg-muted rounded px-1 py-0.5 text-sm">ng add</code> and
@@ -214,6 +226,21 @@ ${ngAddCommand()} --orbs ""              # runtime only`;
   protected readonly generateOrb = `${ngGenerateOrbCommand("orb-07")}
 ${ngGenerateOrbCommand("12,13,14")}
 ${ngGenerateOrbCommand("--list")}`;
+  protected readonly generateField = `${ngGenerateFieldCommand("aurora")}
+${ngGenerateFieldCommand("flow,grid")}
+${ngGenerateFieldCommand("--list")}`;
+  protected readonly fieldUsage = `import { FieldAurora } from "@/components/fields/aurora";
+
+@Component({
+  imports: [FieldAurora],
+  template: \`
+    <section class="relative h-80">
+      <field-aurora state="thinking" />
+      <h1 class="relative">Hello</h1>
+    </section>
+  \`,
+})
+export class Hero {}`;
   protected readonly presetCommand = ngPresetCommand(
     "orb-07",
     `${SITE.url}/playground?orb=orb-07&state=speaking&p=twist:2.5&c=tint:ff8800`,

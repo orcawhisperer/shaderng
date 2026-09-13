@@ -102,7 +102,8 @@ export const lockfileFor = (tree: Tree, resolved: ResolvedProject): Lockfile =>
 
 /**
  * Where a file bundled in the package lands in the project. Package paths are relative to
- * `files/`: `runtime/src/<rel>`, `runtime/tools/<rel>` or `orbs/<slug>/<rel>`.
+ * `files/`: `runtime/src/<rel>`, `runtime/tools/<rel>`, `orbs/<slug>/<rel>` or
+ * `fields/<slug>/<rel>`.
  */
 export const projectPathFor = (resolved: ResolvedProject, packagePath: string): string => {
   if (packagePath.startsWith("runtime/src/")) {
@@ -111,7 +112,7 @@ export const projectPathFor = (resolved: ResolvedProject, packagePath: string): 
   if (packagePath.startsWith("runtime/tools/")) {
     return joinPath(resolved.root, "tools", packagePath.slice("runtime/tools/".length));
   }
-  if (packagePath.startsWith("orbs/")) {
+  if (packagePath.startsWith("orbs/") || packagePath.startsWith("fields/")) {
     return joinPath(resolved.sourceRoot, "components", packagePath);
   }
   throw new Error(`unexpected package path ${packagePath}`);

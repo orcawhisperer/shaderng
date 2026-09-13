@@ -13,6 +13,12 @@
       "schema": "./orb/schema.json",
       "aliases": ["orbs"]
     },
+    "field": {
+      "description": "Copy one or more rectangular field shaders into the project.",
+      "factory": "./field/index#field",
+      "schema": "./field/schema.json",
+      "aliases": ["fields"]
+    },
     "update": {
       "description": "Refresh the copied shaderng runtime and orb files that the project has not edited.",
       "factory": "./update/index#update",

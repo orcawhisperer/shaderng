@@ -14,6 +14,7 @@
 - One shared WebGPU device and frame loop across every mounted orb
 - TypeGPU transform that works with Angular’s esbuild compiler (`tools/typegpu.esbuild.ts`)
 - `prefers-reduced-motion` pause on `<shader-orb>`
+- Five rectangular **fields** (aurora, flow, grid, waves, caustics) — original MIT shaders, not ports
 
 ## Orb index
 
@@ -52,3 +53,15 @@
 | `orb-31` | Corona        | [@XorDev](https://x.com/XorDev) |
 | `orb-32` | Galaxy        | [@XorDev](https://x.com/XorDev) |
 | `orb-33` | Abyss         | [@XorDev](https://x.com/XorDev) |
+
+## Field index
+
+Original to shaderng. MIT, like the runtime.
+
+| Field      | Title    |
+| ---------- | -------- |
+| `aurora`   | Aurora   |
+| `flow`     | Flow     |
+| `grid`     | Grid     |
+| `waves`    | Waves    |
+| `caustics` | Caustics |

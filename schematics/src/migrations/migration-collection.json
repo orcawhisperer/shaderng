@@ -5,6 +5,11 @@
       "version": "0.2.0",
       "description": "shaderng 0.2.0: refresh unmodified runtime and orb files (shader-background, [preset], maxFps).",
       "factory": "../update/index#update"
+    },
+    "refresh-files-0-3-0": {
+      "version": "0.3.0",
+      "description": "shaderng 0.3.0: add field-base, mouse tracking, fit=fill, and refresh unmodified files.",
+      "factory": "../update/index#update"
     }
   }
 }

@@ -19,6 +19,7 @@
     "build:pages": "node tools/build-pages.mjs",
     "build:schematics": "node tools/build-schematics.mjs",
     "test:schematics": "npm run build:schematics && node --test \"dist/schematics/**/*.spec.js\"",
+    "check:shaders": "node tools/check-shaders.mjs",
     "pack:schematics": "npm run build:schematics && npm pack ./dist/schematics --pack-destination dist",
     "generate:orbs": "node tools/generate-orbs.mjs"
   },

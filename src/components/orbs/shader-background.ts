@@ -7,13 +7,14 @@ import {
   inject,
   input,
   signal,
+  type TemplateRef,
 } from "@angular/core";
 
 import { OrbInputs } from "@/components/orbs/orb-base";
 import type { OrbVariant } from "@/components/orbs/renderer";
-import { ShaderOrb } from "@/components/orbs/shader-orb";
+import { ShaderOrb, type ShaderOrbFallbackContext } from "@/components/orbs/shader-orb";
 
-export type ShaderBackgroundFit = "cover" | "contain";
+export type ShaderBackgroundFit = "cover" | "contain" | "fill";
 
 /**
  * An orb as a full-bleed background: fills its positioned parent and keeps rendering while
@@ -42,6 +43,8 @@ export type ShaderBackgroundFit = "cover" | "contain";
         [variant]="variant()"
         [preset]="preset()"
         [size]="side()"
+        [width]="fill() ? box().width : undefined"
+        [height]="fill() ? box().height : undefined"
         [state]="state()"
         [params]="params()"
         [colors]="colors()"
@@ -56,10 +59,12 @@ export type ShaderBackgroundFit = "cover" | "contain";
         [respectReducedMotion]="respectReducedMotion()"
         [maxDpr]="maxDpr()"
         [maxFps]="maxFps()"
+        [trackPointer]="trackPointer()"
+        [mouse]="mouse()"
         [className]="className()"
         [style]="style()"
         [ariaLabel]="ariaLabel()"
-        [fallback]="fallbackTemplate()?.template"
+        [fallback]="fallback() ?? fallbackTemplate()?.template"
         [fallbackMessage]="false"
       />
     }
@@ -84,14 +89,23 @@ export type ShaderBackgroundFit = "cover" | "contain";
 export class ShaderBackground extends OrbInputs {
   /** The orb to draw, e.g. `orb07Orb` from `@/components/orbs/orb-07`. */
   readonly variant = input.required<OrbVariant>();
-  /** `cover` fills the box and crops the orb's edges; `contain` fits the whole orb inside. */
+  /**
+   * `cover` fills the box and crops the orb's edges; `contain` fits the whole orb inside;
+   * `fill` gives the shader the whole rectangle, for fields (`src/components/fields`) that are
+   * drawn aspect-aware rather than as a sphere.
+   */
   readonly fit = input<ShaderBackgroundFit>("cover");
   /** Zoom on top of `fit`, e.g. `1.4` to push the orb's rim past the edges. */
   readonly scale = input(1);
   /** Backgrounds default to 30 paints per second; `0` paints every frame. */
   override readonly maxFps = input(30);
+  /** A fallback template passed down by a wrapper (`<field-xx>`); content templates also work. */
+  readonly fallback = input<TemplateRef<ShaderOrbFallbackContext> | undefined>(undefined);
+  /** A full-bleed canvas has many more pixels than an orb, so cap device pixels lower. */
+  override readonly maxDpr = input(1.5);
 
-  private readonly box = signal({ width: 0, height: 0 });
+  protected readonly box = signal({ width: 0, height: 0 });
+  protected readonly fill = computed(() => this.fit() === "fill");
 
   /** Side of the square the orb renders at, from the host's box, `fit` and `scale`. */
   protected readonly side = computed(() => {
@@ -99,7 +113,11 @@ export class ShaderBackground extends OrbInputs {
     if (width <= 0 || height <= 0) {
       return 0;
     }
-    const base = this.fit() === "cover" ? Math.max(width, height) : Math.min(width, height);
+    const fit = this.fit();
+    if (fit === "fill") {
+      return 1;
+    }
+    const base = fit === "cover" ? Math.max(width, height) : Math.min(width, height);
     return Math.max(1, Math.round(base * this.scale()));
   });
 
@@ -108,7 +126,7 @@ export class ShaderBackground extends OrbInputs {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
     const measure = () => {
       const rect = host.getBoundingClientRect();
-      this.box.set({ width: rect.width, height: rect.height });
+      this.box.set({ width: Math.round(rect.width), height: Math.round(rect.height) });
     };
     measure();
     if (typeof ResizeObserver !== "undefined") {

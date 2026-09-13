@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from "@angular/common";
 import { Component } from "@angular/core";
 import { RouterLink, RouterLinkActive, RouterOutlet } from "@angular/router";
 
+import { FIELD_CATALOG } from "@/lib/field-catalog";
 import { ORB_CATALOG } from "@/lib/orb-catalog";
 
 @Component({
@@ -45,6 +46,21 @@ import { ORB_CATALOG } from "@/lib/orb-catalog";
           </div>
         </div>
         <div>
+          <p class="mb-2 text-xs font-medium tracking-wide uppercase">Fields</p>
+          <div class="flex flex-col gap-0.5">
+            @for (field of fields; track field.slug) {
+              <a
+                [routerLink]="['/docs/fields', field.slug]"
+                routerLinkActive="bg-muted text-foreground"
+                class="text-muted-foreground hover:text-foreground rounded-md px-2 py-1.5"
+              >
+                {{ field.title }}
+                <span class="text-muted-foreground/70 ml-1 text-xs">{{ field.name }}</span>
+              </a>
+            }
+          </div>
+        </div>
+        <div>
           <p class="mb-2 text-xs font-medium tracking-wide uppercase">Orbs</p>
           <div class="flex flex-col gap-0.5">
             @for (orb of orbs; track orb.slug) {
@@ -69,8 +85,10 @@ export class DocsLayout {
     { href: "/docs/installation", label: "Installation" },
     { href: "/docs/components", label: "Components" },
     { href: "/docs/background", label: "Background" },
+    { href: "/docs/fields", label: "Fields" },
     { href: "/docs/changelog", label: "Changelog" },
     { href: "/docs/credits", label: "Credits" },
   ];
   protected readonly orbs = ORB_CATALOG;
+  protected readonly fields = FIELD_CATALOG;
 }

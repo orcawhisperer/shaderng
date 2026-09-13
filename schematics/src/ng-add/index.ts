@@ -7,6 +7,7 @@ import {
   writeWorkspace,
 } from "@schematics/angular/utility";
 
+import { copyFields, fieldClassName, parseFieldSelection } from "../shared/fields";
 import { copyOrbs, orbClassName, orbTargetDir, parseOrbSelection } from "../shared/orbs";
 import { lockfileFor, packageVersion, recordFiles, writeLockfile } from "../shared/lockfile";
 import {
@@ -127,28 +128,50 @@ const addOrbs =
     copyOrbs(tree, context, resolved, slugs, overwrite);
   };
 
+const addFields =
+  (resolved: ResolvedProject, slugs: string[], overwrite: boolean): Rule =>
+  (tree, context) => {
+    if (slugs.length === 0) {
+      return;
+    }
+    copyFields(tree, context, resolved, slugs, overwrite);
+  };
+
 const printNextSteps =
-  (resolved: ResolvedProject, slugs: string[]): Rule =>
+  (resolved: ResolvedProject, orbs: string[], fields: string[]): Rule =>
   (_tree: Tree, context: SchematicContext) => {
-    const [first] = slugs;
-    const usage = first
+    const [firstOrb] = orbs;
+    const [firstField] = fields;
+    const usage = firstOrb
       ? [
           "",
           "Use it:",
-          `  import { ${orbClassName(first)} } from "@/components/orbs/${first}";`,
-          `  <${first} [size]="280" state="speaking" [listen]="true" />`,
+          `  import { ${orbClassName(firstOrb)} } from "@/components/orbs/${firstOrb}";`,
+          `  <${firstOrb} [size]="280" state="speaking" [listen]="true" />`,
         ]
-      : ["", "Copy an orb:", "  ng g shaderng:orb orb-01"];
-    const copied =
-      slugs.length > 0
-        ? `Orbs: ${slugs.map((slug) => orbTargetDir(resolved, slug)).join(", ")}`
+      : firstField
+        ? [
+            "",
+            "Use it:",
+            `  import { ${fieldClassName(firstField)} } from "@/components/fields/${firstField}";`,
+            `  <field-${firstField} state="thinking" />`,
+          ]
+        : ["", "Copy an orb:", "  ng g shaderng:orb orb-01"];
+    const copiedOrbs =
+      orbs.length > 0
+        ? `Orbs: ${orbs.map((slug) => orbTargetDir(resolved, slug)).join(", ")}`
         : "Orbs: none yet";
+    const copiedFields =
+      fields.length > 0
+        ? `Fields: ${fields.join(", ")}`
+        : "Fields: none yet (ng g shaderng:field aurora)";
     context.logger.info(
       [
         "",
         `shaderng is set up in "${resolved.name}".`,
         `  Runtime: ${resolved.sourceRoot}/components/orbs, ${resolved.sourceRoot}/lib, ${joinPath(resolved.root, PLUGIN_FILE)}`,
-        `  ${copied}`,
+        `  ${copiedOrbs}`,
+        `  ${copiedFields}`,
         ...usage,
         "",
         "The WebGPU runtime adds ~500 kB to the initial bundle; a new project's 500 kB warning",
@@ -156,6 +179,7 @@ const printNextSteps =
         "the orb behind a dynamic import().",
         "",
         "More orbs: ng g shaderng:orb orb-07   (list them with ng g shaderng:orb --list)",
+        "Fields:    ng g shaderng:field aurora (list them with ng g shaderng:field --list)",
         `Docs: ${DOCS_URL}`,
       ].join("\n"),
     );
@@ -166,6 +190,7 @@ export function ngAdd(options: NgAddOptions): Rule {
     const resolved = await resolveProject(tree, options.project);
     assertEsbuildBuilder(resolved);
     const slugs = parseOrbSelection(options.orbs);
+    const fields = parseFieldSelection(options.fields);
     const force = options.force ?? false;
 
     return chain([
@@ -174,7 +199,8 @@ export function ngAdd(options: NgAddOptions): Rule {
       wireBuilders(resolved),
       addPathAlias(resolved),
       addOrbs(resolved, slugs, force),
-      printNextSteps(resolved, slugs),
+      addFields(resolved, fields, force),
+      printNextSteps(resolved, slugs, fields),
     ]);
   };
 }
