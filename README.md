@@ -15,20 +15,26 @@ See [CREDITS.md](CREDITS.md) and the in-app [Credits](https://orcawhisperer.gith
 
 ## Original to shaderng
 
-shadercn feeds voice levels through `volumes`. shaderng adds a microphone listener:
+shadercn feeds voice levels through `volumes`. shaderng measures them from live audio for you:
 
 ```html
+<!-- microphone -->
 <orb-01 [size]="280" state="speaking" [listen]="true" />
+
+<!-- the assistant's voice: a WebRTC remote stream, TTS output, an <audio> element, or a Web Audio node -->
+<orb-01 [size]="280" state="speaking" [audio]="remoteStream" />
 ```
 
-Also original here: the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
+`[audio]` accepts `"microphone" | MediaStream | AudioNode | HTMLMediaElement`; `[listen]` is shorthand for the microphone. Sources you pass in are never stopped or closed by the orb.
+
+Also original here: one shared WebGPU device and frame loop for every mounted orb, the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
 
 ## Features
 
 - **33 orb shaders** — the full shadercn set, from Dispersion to Abyss
 - **Angular 22** — standalone components, signal inputs, zoneless change detection
 - **WebGPU** — the original `renderer.ts` scene loop, wrapped as `<shader-orb>`
-- **Typed inputs** — `state`, `size`, `params`, `colors`, `listen`, volumes, and DPR
+- **Typed inputs** — `state`, `size`, `params`, `colors`, `audio` / `listen`, volumes, and DPR
 - **Docs + playground** — live previews, credits, per-orb prop tables
 
 ## Quick start

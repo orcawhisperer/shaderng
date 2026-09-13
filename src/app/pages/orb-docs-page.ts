@@ -152,7 +152,12 @@ export class Example {}`;
     { name: "size", type: "number", fallback: "280" },
     { name: "params", type: "Partial<Record<string, number>>", fallback: "—" },
     { name: "colors", type: "Partial<Record<string, string>>", fallback: "—" },
-    { name: "listen", type: "boolean", fallback: "false" },
+    {
+      name: "audio",
+      type: '"microphone" | MediaStream | AudioNode | HTMLMediaElement',
+      fallback: "—",
+    },
+    { name: "listen", type: "boolean (shorthand for audio: 'microphone')", fallback: "false" },
     { name: "paused", type: "boolean", fallback: "false" },
     { name: "pauseOffscreen", type: "boolean", fallback: "true" },
     { name: "respectReducedMotion", type: "boolean", fallback: "true" },

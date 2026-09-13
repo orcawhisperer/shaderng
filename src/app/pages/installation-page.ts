@@ -104,13 +104,25 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">5. Microphone drive (shaderng original)</h2>
+        <h2 class="text-xl font-semibold">5. Live audio drive (shaderng original)</h2>
         <p class="text-muted-foreground">
           shadercn feeds voice levels as
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>. shaderng adds a
-          microphone listener that writes those volumes for you:
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>. shaderng measures them
+          for you from any audio source through
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">[audio]</code>: the microphone, a
+          WebRTC or TTS <code class="bg-muted rounded px-1 py-0.5 text-sm">MediaStream</code>, a Web
+          Audio node, or an
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;audio&gt;</code> element.
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">[listen]="true"</code> is shorthand for
+          the microphone.
         </p>
         <app-code-block [code]="listenSnippet" />
+        <p class="text-muted-foreground text-sm">
+          Streams and nodes you pass in are left running when the orb unmounts; only a microphone
+          the orb opened itself is stopped. Media elements use
+          <code class="bg-muted rounded px-1 py-0.5">captureStream()</code> where available so
+          playback is untouched.
+        </p>
       </section>
     </article>
   `,
@@ -134,5 +146,16 @@ export class InstallationPage {
   template: \`<orb-01 [size]="280" state="idle" />\`,
 })
 export class Hero {}`;
-  protected readonly listenSnippet = `<orb-01 state="speaking" [listen]="true" />`;
+  protected readonly listenSnippet = `<!-- microphone -->
+<orb-01 state="speaking" [listen]="true" />
+
+<!-- the assistant's voice: a WebRTC remote stream or TTS output -->
+<orb-01 state="speaking" [audio]="remoteStream" />
+
+<!-- an <audio> element -->
+<audio #player src="/reply.mp3" autoplay></audio>
+<orb-01 state="speaking" [audio]="player" />
+
+<!-- a node in your own Web Audio graph -->
+<orb-01 state="speaking" [audio]="gainNode" />`;
 }

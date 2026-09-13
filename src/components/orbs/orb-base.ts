@@ -6,6 +6,7 @@ import type {
   OrbState,
   OrbVariant,
 } from "@/components/orbs/renderer";
+import type { OrbAudioSource } from "@/lib/audio-drive";
 
 @Directive()
 export abstract class OrbBase {
@@ -25,6 +26,7 @@ export abstract class OrbBase {
     Partial<Record<OrbState, { input?: number; output?: number }>> | undefined
   >(undefined);
   readonly volumes = input<{ input?: number; output?: number } | undefined>(undefined);
+  readonly audio = input<OrbAudioSource | undefined>(undefined);
   readonly listen = input(false);
   readonly paused = input(false);
   readonly pauseOffscreen = input(true);
@@ -46,6 +48,7 @@ export const ORB_TEMPLATE = `
   [stateColors]="stateColors()"
   [stateVolumes]="stateVolumes()"
   [volumes]="volumes()"
+  [audio]="audio()"
   [listen]="listen()"
   [paused]="paused()"
   [pauseOffscreen]="pauseOffscreen()"
