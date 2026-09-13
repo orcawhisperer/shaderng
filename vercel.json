@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "angular",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/shadercn-angular/browser",
+  "installCommand": "npm install",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}

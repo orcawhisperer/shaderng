@@ -1,0 +1,9 @@
+<div class="bg-background relative flex min-h-svh flex-col">
+  <app-site-header />
+  <main class="flex flex-1 flex-col">
+    <router-outlet />
+  </main>
+  @if (!hideFooter()) {
+    <app-site-footer />
+  }
+</div>

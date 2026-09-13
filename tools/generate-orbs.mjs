@@ -1,0 +1,167 @@
+import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const sourceOrbs = "/tmp/shadercn/registry/components/orbs";
+const destOrbs = join(root, "src/components/orbs");
+
+const NAMES = {
+  "orb-01": "Dispersion",
+  "orb-02": "Rocaille",
+  "orb-03": "Ecliptic",
+  "orb-04": "Chromatic",
+  "orb-05": "Iridescent",
+  "orb-06": "Moiré",
+  "orb-07": "Torsion",
+  "orb-08": "Nacre",
+  "orb-09": "Spectra",
+  "orb-10": "Weave",
+  "orb-11": "Hydrogen",
+  "orb-12": "Nebula",
+  "orb-13": "Ion",
+  "orb-14": "Dither",
+  "orb-15": "Muons",
+  "orb-16": "Caustic",
+  "orb-17": "Granular",
+  "orb-18": "Lattice",
+  "orb-19": "Plasma",
+  "orb-20": "Falls",
+  "orb-21": "Nimbus",
+  "orb-22": "Vectors",
+  "orb-23": "Phosphor",
+  "orb-24": "Voxel",
+  "orb-25": "Cascade",
+  "orb-26": "Reaction",
+  "orb-27": "Constellation",
+  "orb-28": "Bitdumb",
+  "orb-29": "Mosaic",
+  "orb-30": "Droste",
+  "orb-31": "Corona",
+  "orb-32": "Galaxy",
+  "orb-33": "Abyss",
+};
+
+const slugs = readdirSync(sourceOrbs)
+  .filter((name) => name.startsWith("orb-"))
+  .sort();
+
+mkdirSync(destOrbs, { recursive: true });
+cpSync(join(sourceOrbs, "renderer.ts"), join(destOrbs, "renderer.ts"));
+
+const catalog = [];
+const loaderLines = [];
+const exportLines = [];
+
+for (const slug of slugs) {
+  const n = slug.slice(-2);
+  const className = `Orb${n}`;
+  const variantName = `orb${n}Orb`;
+  const dest = join(destOrbs, slug);
+  mkdirSync(dest, { recursive: true });
+  cpSync(join(sourceOrbs, slug, "gpu.ts"), join(dest, "gpu.ts"));
+
+  let meta = readFileSync(join(sourceOrbs, slug, "meta.ts"), "utf8");
+  meta = meta.replace('files: ["index.tsx", "meta.ts", "gpu.ts"]', `files: ["${slug}.ts", "meta.ts", "gpu.ts"]`);
+  writeFileSync(join(dest, "meta.ts"), meta);
+
+  const title = meta.match(/title: "([^"]+)"/)?.[1] ?? slug.toUpperCase();
+  const description = meta.match(/description: "([^"]+)"/)?.[1] ?? "";
+
+  writeFileSync(
+    join(dest, `${slug}.ts`),
+    `import { Component } from "@angular/core";
+
+import { ORB_TEMPLATE, OrbBase } from "@/components/orbs/orb-base";
+import { ShaderOrb } from "@/components/orbs/canvas";
+import { ${variantName} } from "@/components/orbs/${slug}/meta";
+
+export { meta, ${variantName} } from "@/components/orbs/${slug}/meta";
+
+@Component({
+  selector: "${slug}",
+  imports: [ShaderOrb],
+  template: ORB_TEMPLATE,
+})
+export class ${className} extends OrbBase {
+  override readonly variant = ${variantName};
+}
+`,
+  );
+
+  writeFileSync(
+    join(dest, "index.ts"),
+    `export { ${className}, ${variantName}, meta } from "./${slug}";
+`,
+  );
+
+  catalog.push({
+    description,
+    name: NAMES[slug] ?? title,
+    slug,
+    title,
+  });
+
+  loaderLines.push(
+    `  "${slug}": () =>\n    import("@/components/orbs/${slug}").then((m) => ({\n      Component: m.${className},\n      variant: m.${variantName},\n    })),`,
+  );
+  exportLines.push(`export { ${className}, ${variantName}, meta as meta${n} } from "@/components/orbs/${slug}";`);
+}
+
+writeFileSync(
+  join(root, "src/lib/orb-catalog.ts"),
+  `export const ORB_SLUGS = ${JSON.stringify(
+    catalog.map((item) => item.slug),
+    null,
+    2,
+  )} as const;
+
+export type OrbSlug = (typeof ORB_SLUGS)[number];
+
+export const ORB_STATE_VALUES = ["idle", "thinking", "speaking"] as const;
+
+export interface OrbCatalogItem {
+  slug: OrbSlug;
+  title: string;
+  name: string;
+  description: string;
+}
+
+export const ORB_CATALOG: OrbCatalogItem[] = ${JSON.stringify(catalog, null, 2)} as OrbCatalogItem[];
+
+export const ORB_CATALOG_MAP = Object.fromEntries(
+  ORB_CATALOG.map((item) => [item.slug, item]),
+) as Record<OrbSlug, OrbCatalogItem>;
+`,
+);
+
+writeFileSync(
+  join(root, "src/lib/orb-loaders.ts"),
+  `import type { Type } from "@angular/core";
+
+import type { OrbBase } from "@/components/orbs/orb-base";
+import type { OrbVariant } from "@/components/orbs/renderer";
+import type { OrbSlug } from "@/lib/orb-catalog";
+
+export interface OrbEntry {
+  Component: Type<OrbBase>;
+  variant: OrbVariant;
+}
+
+export const ORB_LOADERS: Record<OrbSlug, () => Promise<OrbEntry>> = {
+${loaderLines.join("\n")}
+};
+
+export const loadOrb = (slug: string): Promise<OrbEntry> => {
+  const loader = ORB_LOADERS[slug as OrbSlug];
+  if (!loader) {
+    return ORB_LOADERS["orb-01"]();
+  }
+  return loader();
+};
+`,
+);
+
+writeFileSync(join(destOrbs, "index.ts"), `${exportLines.join("\n")}\n`);
+
+console.log(`generated ${slugs.length} orb components`);
