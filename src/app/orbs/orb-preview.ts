@@ -91,7 +91,7 @@ export class OrbPreview {
           if (cancelled) {
             return;
           }
-          console.error(`[shadercn-angular] failed to load ${slug}`, error);
+          console.error(`[shaderng] failed to load ${slug}`, error);
           this.loadError.set(
             error instanceof Error ? error.message : `Failed to load ${slug}`,
           );

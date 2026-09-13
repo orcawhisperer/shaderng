@@ -67,6 +67,7 @@ export class DocsLayout {
     { href: "/docs/installation", label: "Installation" },
     { href: "/docs/components", label: "Components" },
     { href: "/docs/changelog", label: "Changelog" },
+    { href: "/docs/credits", label: "Credits" },
   ];
   protected readonly orbs = ORB_CATALOG;
 }

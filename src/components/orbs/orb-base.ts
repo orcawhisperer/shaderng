@@ -24,8 +24,10 @@ export abstract class OrbBase {
       undefined,
     );
   readonly volumes = input<{ input?: number; output?: number } | undefined>(undefined);
+  readonly listen = input(false);
   readonly paused = input(false);
   readonly pauseOffscreen = input(true);
+  readonly respectReducedMotion = input(true);
   readonly maxDpr = input(2);
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
@@ -43,8 +45,10 @@ export const ORB_TEMPLATE = `
   [stateColors]="stateColors()"
   [stateVolumes]="stateVolumes()"
   [volumes]="volumes()"
+  [listen]="listen()"
   [paused]="paused()"
   [pauseOffscreen]="pauseOffscreen()"
+  [respectReducedMotion]="respectReducedMotion()"
   [maxDpr]="maxDpr()"
   [className]="className()"
   [style]="style()"

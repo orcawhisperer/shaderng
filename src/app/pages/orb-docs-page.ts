@@ -124,8 +124,10 @@ export class OrbDocsPage {
     { name: "size", type: "number", fallback: "280" },
     { name: "params", type: "Partial<Record<string, number>>", fallback: "—" },
     { name: "colors", type: "Partial<Record<string, string>>", fallback: "—" },
+    { name: "listen", type: "boolean", fallback: "false" },
     { name: "paused", type: "boolean", fallback: "false" },
     { name: "pauseOffscreen", type: "boolean", fallback: "true" },
+    { name: "respectReducedMotion", type: "boolean", fallback: "true" },
     { name: "maxDpr", type: "number", fallback: "2" },
   ];
 
@@ -142,7 +144,7 @@ export class OrbDocsPage {
         })
         .catch((error: unknown) => {
           if (!cancelled) {
-            console.error(`[shadercn-angular] failed to load ${slug} docs`, error);
+            console.error(`[shaderng] failed to load ${slug} docs`, error);
           }
         });
       onCleanup(() => {

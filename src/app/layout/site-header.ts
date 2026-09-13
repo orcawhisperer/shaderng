@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/ro
 import { filter } from "rxjs";
 
 import { ThemeService } from "@/lib/theme";
+import { SITE } from "@/lib/site";
 
 const NAV = [
   { href: "/docs", label: "Docs" },
@@ -20,11 +21,10 @@ const NAV = [
         <div class="relative flex h-(--header-height) items-center gap-3">
           <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
             <span
-              class="bg-foreground text-background flex size-6 items-center justify-center rounded-md text-[11px]"
-              >s</span
+              class="bg-foreground text-background flex size-6 items-center justify-center rounded-md text-[11px] font-semibold"
+              >ng</span
             >
-            <span>shadercn</span>
-            <span class="text-muted-foreground font-normal">angular</span>
+            <span>shader<span class="text-muted-foreground font-normal">ng</span></span>
           </a>
 
           <nav class="ml-4 hidden items-center gap-1 lg:flex">
@@ -64,11 +64,11 @@ const NAV = [
               rel="noreferrer"
               target="_blank"
             >
-              Original
+              shadercn
             </a>
             <a
               class="text-muted-foreground hover:text-foreground rounded-md px-3 py-1.5 text-sm"
-              href="https://github.com/orcawhisperer/shadercn-angular"
+              [href]="github"
               rel="noreferrer"
               target="_blank"
             >
@@ -127,6 +127,7 @@ export class SiteHeader {
   protected readonly nav = NAV;
   protected readonly theme = inject(ThemeService);
   protected readonly menuOpen = signal(false);
+  protected readonly github = SITE.github;
 
   constructor() {
     inject(Router)

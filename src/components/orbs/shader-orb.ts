@@ -17,7 +17,13 @@ import type {
   OrbVariant,
 } from "@/components/orbs/renderer";
 import { createOrbRenderer } from "@/components/orbs/renderer";
+import { startMicDrive } from "@/lib/mic-drive";
+import { SITE } from "@/lib/site";
 import { cn } from "@/lib/utils";
+
+const prefersReducedMotion = (): boolean =>
+  typeof window !== "undefined" &&
+  Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 
 @Component({
   selector: "shader-orb",
@@ -60,8 +66,10 @@ export class ShaderOrb {
       undefined,
     );
   readonly volumes = input<{ input?: number; output?: number } | undefined>(undefined);
+  readonly listen = input(false);
   readonly paused = input(false);
   readonly pauseOffscreen = input(true);
+  readonly respectReducedMotion = input(true);
   readonly maxDpr = input(2);
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
@@ -82,8 +90,44 @@ export class ShaderOrb {
       this.drive.statePresets = this.statePresets();
       this.drive.stateColors = this.stateColors();
       this.drive.stateVolumes = this.stateVolumes();
-      this.drive.volumes = this.volumes();
-      this.drive.paused = this.paused();
+      if (!this.listen()) {
+        this.drive.volumes = this.volumes();
+      }
+      const reduce = this.respectReducedMotion() && prefersReducedMotion();
+      this.drive.paused = this.paused() || (reduce && !this.listen());
+    });
+
+    effect((onCleanup) => {
+      if (!this.listen()) {
+        return;
+      }
+      let stopped = false;
+      let dispose: (() => void) | undefined;
+      void startMicDrive((volumes) => {
+        if (!stopped) {
+          this.drive.volumes = volumes;
+        }
+      })
+        .then((stop) => {
+          if (stopped) {
+            stop();
+            return;
+          }
+          dispose = stop;
+        })
+        .catch((error: unknown) => {
+          if (untracked(() => this.errorMessage())) {
+            return;
+          }
+          const message =
+            error instanceof Error ? error.message : "Microphone permission was denied";
+          console.error(`[${SITE.log}] microphone failed:`, error);
+          this.errorMessage.set(message);
+        });
+      onCleanup(() => {
+        stopped = true;
+        dispose?.();
+      });
     });
 
     effect((onCleanup) => {
@@ -110,7 +154,7 @@ export class ShaderOrb {
       void renderer.ready.catch((error: unknown) => {
         const message =
           error instanceof Error ? error.message : "WebGPU failed to start";
-        console.error(`[shadercn-angular] ${untracked(() => this.variant().key)} failed to start:`, error);
+        console.error(`[${SITE.log}] ${untracked(() => this.variant().key)} failed to start:`, error);
         this.errorMessage.set(
           /gpu|webgpu|adapter/i.test(message)
             ? "WebGPU is not available in this browser. Try Chrome or Edge 113+ with hardware acceleration."

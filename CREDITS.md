@@ -1,6 +1,20 @@
 # Credits
 
-All 33 orb shaders are based on original work by [@XorDev](https://x.com/XorDev). Used with permission.
+**shaderng** is an unofficial Angular port of [shadercn](https://github.com/shadcn-labs/shadercn). Give credit in this order:
+
+1. **[XorDev](https://x.com/XorDev)** — original shader work for all 33 orbs, used with permission. Keep the copyright notice in every `gpu.ts` file.
+2. **[shadercn](https://github.com/shadcn-labs/shadercn) / Shadcn Labs** — React registry, renderer, orb presets, and copy-paste component model (MIT).
+3. **[vgpu](https://vgpu.labs.vercel.dev/)** — WebGPU shader runtime.
+4. **[TypeGPU](https://typegpu.com/)** — typed `"use gpu"` functions.
+5. **[Angular](https://angular.dev/)** — component model used by this port.
+
+## Original to shaderng
+
+- `[listen]` — microphone-reactive `volumes` (not in shadercn)
+- TypeGPU transform that works with Angular’s esbuild compiler (`tools/typegpu.esbuild.ts`)
+- `prefers-reduced-motion` pause on `<shader-orb>`
+
+## Orb index
 
 | Orb      | Title         | Based on                        |
 | -------- | ------------- | ------------------------------- |

@@ -13,12 +13,14 @@ const formatNumber = (value: number): string =>
 
 export const buildAngularSnippet = ({
   draft,
+  listen = false,
   size,
   slug,
   state,
   variant,
 }: {
   draft: SnippetDraft;
+  listen?: boolean;
   size: number;
   slug: string;
   state: OrbState;
@@ -46,11 +48,12 @@ export const buildAngularSnippet = ({
     `      state="${state}"`,
     ...(params.length > 0 ? [`      [params]="{ ${params.join(", ")} }"`] : []),
     ...(colors.length > 0 ? [`      [colors]="{ ${colors.join(", ")} }"`] : []),
-    ...(draft.autoDrive
-      ? []
-      : [
+    ...(listen ? [`      [listen]="true"`] : []),
+    ...(!listen && !draft.autoDrive
+      ? [
           `      [volumes]="{ input: ${formatNumber(draft.input)}, output: ${formatNumber(draft.output)} }"`,
-        ]),
+        ]
+      : []),
     "    />",
   ];
 

@@ -3,6 +3,7 @@ import { RouterLink } from "@angular/router";
 
 import { HomeShowcase } from "@/app/orbs/home-showcase";
 import { CopyButton } from "@/app/ui/copy-button";
+import { SITE } from "@/lib/site";
 
 @Component({
   selector: "app-home-page",
@@ -14,12 +15,15 @@ import { CopyButton } from "@/app/ui/copy-button";
           Angular · WebGPU · TypeGPU
         </p>
         <h1 class="max-w-4xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-          Beautiful shaders, made simple
+          Beautiful shaders, in Angular
         </h1>
         <p class="text-muted-foreground max-w-2xl text-lg sm:text-xl">
-          WebGPU/WGSL shader components for Angular.
+          {{ site.name }} is a copy-paste WebGPU orb kit for Angular.
           <br class="hidden sm:block" />
-          Ported from shadercn, built on vgpu and TypeGPU.
+          GPU programs from
+          <a class="text-foreground underline underline-offset-4" [href]="site.original" rel="noreferrer" target="_blank">{{ site.originalName }}</a>,
+          based on
+          <a class="text-foreground underline underline-offset-4" [href]="site.xordev" rel="noreferrer" target="_blank">XorDev</a>.
         </p>
 
         <div class="bg-code text-code-foreground relative mt-4 w-full max-w-xl overflow-hidden rounded-lg text-left text-sm">
@@ -51,10 +55,10 @@ import { CopyButton } from "@/app/ui/copy-button";
             Get Started
           </a>
           <a
-            routerLink="/docs/components"
+            routerLink="/docs/credits"
             class="hover:bg-muted inline-flex h-10 items-center rounded-md border px-4 text-sm font-medium"
           >
-            Browse Components
+            Credits
           </a>
         </div>
       </div>
@@ -65,6 +69,33 @@ import { CopyButton } from "@/app/ui/copy-button";
         <app-home-showcase />
       </div>
     </section>
+
+    <section class="container-wrapper pb-16">
+      <div class="container mx-auto grid max-w-4xl gap-4 sm:grid-cols-3">
+        @for (item of originals; track item.title) {
+          <div class="rounded-xl border p-4 text-left">
+            <h2 class="font-medium">{{ item.title }}</h2>
+            <p class="text-muted-foreground mt-1 text-sm">{{ item.description }}</p>
+          </div>
+        }
+      </div>
+    </section>
   `,
 })
-export class HomePage {}
+export class HomePage {
+  protected readonly site = SITE;
+  protected readonly originals = [
+    {
+      title: "Listen",
+      description: "A [listen] input drives orb volumes from the microphone. shadercn does not have this.",
+    },
+    {
+      title: "Angular TypeGPU",
+      description: "gpu.ts is transformed in the Angular esbuild pipeline, which otherwise swallows unplugin-typegpu.",
+    },
+    {
+      title: "Reduced motion",
+      description: "Orbs pause when the OS asks for prefers-reduced-motion, unless you are using Listen.",
+    },
+  ];
+}

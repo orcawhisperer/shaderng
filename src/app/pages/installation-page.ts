@@ -64,6 +64,15 @@ npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @an
 {{ '}' }})
 export class Hero {{ '{' }}{{ '}' }}</code></pre>
       </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold">5. Microphone drive (shaderng original)</h2>
+        <p class="text-muted-foreground">
+          shadercn feeds voice levels as <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>.
+          shaderng adds a microphone listener that writes those volumes for you:
+        </p>
+        <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>&lt;orb-01 state="speaking" [listen]="true" /&gt;</code></pre>
+      </section>
     </article>
   `,
 })

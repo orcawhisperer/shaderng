@@ -20,6 +20,6 @@ describe("App", () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain("shadercn");
+    expect(compiled.textContent).toContain("shaderng");
   });
 });

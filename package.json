@@ -1,7 +1,7 @@
 {
-  "name": "shadercn-angular",
+  "name": "shaderng",
   "version": "0.1.0",
-  "description": "GPU-powered shader components for Angular, ported from shadercn. Built on vgpu and TypeGPU.",
+  "description": "GPU shader components for Angular. Unofficial port of shadercn, with microphone-reactive [listen] drive.",
   "license": "MIT",
   "private": true,
   "engines": {
@@ -13,6 +13,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "build:pages": "node tools/build-pages.mjs",
     "generate:orbs": "node tools/generate-orbs.mjs"
   },
   "packageManager": "npm@10.9.8",

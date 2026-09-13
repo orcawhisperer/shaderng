@@ -58,6 +58,19 @@ describe("buildAngularSnippet", () => {
       state: "idle",
       variant,
     });
-    expect(snippet).toContain("[params]=\"{ speed: 1.25 }\"");
+    expect(snippet).toContain('[params]="{ speed: 1.25 }"');
+  });
+
+  it("includes listen when enabled", () => {
+    const snippet = buildAngularSnippet({
+      draft,
+      listen: true,
+      size: 280,
+      slug: "orb-01",
+      state: "speaking",
+      variant,
+    });
+    expect(snippet).toContain('[listen]="true"');
+    expect(snippet).not.toContain("[volumes]");
   });
 });

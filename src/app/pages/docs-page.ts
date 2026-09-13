@@ -1,6 +1,8 @@
 import { Component } from "@angular/core";
 import { RouterLink } from "@angular/router";
 
+import { SITE } from "@/lib/site";
+
 @Component({
   selector: "app-docs-page",
   imports: [RouterLink],
@@ -9,17 +11,17 @@ import { RouterLink } from "@angular/router";
       <p class="text-muted-foreground text-sm">Docs</p>
       <h1 class="text-3xl font-semibold tracking-tight">Introduction</h1>
       <p class="text-muted-foreground text-lg">
-        GPU-powered shader components for Angular. Built on
-        <a class="text-foreground underline underline-offset-4" href="https://vgpu.labs.vercel.dev/" rel="noreferrer" target="_blank">vgpu</a>
+        {{ site.name }} is GPU-powered shader components for Angular. Built on
+        <a class="text-foreground underline underline-offset-4" [href]="site.vgpu" rel="noreferrer" target="_blank">vgpu</a>
         and
-        <a class="text-foreground underline underline-offset-4" href="https://typegpu.com/" rel="noreferrer" target="_blank">TypeGPU</a>,
+        <a class="text-foreground underline underline-offset-4" [href]="site.typegpu" rel="noreferrer" target="_blank">TypeGPU</a>,
         ported from
-        <a class="text-foreground underline underline-offset-4" href="https://github.com/shadcn-labs/shadercn" rel="noreferrer" target="_blank">shadercn</a>.
+        <a class="text-foreground underline underline-offset-4" [href]="site.original" rel="noreferrer" target="_blank">{{ site.originalName }}</a>.
       </p>
       <p>
-        <strong>shadercn-angular</strong> follows the same copy-paste model as shadercn: you own the
-        shader source. Each orb is a standalone Angular component with typed inputs for uniforms,
-        colors, and the idle / thinking / speaking drive states.
+        Same copy-paste model as shadercn: you own the shader source. Each orb is a standalone
+        Angular component with typed inputs for uniforms, colors, idle / thinking / speaking, and
+        shaderng’s microphone <code class="bg-muted rounded px-1 py-0.5 text-sm">listen</code> input.
       </p>
       <div class="grid gap-4 sm:grid-cols-2">
         @for (item of features; track item.title) {
@@ -31,14 +33,17 @@ import { RouterLink } from "@angular/router";
       </div>
       <p>
         Start with
-        <a routerLink="/docs/installation" class="underline underline-offset-4">installation</a>
-        or jump into the
+        <a routerLink="/docs/installation" class="underline underline-offset-4">installation</a>,
+        read
+        <a routerLink="/docs/credits" class="underline underline-offset-4">credits</a>,
+        or open the
         <a routerLink="/playground" class="underline underline-offset-4">playground</a>.
       </p>
     </article>
   `,
 })
 export class DocsPage {
+  protected readonly site = SITE;
   protected readonly features = [
     {
       title: "Zero config",
@@ -46,7 +51,7 @@ export class DocsPage {
     },
     {
       title: "Typed inputs",
-      description: "Every visual parameter is an Angular input — size, state, params, and colors.",
+      description: "Every visual parameter is an Angular input — size, state, params, colors, and listen.",
     },
     {
       title: "Own the code",

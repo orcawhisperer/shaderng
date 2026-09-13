@@ -14,6 +14,7 @@ import { ORB_STATES, type OrbState, type OrbVariant } from "@/components/orbs/ca
 import { CopyButton } from "@/app/ui/copy-button";
 import { loadOrb, type OrbEntry } from "@/lib/orb-loaders";
 import { ORB_CATALOG, ORB_SLUGS } from "@/lib/orb-catalog";
+import { SITE } from "@/lib/site";
 import {
   buildAngularSnippet,
   formatControlValue,
@@ -104,6 +105,15 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
             </select>
             <div class="ml-auto flex items-center gap-2">
               <button
+                class="inline-flex h-8 items-center rounded-md border px-3 text-sm"
+                type="button"
+                [class]="listen() ? 'bg-secondary' : 'hover:bg-muted bg-background'"
+                [attr.aria-pressed]="listen()"
+                (click)="toggleListen()"
+              >
+                {{ listen() ? "Listening" : "Listen" }}
+              </button>
+              <button
                 class="hover:bg-muted bg-background inline-flex h-8 items-center rounded-md border px-3 text-sm"
                 type="button"
                 (click)="paused.set(!paused())"
@@ -173,7 +183,15 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
             </div>
           }
 
-          @if (draft(); as live) {
+          @if (listen()) {
+            <div class="flex flex-col gap-3 p-4">
+              <span class="text-muted-foreground text-xs">Drive</span>
+              <p class="text-muted-foreground text-xs leading-relaxed">
+                Microphone is driving <code class="bg-muted rounded px-1">volumes</code>.
+                Speak or play audio — this is original to shaderng, not shadercn.
+              </p>
+            </div>
+          } @else if (draft(); as live) {
             <div class="flex flex-col gap-3 p-4">
               <span class="text-muted-foreground text-xs">Drive</span>
               <button
@@ -215,7 +233,9 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
                 </label>
               }
             </div>
+          }
 
+          @if (draft(); as live) {
             <div class="flex flex-col gap-3 p-4">
               <span class="text-muted-foreground text-xs">Params</span>
               @for (p of current.variant.params; track p.key) {
@@ -264,6 +284,7 @@ export class OrbPlayground {
   protected readonly state = linkedSignal(() => this.initialState());
   protected readonly size = signal(420);
   protected readonly paused = signal(false);
+  protected readonly listen = signal(false);
   protected readonly panelOpen = signal(false);
   protected readonly entry = signal<OrbEntry | null>(null);
   protected readonly drafts = signal<Drafts | null>(null);
@@ -279,6 +300,7 @@ export class OrbPlayground {
     }
     return buildAngularSnippet({
       draft,
+      listen: this.listen(),
       size: this.size(),
       slug: this.slug(),
       state: this.state(),
@@ -291,11 +313,12 @@ export class OrbPlayground {
     return {
       ariaLabel: `${this.slug()} orb, ${this.state()}`,
       colors: draft?.colors,
+      listen: this.listen(),
       params: draft?.params,
       paused: this.paused(),
       size: this.size(),
       state: this.state(),
-      volumes: draft?.autoDrive
+      volumes: this.listen() || draft?.autoDrive
         ? undefined
         : { input: draft?.input ?? 0, output: draft?.output ?? 0 },
     };
@@ -318,7 +341,7 @@ export class OrbPlayground {
           if (cancelled) {
             return;
           }
-          console.error(`[shadercn-angular] failed to load ${slug}`, error);
+          console.error(`[${SITE.log}] failed to load ${slug}`, error);
           this.entry.set(null);
           this.loadError.set(
             error instanceof Error ? error.message : `Failed to load ${slug}`,
@@ -345,6 +368,15 @@ export class OrbPlayground {
   protected selectState(next: OrbState) {
     this.state.set(next);
     this.syncQuery(this.slug(), next);
+  }
+
+  protected toggleListen() {
+    const next = !this.listen();
+    this.listen.set(next);
+    if (next) {
+      this.state.set("speaking");
+      this.syncQuery(this.slug(), "speaking");
+    }
   }
 
   protected reset(variant: OrbVariant) {
