@@ -1,0 +1,82 @@
+name: Sync shadercn upstream
+
+# Regenerates the orb wrappers from the latest shadercn sources and opens a PR when anything
+# changed. renderer.ts is maintained here and is not touched (see tools/generate-orbs.mjs).
+# Needs "Allow GitHub Actions to create and approve pull requests" in Settings → Actions.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22.22.3"
+          cache: npm
+      - run: npm ci
+
+      - name: Clone shadercn
+        id: upstream
+        run: |
+          git clone --depth 1 https://github.com/shadcn-labs/shadercn /tmp/shadercn
+          echo "sha=$(git -C /tmp/shadercn rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "date=$(git -C /tmp/shadercn log -1 --format=%cs)" >> "$GITHUB_OUTPUT"
+
+      - name: Regenerate orbs
+        env:
+          SHADERCN_DIR: /tmp/shadercn
+        run: |
+          npm run generate:orbs
+          npm run format
+
+      - name: Summarize changes
+        id: diff
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          {
+            echo 'files<<EOF'
+            git diff --cached --stat
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open or update the sync PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: sync/shadercn
+          delete-branch: true
+          commit-message: "Sync orbs from shadercn ${{ steps.upstream.outputs.sha }}"
+          title: "Sync orbs from shadercn ${{ steps.upstream.outputs.sha }}"
+          labels: upstream-sync
+          body: |
+            Regenerated from [shadcn-labs/shadercn](https://github.com/shadcn-labs/shadercn) at
+            `${{ steps.upstream.outputs.sha }}` (${{ steps.upstream.outputs.date }}) with
+            `npm run generate:orbs` and `npm run format`.
+
+            `renderer.ts` is maintained in this repo and was not regenerated. If upstream's
+            `renderer.ts` changed, diff it by hand.
+
+            Every `gpu.ts` remains XorDev's shader under its non-commercial notice; check that
+            new files carry the header.
+
+            ```
+            ${{ steps.diff.outputs.files }}
+            ```

@@ -108,9 +108,9 @@ export class HomePage {
   protected readonly site = SITE;
   protected readonly originals = [
     {
-      title: "Listen",
+      title: "Live audio",
       description:
-        "A [listen] input drives orb volumes from the microphone. shadercn does not have this.",
+        "[audio] drives orb volumes from the microphone, a WebRTC or TTS stream, an <audio> element, or a Web Audio node. shadercn does not have this.",
     },
     {
       title: "Angular TypeGPU",

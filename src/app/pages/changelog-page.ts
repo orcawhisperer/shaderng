@@ -21,14 +21,22 @@ import { SITE } from "@/lib/site";
         <ul class="list-disc space-y-1 pl-5">
           <li>33 orb shaders with the original TypeGPU GPU programs (XorDev / shadercn)</li>
           <li>
-            Shared WebGPU renderer from shadercn, wrapped as
-            <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code>
+            WebGPU renderer from shadercn, wrapped as
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code>, with one
+            device and one frame loop shared by every mounted orb
           </li>
           <li>Standalone Angular components with typed signal inputs</li>
           <li>
-            Original: microphone
-            <code class="bg-muted rounded px-1 py-0.5 text-sm">[listen]</code>
-            drive, reduced-motion pause, Angular TypeGPU esbuild intercept
+            Original:
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">[audio]</code> drive from the
+            microphone, a MediaStream, an audio element or a Web Audio node (<code
+              class="bg-muted rounded px-1 py-0.5 text-sm"
+              >[listen]</code
+            >
+            is the microphone shorthand), reduced-motion pause, Angular TypeGPU esbuild intercept
+          </li>
+          <li>
+            Instant fallback where WebGPU is missing, shareable playground links, per-route titles
           </li>
           <li>Gallery, playground, credits, and docs site</li>
         </ul>

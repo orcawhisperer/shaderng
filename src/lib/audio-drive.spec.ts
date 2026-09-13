@@ -1,6 +1,6 @@
-import { envelopeStep, rmsFromTimeDomain } from "./mic-drive";
+import { envelopeStep, rmsFromTimeDomain } from "./audio-drive";
 
-describe("mic drive", () => {
+describe("audio drive", () => {
   it("treats a silent buffer as near-zero RMS", () => {
     const samples = Uint8Array.from({ length: 32 }, () => 128);
     expect(rmsFromTimeDomain(samples)).toBeCloseTo(0, 5);
