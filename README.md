@@ -90,7 +90,7 @@ BASE_HREF=/shaderng/ npm run build:pages
 
 ## Deploy on Vercel
 
-Vercel serves the Angular production build from `dist/shadercn-angular/browser`. Client-side routes rewrite to `index.html`.
+Vercel serves the Angular production build from `dist/shaderng/browser`. Client-side routes rewrite to `index.html`.
 
 ```bash
 npx vercel --prod
