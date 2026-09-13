@@ -1,7 +1,7 @@
 {
   "name": "shaderng",
   "version": "0.1.0",
-  "description": "GPU shader components for Angular. Unofficial port of shadercn, with microphone-reactive [listen] drive.",
+  "description": "GPU shader components for Angular. Unofficial port of shadercn; ng add shaderng installs it, [audio] drives orbs from live sound.",
   "license": "MIT",
   "private": true,
   "engines": {

@@ -6,6 +6,7 @@ import { CloneOptions } from "@/app/ui/clone-options";
 import { CopyButton } from "@/app/ui/copy-button";
 import { LogoMark } from "@/app/ui/logo-mark";
 import { SITE } from "@/lib/site";
+import { ngAddCommand } from "@/lib/snippet";
 
 @Component({
   selector: "app-home-page",
@@ -21,7 +22,8 @@ import { SITE } from "@/lib/site";
           Beautiful shaders, in Angular
         </h1>
         <p class="text-muted-foreground max-w-2xl text-lg sm:text-xl">
-          {{ site.name }} is a copy-paste WebGPU orb kit for Angular.
+          {{ site.name }} is a WebGPU orb kit for Angular, one
+          <code class="text-foreground">ng add</code> away.
           <br class="hidden sm:block" />
           GPU programs from
           <a
@@ -43,15 +45,13 @@ import { SITE } from "@/lib/site";
         <div
           class="bg-code text-code-foreground relative mt-4 w-full max-w-xl overflow-hidden rounded-lg text-left text-sm"
         >
-          <pre class="px-4 py-3.5 font-mono">
-            <code class="text-muted-foreground">
-              <span class="select-none">$ </span>npm i vgpu typegpu
-            </code>
-          </pre>
+          <pre
+            class="px-4 py-3.5 font-mono"
+          ><code class="text-muted-foreground"><span class="select-none">$ </span>{{ ngAdd }}</code></pre>
           <app-copy-button
             className="absolute top-2 right-2 size-7 px-0"
             label="Copy install command"
-            value="npm i vgpu typegpu"
+            [value]="ngAdd"
           >
             <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -93,7 +93,7 @@ import { SITE } from "@/lib/site";
     </section>
 
     <section class="container-wrapper pb-16">
-      <div class="container mx-auto grid max-w-4xl gap-4 sm:grid-cols-3">
+      <div class="container mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @for (item of originals; track item.title) {
           <div class="rounded-xl border p-4 text-left">
             <h2 class="font-medium">{{ item.title }}</h2>
@@ -106,7 +106,13 @@ import { SITE } from "@/lib/site";
 })
 export class HomePage {
   protected readonly site = SITE;
+  protected readonly ngAdd = ngAddCommand();
   protected readonly originals = [
+    {
+      title: "ng add",
+      description:
+        "ng add shaderng installs the runtime, wires the TypeGPU esbuild plugin and copies the orbs you pick. ng g shaderng:orb adds more.",
+    },
     {
       title: "Live audio",
       description:

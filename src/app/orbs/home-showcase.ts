@@ -3,7 +3,7 @@ import { Component, computed, signal } from "@angular/core";
 import { OrbPreview } from "@/app/orbs/orb-preview";
 import { CopyButton } from "@/app/ui/copy-button";
 import { ORB_CATALOG } from "@/lib/orb-catalog";
-import { orbInstallCommand } from "@/lib/snippet";
+import { ngGenerateOrbCommand } from "@/lib/snippet";
 import { cn } from "@/lib/utils";
 
 @Component({
@@ -100,5 +100,5 @@ export class HomeShowcase {
     );
   });
 
-  protected readonly installCommand = computed(() => orbInstallCommand(this.slug()));
+  protected readonly installCommand = computed(() => ngGenerateOrbCommand(this.slug()));
 }

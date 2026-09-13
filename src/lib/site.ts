@@ -6,6 +6,7 @@ export const SITE = {
   cloneHttps: "https://github.com/orcawhisperer/shaderng.git",
   cloneSsh: "git@github.com:orcawhisperer/shaderng.git",
   url: "https://shaderng.vercel.app",
+  npm: "https://www.npmjs.com/package/shaderng",
   original: "https://github.com/shadcn-labs/shadercn",
   originalName: "shadercn",
   xordev: "https://x.com/XorDev",
