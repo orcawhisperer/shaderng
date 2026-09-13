@@ -4,7 +4,12 @@ import { RouterLink } from "@angular/router";
 import { CloneOptions } from "@/app/ui/clone-options";
 import { CodeBlock } from "@/app/ui/code-block";
 import { SITE } from "@/lib/site";
-import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
+import {
+  ngAddCommand,
+  ngGenerateOrbCommand,
+  orbInstallCommand,
+  runtimeInstallCommands,
+} from "@/lib/snippet";
 
 @Component({
   selector: "app-installation-page",
@@ -65,46 +70,75 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">1. Install dependencies and the runtime</h2>
+        <h2 class="text-xl font-semibold">1. ng add</h2>
         <p class="text-muted-foreground">
-          Runtime packages, the build-time TypeGPU tooling, and the shared files every orb imports.
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">degit</code> downloads single files and
-          folders from GitHub without cloning the repository.
+          One command installs the runtime packages and the build-time TypeGPU tooling, copies the
+          shared runtime into <code class="bg-muted rounded px-1 py-0.5 text-sm">src/</code>,
+          switches the project to the custom esbuild builder with the plugin registered, adds the
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">@/*</code> path alias, and copies the
+          orbs you pick (<code class="bg-muted rounded px-1 py-0.5 text-sm">orb-01</code> by
+          default).
         </p>
-        <app-code-block [code]="installDeps" />
+        <app-code-block [code]="ngAdd" />
+        <p class="text-muted-foreground text-sm">
+          Files that already exist are left alone; pass
+          <code class="bg-muted rounded px-1 py-0.5">--force</code> to overwrite them. The schematic
+          refuses the webpack <code class="bg-muted rounded px-1 py-0.5">browser</code> builder,
+          since the TypeGPU transform only runs under esbuild.
+        </p>
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">2. Enable the TypeGPU esbuild plugin</h2>
+        <h2 class="text-xl font-semibold">2. Add orbs</h2>
+        <p class="text-muted-foreground">
+          Every component page shows this line with its own slug. Slugs, bare numbers, and
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">all</code> are accepted.
+        </p>
+        <app-code-block [code]="generateOrb" />
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold">3. Use it</h2>
+        <app-code-block [code]="usage" />
+        <p class="text-muted-foreground text-sm">
+          The WebGPU runtime adds roughly 500 kB to the initial bundle, above the 500 kB warning
+          budget a new project starts with (well under the 1 MB error). Raise the
+          <code class="bg-muted rounded px-1 py-0.5">initial</code> budget in
+          <code class="bg-muted rounded px-1 py-0.5">angular.json</code>, or load the orb behind a
+          dynamic <code class="bg-muted rounded px-1 py-0.5">import()</code> so it leaves the
+          initial chunk.
+        </p>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold">Without ng add</h2>
+        <p class="text-muted-foreground">
+          The same result by hand, for projects that cannot run schematics.
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">degit</code> downloads single files and
+          folders from GitHub without cloning the repository. Install the packages and fetch the
+          runtime files:
+        </p>
+        <app-code-block [code]="installDeps" />
         <p class="text-muted-foreground">
           GPU files use
           <code class="bg-muted rounded px-1 py-0.5 text-sm">"use gpu"</code> functions that must be
           transformed at build time. Point the Angular application builder at
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">tools/typegpu.esbuild.ts</code>.
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">tools/typegpu.esbuild.ts</code>:
         </p>
         <app-code-block [code]="esbuildPlugin" />
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-xl font-semibold">3. Add an orb</h2>
         <p class="text-muted-foreground">
-          One command per orb. The same command is on the home page and every component page, with
-          that orb's slug filled in. Add a path alias for
+          Add a path alias for
           <code class="bg-muted rounded px-1 py-0.5 text-sm">@/*</code> pointing at
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">src/*</code> in your
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">tsconfig.json</code>.
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">src/*</code> in
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">tsconfig.json</code>, then fetch one
+          folder per orb:
         </p>
-        <app-code-block [code]="installOrb" />
         <app-code-block [code]="pathAlias" />
+        <app-code-block [code]="installOrb" />
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">4. Use it</h2>
-        <app-code-block [code]="usage" />
-      </section>
-
-      <section class="space-y-3">
-        <h2 class="text-xl font-semibold">5. Live audio drive (shaderng original)</h2>
+        <h2 class="text-xl font-semibold">Live audio drive (shaderng original)</h2>
         <p class="text-muted-foreground">
           shadercn feeds voice levels as
           <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>. shaderng measures them
@@ -129,6 +163,13 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
 })
 export class InstallationPage {
   protected readonly site = SITE;
+  protected readonly ngAdd = `${ngAddCommand()}
+${ngAddCommand()} --orbs orb-01,orb-07   # pick orbs
+${ngAddCommand()} --orbs all             # all 33
+${ngAddCommand()} --orbs ""              # runtime only`;
+  protected readonly generateOrb = `${ngGenerateOrbCommand("orb-07")}
+${ngGenerateOrbCommand("12,13,14")}
+${ngGenerateOrbCommand("--list")}`;
   protected readonly installDeps = runtimeInstallCommands();
   protected readonly installOrb = orbInstallCommand("orb-01");
   protected readonly pathAlias = `"compilerOptions": {

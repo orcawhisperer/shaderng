@@ -1,4 +1,5 @@
 import type { OrbState, OrbVariant } from "@/components/orbs/renderer";
+import runtimeFiles from "@/lib/runtime-files.json";
 import { SITE } from "@/lib/site";
 
 export interface SnippetDraft {
@@ -68,18 +69,15 @@ export const formatControlValue = (value: number): string =>
 const repoSlug = (): string => new URL(SITE.github).pathname.replace(/^\/|\.git$|\/$/g, "");
 
 /** Files every orb depends on, relative to the repo root. */
-export const RUNTIME_PATHS = [
-  "src/components/orbs/renderer.ts",
-  "src/components/orbs/canvas.ts",
-  "src/components/orbs/orb-base.ts",
-  "src/components/orbs/shader-orb.ts",
-  "src/lib/audio-drive.ts",
-  "src/lib/mic-drive.ts",
-  "src/lib/reduced-motion.ts",
-  "src/lib/site.ts",
-  "src/lib/utils.ts",
-  "tools/typegpu.esbuild.ts",
-] as const;
+export const RUNTIME_PATHS: readonly string[] = [...runtimeFiles.source, ...runtimeFiles.tools];
+
+/** The npm package name published for `ng add`. */
+export const NG_ADD_PACKAGE = "shaderng";
+
+/** The schematic that copies a single orb after `ng add`, e.g. `ng g shaderng:orb orb-07`. */
+export const ngAddCommand = (): string => `ng add ${NG_ADD_PACKAGE}`;
+
+export const ngGenerateOrbCommand = (slug: string): string => `ng g ${NG_ADD_PACKAGE}:orb ${slug}`;
 
 /**
  * A runnable shell command that fetches one orb folder from GitHub with degit,
@@ -91,7 +89,7 @@ export const orbInstallCommand = (slug: string): string =>
 /** The one-time commands that fetch the shared runtime files. */
 export const runtimeInstallCommands = (): string =>
   [
-    "npm i vgpu typegpu",
-    "npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild",
+    `npm i ${runtimeFiles.dependencies.join(" ")}`,
+    `npm i -D ${runtimeFiles.devDependencies.join(" ")}`,
     ...RUNTIME_PATHS.map((path) => `npx degit ${repoSlug()}/${path} ${path}`),
   ].join("\n");
