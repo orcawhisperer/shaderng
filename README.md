@@ -111,16 +111,29 @@ npx vercel --prod
    npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild
    ```
 
-2. Copy `src/components/orbs` into your app and add the `@/*` path alias.
+2. Fetch the shared runtime and one orb (the [installation page](https://shaderng.vercel.app/docs/installation) has the full, copyable list, and every component page has its own `degit` line):
+
+   ```bash
+   npx degit orcawhisperer/shaderng/src/components/orbs/orb-01 src/components/orbs/orb-01
+   ```
+
+   Add the `@/*` → `src/*` path alias to `tsconfig.json`.
 
 3. Register the TypeGPU esbuild plugin (see `tools/typegpu.esbuild.ts` and `angular.json`). GPU files use `"use gpu"` functions that must be transformed at build time.
 
 Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state presets), and an Angular wrapper. Shared runtime files:
 
-- `renderer.ts` — WebGPU scene, springs, and frame loop (from shadercn)
-- `shader-orb.ts` — canvas host, listen, reduced-motion
+- `renderer.ts` — WebGPU scene, springs, and the shared device + frame loop (shaderng-maintained fork of shadercn's)
+- `shader-orb.ts` — canvas host, `[audio]`, reduced-motion, `shaderOrbFallback`
 - `canvas.ts` — public types
 - `orb-base.ts` — shared inputs
+- `src/lib/audio-drive.ts` — volume measurement for any audio source
+
+## Syncing with shadercn
+
+`npm run generate:orbs` regenerates `gpu.ts`, `meta.ts`, the wrappers and the catalog from a shadercn checkout (`SHADERCN_DIR`, default `/tmp/shadercn`). `renderer.ts` is not regenerated: it carries the shared-device work and is diffed against upstream by hand.
+
+The **Sync shadercn upstream** workflow runs weekly (and on demand) and opens a PR on the `sync/shadercn` branch when anything changed. It needs _Settings → Actions → General → Allow GitHub Actions to create and approve pull requests_ enabled once.
 
 ## Scripts
 
@@ -132,7 +145,7 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 | `npm run format` / `format:check` | Prettier (upstream `gpu.ts` / `meta.ts` are ignored) |
 | `npm run build`                   | Production build                                     |
 | `npm run build:pages`             | GitHub Pages build                                   |
-| `npm run generate:orbs`           | Regenerate Angular wrappers from shadercn sources    |
+| `npm run generate:orbs`           | Regenerate orbs from `$SHADERCN_DIR` (see above)     |
 
 ## License
 
