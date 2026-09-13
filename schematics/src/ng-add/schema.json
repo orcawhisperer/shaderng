@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "shaderng-ng-add",
+  "title": "Add shaderng to an Angular application",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "The application project to install into. Defaults to the first application in angular.json.",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "orbs": {
+      "type": "string",
+      "description": "Comma-separated orb slugs to copy right away (orb-01 … orb-33), \"all\", or empty for none.",
+      "default": "orb-01",
+      "x-prompt": "Which orbs should be copied now? (comma-separated slugs like orb-01,orb-07, \"all\", or leave empty)"
+    },
+    "force": {
+      "type": "boolean",
+      "description": "Overwrite runtime files and orbs that already exist in the project.",
+      "default": false
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "description": "Add the dependencies to package.json without running the package manager.",
+      "default": false
+    }
+  },
+  "required": []
+}

@@ -38,6 +38,12 @@ import { SITE } from "@/lib/site";
           <li>
             Instant fallback where WebGPU is missing, shareable playground links, per-route titles
           </li>
+          <li>
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">ng add shaderng</code> installs the
+            runtime, wires the TypeGPU esbuild plugin and copies orbs;
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">ng g shaderng:orb</code> adds more.
+            The orb layout no longer depends on Tailwind.
+          </li>
           <li>Gallery, playground, credits, and docs site</li>
         </ul>
         <p class="text-muted-foreground">

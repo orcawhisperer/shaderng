@@ -1,0 +1,51 @@
+{
+  "name": "shaderng",
+  "version": "0.1.0",
+  "description": "ng add shaderng: GPU shader orbs for Angular 22, copied into your project. Unofficial Angular port of shadercn.",
+  "license": "MIT",
+  "homepage": "https://shaderng.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/orcawhisperer/shaderng.git",
+    "directory": "schematics"
+  },
+  "bugs": "https://github.com/orcawhisperer/shaderng/issues",
+  "keywords": [
+    "angular",
+    "schematics",
+    "ng-add",
+    "webgpu",
+    "shader",
+    "typegpu",
+    "vgpu",
+    "shadercn",
+    "orb"
+  ],
+  "schematics": "./collection.json",
+  "ng-add": {
+    "save": "devDependencies"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "files": [
+    "collection.json",
+    "versions.json",
+    "ng-add/",
+    "orb/",
+    "shared/",
+    "files/",
+    "README.md",
+    "LICENSE",
+    "!**/*.spec.js"
+  ],
+  "peerDependencies": {
+    "@angular/core": "^22.0.0"
+  },
+  "dependencies": {
+    "@angular-devkit/core": "^22.0.0",
+    "@angular-devkit/schematics": "^22.0.0",
+    "@schematics/angular": "^22.0.0",
+    "jsonc-parser": "^3.3.1"
+  }
+}

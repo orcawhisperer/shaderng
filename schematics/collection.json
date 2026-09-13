@@ -1,0 +1,17 @@
+{
+  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "ng-add": {
+      "description": "Install the shaderng runtime, wire the TypeGPU esbuild plugin, and copy the first orbs.",
+      "factory": "./ng-add/index#ngAdd",
+      "schema": "./ng-add/schema.json",
+      "private": true
+    },
+    "orb": {
+      "description": "Copy one or more shader orbs into the project.",
+      "factory": "./orb/index#orb",
+      "schema": "./orb/schema.json",
+      "aliases": ["orbs"]
+    }
+  }
+}

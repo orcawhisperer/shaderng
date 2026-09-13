@@ -104,22 +104,17 @@ npx vercel --prod
 
 ## Add the components to another project
 
-1. Install the GPU runtime:
+```bash
+ng add shaderng                        # runtime + orb-01
+ng add shaderng --orbs orb-01,orb-07   # pick orbs; "all" for all 33; "" for runtime only
+ng g shaderng:orb 12                   # add more later; --list prints them
+```
 
-   ```bash
-   npm i vgpu typegpu
-   npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild
-   ```
+`ng add` installs `vgpu`, `typegpu` and the build-time TypeGPU tooling, copies the runtime into `src/components/orbs`, `src/lib` and `tools/typegpu.esbuild.ts`, switches the project to `@angular-builders/custom-esbuild` with the plugin registered, adds the `@/*` path alias, and copies the orbs you name. Existing files are kept unless you pass `--force`. It needs the esbuild application builder (the default since Angular 17).
 
-2. Fetch the shared runtime and one orb (the [installation page](https://shaderng.vercel.app/docs/installation) has the full, copyable list, and every component page has its own `degit` line):
+The package lives in [`schematics/`](schematics) and is built into `dist/schematics` by `npm run build:schematics` from the same source files this site ships, so an upstream sync flows into the next publish. `npm run pack:schematics` produces a tarball you can `ng add ./dist/shaderng-0.1.0.tgz` locally.
 
-   ```bash
-   npx degit orcawhisperer/shaderng/src/components/orbs/orb-01 src/components/orbs/orb-01
-   ```
-
-   Add the `@/*` → `src/*` path alias to `tsconfig.json`.
-
-3. Register the TypeGPU esbuild plugin (see `tools/typegpu.esbuild.ts` and `angular.json`). GPU files use `"use gpu"` functions that must be transformed at build time.
+Without `ng add`, the [installation page](https://shaderng.vercel.app/docs/installation) has the equivalent manual steps: install the packages, `degit` the runtime files and one folder per orb, register `tools/typegpu.esbuild.ts` in `angular.json`, and add the `@/*` → `src/*` alias. GPU files use `"use gpu"` functions that must be transformed at build time.
 
 Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state presets), and an Angular wrapper. Shared runtime files:
 
@@ -145,6 +140,9 @@ The **Sync shadercn upstream** workflow runs weekly (and on demand) and opens a 
 | `npm run format` / `format:check` | Prettier (upstream `gpu.ts` / `meta.ts` are ignored) |
 | `npm run build`                   | Production build                                     |
 | `npm run build:pages`             | GitHub Pages build                                   |
+| `npm run build:schematics`        | Build the `ng add` package into `dist/schematics`    |
+| `npm run test:schematics`         | Run the schematic tests against the built package    |
+| `npm run pack:schematics`         | Build and `npm pack` the package into `dist/`        |
 | `npm run generate:orbs`           | Regenerate orbs from `$SHADERCN_DIR` (see above)     |
 
 ## License

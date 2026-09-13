@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "shaderng-orb",
+  "title": "Copy shader orbs into the project",
+  "type": "object",
+  "properties": {
+    "orbs": {
+      "type": "string",
+      "description": "Comma-separated orb slugs (orb-01 … orb-33, or just the number), or \"all\".",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      }
+    },
+    "project": {
+      "type": "string",
+      "description": "The application project to copy into. Defaults to the first application in angular.json.",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "force": {
+      "type": "boolean",
+      "description": "Overwrite orbs that already exist in the project.",
+      "default": false
+    },
+    "list": {
+      "type": "boolean",
+      "description": "Print the available orbs and exit without copying anything.",
+      "default": false
+    }
+  },
+  "required": []
+}
