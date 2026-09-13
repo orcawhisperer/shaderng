@@ -39,7 +39,7 @@ shadercn feeds voice levels through `volumes`. shaderng measures them from live 
 
 `[audio]` accepts `"microphone" | MediaStream | AudioNode | HTMLMediaElement`; `[listen]` is shorthand for the microphone. Sources you pass in are never stopped or closed by the orb.
 
-Also original here: five **fields** (aurora, flow, grid, waves, caustics) drawn for rectangles and MIT-licensed, `<shader-background>` (any orb or field as a full-bleed page or hero background), `[preset]` looks saved straight from the playground, an eased `mouse` uniform from the window pointer, one shared WebGPU device and frame loop for every mounted shader, the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
+Also original here: eight **fields** (cyber, nebula, warp, aurora, flow, grid, waves, caustics) drawn for rectangles and MIT-licensed, `<shader-background>` (any orb or field as a full-bleed page or hero background), `[preset]` looks saved straight from the playground, an eased `mouse` uniform from the window pointer, one shared WebGPU device and frame loop for every mounted shader, the TypeGPU esbuild intercept Angular needs, dual-mode light/dark theme color adaptation, and `prefers-reduced-motion` pause.
 
 ```html
 <section class="relative h-80">
@@ -59,7 +59,8 @@ Also original here: five **fields** (aurora, flow, grid, waves, caustics) drawn 
 ## Features
 
 - **33 orb shaders** — the full shadercn set, from Dispersion to Abyss
-- **5 field shaders** — original MIT backgrounds drawn for rectangles, not spheres
+- **8 field shaders** — original MIT backgrounds drawn for rectangles, not spheres
+- **Adaptive themes** — dual-mode light and dark color palettes across all fields and orbs
 - **Angular 22** — standalone components, signal inputs, zoneless change detection
 - **WebGPU** — the original `renderer.ts` scene loop, wrapped as `<shader-orb>`
 - **Typed inputs** — `state`, `size`, `params`, `colors`, `preset`, `audio` / `listen`, volumes, DPR and `maxFps`

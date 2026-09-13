@@ -39,6 +39,13 @@ import { SITE } from "@/lib/site";
             Instant fallback where WebGPU is missing, shareable playground links, per-route titles
           </li>
           <li>
+            0.4.0: three new MIT
+            <a routerLink="/docs/fields" class="underline underline-offset-4">fields</a>
+            (cyber 3D, cosmic nebula, hyperspace warp); dual-mode light/dark theme support across all
+            8 fields and 33 orbs with automatic color adaptation; centered interactive hero background
+            selector with Aurora default; full playground integration
+          </li>
+          <li>
             0.3.0: five original MIT
             <a routerLink="/docs/fields" class="underline underline-offset-4">fields</a>
             (aurora, flow, grid, waves, caustics) drawn for rectangles, not spheres;
