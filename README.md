@@ -70,6 +70,16 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 - `canvas.ts` — public types
 - `orb-base.ts` — shared inputs
 
+## Deploy on Vercel
+
+Vercel serves the Angular production build from `dist/shadercn-angular/browser`. Client-side routes (`/docs`, `/playground`, …) rewrite to `index.html`.
+
+```bash
+npx vercel --prod
+```
+
+Or import the Git repo in the [Vercel dashboard](https://vercel.com/new). Requires Node.js 22.22.3+. WebGPU still needs Chrome or Edge 113+.
+
 ## Scripts
 
 | Command | Description |
