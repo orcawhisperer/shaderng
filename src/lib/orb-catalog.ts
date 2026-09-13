@@ -36,7 +36,8 @@ export const ORB_SLUGS = [
 
 export type OrbSlug = (typeof ORB_SLUGS)[number];
 
-export const ORB_STATE_VALUES = ["idle", "thinking", "speaking"] as const;
+export const isOrbSlug = (value: unknown): value is OrbSlug =>
+  typeof value === "string" && (ORB_SLUGS as readonly string[]).includes(value);
 
 export interface OrbCatalogItem {
   slug: OrbSlug;
@@ -59,7 +60,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-02"
   },
   {
-    "description": "",
+    "description": "a turbulent belt of light girdling the ball, contoured in rainbow",
     "name": "Ecliptic",
     "slug": "orb-03",
     "title": "ORB-03"
@@ -77,13 +78,13 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-05"
   },
   {
-    "description": "",
+    "description": "a hundred glowing lattices stacked through the ball, interfering",
     "name": "Moiré",
     "slug": "orb-06",
     "title": "ORB-06"
   },
   {
-    "description": "",
+    "description": "a twist wave travelling out through the ball around a lit column",
     "name": "Torsion",
     "slug": "orb-07",
     "title": "ORB-07"
@@ -113,7 +114,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-11"
   },
   {
-    "description": "",
+    "description": "a ball of glossy toy bricks, studs up — it rebuilds itself while it thinks",
     "name": "Nebula",
     "slug": "orb-12",
     "title": "ORB-12"
@@ -137,7 +138,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-15"
   },
   {
-    "description": "",
+    "description": "sunlight through water — a caustic net crawling over the ball, fringing into colour where it moves",
     "name": "Caustic",
     "slug": "orb-16",
     "title": "ORB-16"
@@ -155,7 +156,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-18"
   },
   {
-    "description": "",
+    "description": "beads swelling and shrinking in their cells, packed over the ball",
     "name": "Plasma",
     "slug": "orb-19",
     "title": "ORB-19"
@@ -185,7 +186,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-23"
   },
   {
-    "description": "",
+    "description": "a Minecraft Earth — a perfect voxel sphere whose seasons cycle it through lush, cherry-grove, ice, mesa and desert worlds",
     "name": "Voxel",
     "slug": "orb-24",
     "title": "ORB-24"
@@ -203,7 +204,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-26"
   },
   {
-    "description": "",
+    "description": "a weather-radar mosaic, fronts of coloured pixels sweeping the ball",
     "name": "Constellation",
     "slug": "orb-27",
     "title": "ORB-27"
@@ -215,7 +216,7 @@ export const ORB_CATALOG: OrbCatalogItem[] = [
     "title": "ORB-28"
   },
   {
-    "description": "",
+    "description": "an LED tile wall lighting up in flowing blobs, wrapped on the ball",
     "name": "Mosaic",
     "slug": "orb-29",
     "title": "ORB-29"

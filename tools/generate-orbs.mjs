@@ -65,8 +65,12 @@ for (const slug of slugs) {
   meta = meta.replace('files: ["index.tsx", "meta.ts", "gpu.ts"]', `files: ["${slug}.ts", "meta.ts", "gpu.ts"]`);
   writeFileSync(join(dest, "meta.ts"), meta);
 
-  const title = meta.match(/title: "([^"]+)"/)?.[1] ?? slug.toUpperCase();
-  const description = meta.match(/description: "([^"]+)"/)?.[1] ?? "";
+  const title = meta.match(/title:\s*"([^"]+)"/)?.[1] ?? slug.toUpperCase();
+  // Prettier wraps long values onto the next line, so allow whitespace after the colon.
+  const description = meta.match(/description:\s*"([^"]+)"/)?.[1] ?? "";
+  if (!description) {
+    console.warn(`${slug}: no description found in meta.ts`);
+  }
 
   writeFileSync(
     join(dest, `${slug}.ts`),
@@ -118,7 +122,8 @@ writeFileSync(
 
 export type OrbSlug = (typeof ORB_SLUGS)[number];
 
-export const ORB_STATE_VALUES = ["idle", "thinking", "speaking"] as const;
+export const isOrbSlug = (value: unknown): value is OrbSlug =>
+  typeof value === "string" && (ORB_SLUGS as readonly string[]).includes(value);
 
 export interface OrbCatalogItem {
   slug: OrbSlug;
@@ -141,7 +146,7 @@ writeFileSync(
 
 import type { OrbBase } from "@/components/orbs/orb-base";
 import type { OrbVariant } from "@/components/orbs/renderer";
-import type { OrbSlug } from "@/lib/orb-catalog";
+import { isOrbSlug, type OrbSlug } from "@/lib/orb-catalog";
 
 export interface OrbEntry {
   Component: Type<OrbBase>;
@@ -153,11 +158,10 @@ ${loaderLines.join("\n")}
 };
 
 export const loadOrb = (slug: string): Promise<OrbEntry> => {
-  const loader = ORB_LOADERS[slug as OrbSlug];
-  if (!loader) {
-    return ORB_LOADERS["orb-01"]();
+  if (!isOrbSlug(slug)) {
+    return Promise.reject(new Error(\`Unknown orb "\${slug}"\`));
   }
-  return loader();
+  return ORB_LOADERS[slug]();
 };
 `,
 );

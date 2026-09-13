@@ -6,7 +6,7 @@ import { map } from "rxjs";
 import { OrbPreview } from "@/app/orbs/orb-preview";
 import { CodeBlock } from "@/app/ui/code-block";
 import type { OrbVariant } from "@/components/orbs/renderer";
-import { ORB_CATALOG_MAP, ORB_SLUGS, type OrbSlug } from "@/lib/orb-catalog";
+import { ORB_CATALOG_MAP, isOrbSlug } from "@/lib/orb-catalog";
 import { loadOrb } from "@/lib/orb-loaders";
 
 @Component({
@@ -109,7 +109,7 @@ export class OrbDocsPage {
 
   protected readonly item = computed(() => {
     const slug = this.slug();
-    return ORB_SLUGS.includes(slug as OrbSlug) ? ORB_CATALOG_MAP[slug as OrbSlug] : null;
+    return isOrbSlug(slug) ? ORB_CATALOG_MAP[slug] : null;
   });
 
   protected readonly className = computed(() => `Orb${(this.item()?.slug ?? "orb-01").slice(-2)}`);
@@ -143,6 +143,9 @@ export class Example {}`;
       const slug = this.slug();
       let cancelled = false;
       this.variant.set(null);
+      if (!isOrbSlug(slug)) {
+        return;
+      }
       void loadOrb(slug)
         .then((entry) => {
           if (!cancelled) {

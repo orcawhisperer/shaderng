@@ -1,4 +1,5 @@
-import { ORB_CATALOG, ORB_SLUGS } from "./orb-catalog";
+import { ORB_CATALOG, ORB_SLUGS, isOrbSlug } from "./orb-catalog";
+import { loadOrb } from "./orb-loaders";
 import { buildAngularSnippet, type SnippetDraft } from "./snippet";
 import { cn } from "./utils";
 
@@ -11,6 +12,21 @@ describe("orb catalog", () => {
   it("keeps sequential slugs", () => {
     expect(ORB_SLUGS[0]).toBe("orb-01");
     expect(ORB_SLUGS[32]).toBe("orb-33");
+  });
+
+  it("describes every orb", () => {
+    const blank = ORB_CATALOG.filter((item) => !item.description.trim());
+    expect(blank.map((item) => item.slug)).toEqual([]);
+  });
+
+  it("narrows slugs", () => {
+    expect(isOrbSlug("orb-07")).toBe(true);
+    expect(isOrbSlug("orb-99")).toBe(false);
+    expect(isOrbSlug(undefined)).toBe(false);
+  });
+
+  it("rejects unknown orbs instead of falling back", async () => {
+    await expect(loadOrb("orb-99")).rejects.toThrow('Unknown orb "orb-99"');
   });
 });
 
