@@ -17,12 +17,28 @@ export interface Lockfile {
   /** Version of the shaderng package that last wrote files. */
   version: string;
   sourceRoot: string;
-  /** Project path -> sha256 of the content shaderng wrote there. */
+  /** Project path -> {@link fingerprint} of the content shaderng wrote there. */
   files: Record<string, string>;
 }
 
 export const sha256 = (content: string | Buffer): string =>
   createHash("sha256").update(content).digest("hex");
+
+/**
+ * Formatting-insensitive view of a source file. The Angular CLI runs Prettier over every file
+ * a schematic writes when the workspace has Prettier, so the bytes on disk differ from the
+ * bytes shaderng wrote in quotes, wrapping, semicolons and trailing commas. Those are all
+ * dropped here; what remains still changes whenever the code itself does.
+ */
+export const normalizeFormatting = (content: string | Buffer): string =>
+  content
+    .toString("utf8")
+    .replace(/'/g, '"')
+    .replace(/[\s;,]/g, "");
+
+/** sha256 of {@link normalizeFormatting}: the hash stored in the lockfile and known-hash table. */
+export const fingerprint = (content: string | Buffer): string =>
+  sha256(normalizeFormatting(content));
 
 export const packageVersion = (): string =>
   (JSON.parse(readFileSync(join(PACKAGE_ROOT, "package.json"), "utf8")) as { version: string })
@@ -71,7 +87,7 @@ export const recordFiles = (tree: Tree, lock: Lockfile, paths: readonly string[]
   for (const path of paths) {
     const buffer = tree.read(path);
     if (buffer) {
-      lock.files[path] = sha256(buffer);
+      lock.files[path] = fingerprint(buffer);
     }
   }
 };

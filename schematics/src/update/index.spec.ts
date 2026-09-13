@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import type { Tree } from "@angular-devkit/schematics";
 import { SchematicTestRunner } from "@angular-devkit/schematics/testing";
 
-import { readLockfile, sha256, type Lockfile } from "../shared/lockfile";
+import { fingerprint, readLockfile, type Lockfile } from "../shared/lockfile";
 import { resolveProject } from "../shared/workspace";
 import { freshAppTree, readJson, runner } from "../testing/workspace";
 import { KNOWN_HASHES, refreshFiles } from "./index";
@@ -32,8 +32,8 @@ describe("shaderng.json lockfile", () => {
     const lock = readJson<Lockfile>(tree, "shaderng.json");
     assert.match(lock.version, /^\d+\.\d+\.\d+/);
     assert.equal(lock.sourceRoot, "src");
-    assert.equal(lock.files[RENDERER], sha256(tree.readText(RENDERER)));
-    assert.equal(lock.files[PLUGIN], sha256(tree.readText(PLUGIN)));
+    assert.equal(lock.files[RENDERER], fingerprint(tree.readText(RENDERER)));
+    assert.equal(lock.files[PLUGIN], fingerprint(tree.readText(PLUGIN)));
     assert.ok(lock.files["src/components/orbs/orb-01/gpu.ts"]);
     assert.ok(!lock.files["src/components/orbs/orb-02/gpu.ts"]);
   });
@@ -70,7 +70,7 @@ describe("ng g shaderng:update", () => {
     // An older shaderng wrote this renderer: the lockfile knows its hash.
     tree.overwrite(RENDERER, "// stale renderer\n");
     const lock = readJson<Lockfile>(tree, "shaderng.json");
-    lock.files[RENDERER] = sha256("// stale renderer\n");
+    lock.files[RENDERER] = fingerprint("// stale renderer\n");
     tree.overwrite("shaderng.json", JSON.stringify(lock));
     // The project edited its own copy of shader-orb.
     tree.overwrite("src/components/orbs/shader-orb.ts", "// edited by the app\n");
@@ -84,8 +84,8 @@ describe("ng g shaderng:update", () => {
     assert.ok(messages.some((message) => /1 updated, 1 added/.test(message)));
     assert.ok(messages.some((message) => message.includes("! src/components/orbs/shader-orb.ts")));
     const after = readLockfile(result, await resolveProject(result))!;
-    assert.equal(after.files[RENDERER], sha256(result.readText(RENDERER)));
-    assert.equal(after.files[BACKGROUND], sha256(result.readText(BACKGROUND)));
+    assert.equal(after.files[RENDERER], fingerprint(result.readText(RENDERER)));
+    assert.equal(after.files[BACKGROUND], fingerprint(result.readText(BACKGROUND)));
   });
 
   it("takes edited files too with --force", async () => {
@@ -99,7 +99,7 @@ describe("ng g shaderng:update", () => {
     const { testRunner, tree } = await installed("orb-01");
     tree.overwrite("src/components/orbs/orb-01/meta.ts", "// stale meta\n");
     const lock = readJson<Lockfile>(tree, "shaderng.json");
-    lock.files["src/components/orbs/orb-01/meta.ts"] = sha256("// stale meta\n");
+    lock.files["src/components/orbs/orb-01/meta.ts"] = fingerprint("// stale meta\n");
     tree.overwrite("shaderng.json", JSON.stringify(lock));
     const messages = logged(testRunner);
     const result = await testRunner.runSchematic("update", {}, tree);
@@ -136,8 +136,8 @@ describe("refreshFiles without a lockfile", () => {
     const oldPlugin = 'const SOURCE_ROOT = "src";\n// plugin as published\n';
     const known = {
       "0.1.0": {
-        "runtime/src/components/orbs/renderer.ts": sha256(oldRenderer),
-        "runtime/tools/typegpu.esbuild.ts": sha256(oldPlugin),
+        "runtime/src/components/orbs/renderer.ts": fingerprint(oldRenderer),
+        "runtime/tools/typegpu.esbuild.ts": fingerprint(oldPlugin),
       },
     };
     custom.overwrite("app/src/components/orbs/renderer.ts", oldRenderer);

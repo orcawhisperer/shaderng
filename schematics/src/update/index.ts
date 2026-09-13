@@ -10,11 +10,11 @@ import {
 } from "@schematics/angular/utility";
 
 import {
+  fingerprint,
   lockfileFor,
   normalizeForHash,
   packageVersion,
   projectPathFor,
-  sha256,
   writeLockfile,
   type Lockfile,
 } from "../shared/lockfile";
@@ -35,12 +35,12 @@ import type { UpdateOptions } from "./schema";
 
 const RUNTIME_MARKER = "components/orbs/shader-orb.ts";
 
-/** sha256 of every `files/` path as published, per version, for installs made before the lockfile. */
+/** Fingerprint of every `files/` path as published, per version, for installs made before the lockfile. */
 export type KnownHashes = Record<string, Record<string, string>>;
 export const KNOWN_HASHES: KnownHashes = knownHashes;
 
 const isKnownVersion = (known: KnownHashes, packagePath: string, content: string): boolean => {
-  const hash = sha256(content);
+  const hash = fingerprint(content);
   return Object.values(known).some((files) => files[packagePath] === hash);
 };
 
@@ -84,7 +84,7 @@ export const refreshFiles = (
   for (const packagePath of packageFiles(tree, resolved)) {
     const target = projectPathFor(resolved, packagePath);
     const next = transform(target, readFileSync(join(FILES_ROOT, packagePath), "utf8"));
-    const nextHash = sha256(next);
+    const nextHash = fingerprint(next);
     const current = tree.read(target);
 
     if (!current) {
@@ -94,7 +94,7 @@ export const refreshFiles = (
       continue;
     }
     const currentText = current.toString("utf8");
-    const currentHash = sha256(currentText);
+    const currentHash = fingerprint(currentText);
     if (currentHash === nextHash) {
       report.unchanged.push(target);
       lock.files[target] = nextHash;
@@ -151,7 +151,7 @@ const report = (context: SchematicContext, resolved: ResolvedProject, result: Up
       ].join("\n"),
     );
   }
-  if (result.updated.some((path) => path.includes("/components/orbs/orb-"))) {
+  if (result.updated.some((path) => /\/components\/orbs\/orb-\d{2}\//.test(path))) {
     context.logger.warn(LICENSE_NOTICE);
   }
 };
