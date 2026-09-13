@@ -1,4 +1,4 @@
-import { Directive, input } from "@angular/core";
+import { contentChild, Directive, input } from "@angular/core";
 
 import type {
   OrbColorValues,
@@ -6,6 +6,8 @@ import type {
   OrbState,
   OrbVariant,
 } from "@/components/orbs/renderer";
+import { ShaderOrbFallback } from "@/components/orbs/shader-orb";
+import type { OrbAudioSource } from "@/lib/audio-drive";
 
 @Directive()
 export abstract class OrbBase {
@@ -25,6 +27,7 @@ export abstract class OrbBase {
     Partial<Record<OrbState, { input?: number; output?: number }>> | undefined
   >(undefined);
   readonly volumes = input<{ input?: number; output?: number } | undefined>(undefined);
+  readonly audio = input<OrbAudioSource | undefined>(undefined);
   readonly listen = input(false);
   readonly paused = input(false);
   readonly pauseOffscreen = input(true);
@@ -33,6 +36,9 @@ export abstract class OrbBase {
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
+
+  /** `<ng-template shaderOrbFallback>` placed inside the orb tag; forwarded to `<shader-orb>`. */
+  readonly fallbackTemplate = contentChild(ShaderOrbFallback);
 }
 
 export const ORB_TEMPLATE = `
@@ -46,6 +52,7 @@ export const ORB_TEMPLATE = `
   [stateColors]="stateColors()"
   [stateVolumes]="stateVolumes()"
   [volumes]="volumes()"
+  [audio]="audio()"
   [listen]="listen()"
   [paused]="paused()"
   [pauseOffscreen]="pauseOffscreen()"
@@ -54,5 +61,6 @@ export const ORB_TEMPLATE = `
   [className]="className()"
   [style]="style()"
   [ariaLabel]="ariaLabel()"
+  [fallback]="fallbackTemplate()?.template"
 />
 `;
