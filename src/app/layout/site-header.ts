@@ -70,11 +70,11 @@ const NAV = [
             </a>
             <a
               class="text-muted-foreground hover:text-foreground rounded-md px-3 py-1.5 text-sm"
-              [href]="github"
+              [href]="source"
               rel="noreferrer"
               target="_blank"
             >
-              GitHub
+              Source
             </a>
             <button
               class="hover:bg-muted size-8 rounded-md"
@@ -129,7 +129,7 @@ export class SiteHeader {
   protected readonly nav = NAV;
   protected readonly theme = inject(ThemeService);
   protected readonly menuOpen = signal(false);
-  protected readonly github = SITE.github;
+  protected readonly source = SITE.source;
 
   constructor() {
     inject(Router)

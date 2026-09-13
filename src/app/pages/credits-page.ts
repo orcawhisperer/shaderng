@@ -50,7 +50,7 @@ import { SITE } from "@/lib/site";
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">Angular</h2>
         <p class="text-muted-foreground">
-          The component wrappers, docs, playground, and GitHub Pages site are built with
+          The component wrappers, docs, and playground are built with
           <a class="text-foreground underline underline-offset-4" [href]="site.angular" rel="noreferrer" target="_blank">Angular</a>
           22 (standalone components, signal inputs, zoneless change detection).
         </p>

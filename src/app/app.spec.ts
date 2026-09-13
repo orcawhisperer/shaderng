@@ -33,4 +33,16 @@ describe("App", () => {
     );
     expect(ngBadge).toBeUndefined();
   });
+
+  it("should link Source to the Origin repo, not GitHub", async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const source = Array.from(compiled.querySelectorAll("header a")).find(
+      (el) => el.textContent?.trim() === "Source",
+    ) as HTMLAnchorElement | undefined;
+    expect(source).toBeTruthy();
+    expect(source?.getAttribute("href")).toContain("cursor.com/codebase/");
+    expect(compiled.querySelector("header")?.textContent).not.toContain("GitHub");
+  });
 });

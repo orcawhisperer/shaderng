@@ -11,7 +11,7 @@ The name is **shaderng** (`shader` + Angular’s `ng`), not `shadercn-ng` or `sh
 3. **vgpu** and **TypeGPU** — the GPU runtime.
 4. **Angular** — this port’s component model.
 
-See [CREDITS.md](CREDITS.md) and the in-app [Credits](https://orcawhisperer.github.io/shaderng/docs/credits) page (URL depends on the GitHub repo name).
+See [CREDITS.md](CREDITS.md) and the in-app [Credits](https://shaderng.vercel.app/docs/credits) page. Source lives on [Cursor Origin](https://cursor.com/codebase/orcawhisperer/shadercn-angular), not GitHub.
 
 ## Original to shaderng
 
@@ -43,7 +43,6 @@ Requires **Node.js 22.22.3+**. Open `http://localhost:4200`. Chrome or Edge 113+
 ```bash
 npm test
 npm run build
-npm run build:pages   # GitHub Pages output + 404.html fallback
 ```
 
 ## Use an orb in your Angular app
@@ -70,21 +69,9 @@ Drive states (`idle`, `thinking`, `speaking`) ease the shader uniforms. Override
 />
 ```
 
-## GitHub Pages
+## Deploy
 
-1. Rename the GitHub repository to **`shaderng`** if you want `https://<user>.github.io/shaderng/`.
-2. Settings → Pages → Source: **GitHub Actions**.
-3. Merge to `main` (or run the **GitHub Pages** workflow). The action sets `<base href>` from the repo name and copies `index.html` to `404.html` so Angular routes work.
-
-Local Pages build:
-
-```bash
-BASE_HREF=/shaderng/ npm run build:pages
-```
-
-## Deploy on Vercel
-
-Vercel serves the Angular production build from `dist/shadercn-angular/browser`. Client-side routes rewrite to `index.html`.
+The live site is **[shaderng.vercel.app](https://shaderng.vercel.app)**. Vercel serves the Angular production build from `dist/shadercn-angular/browser`. Client-side routes rewrite to `index.html`.
 
 ```bash
 npx vercel --prod
@@ -117,7 +104,7 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 | `npm start` | Dev server on port 4200 |
 | `npm test` | Unit tests (Vitest) |
 | `npm run build` | Production build |
-| `npm run build:pages` | GitHub Pages build |
+| `npm run build:pages` | SPA build with `404.html` fallback (optional) |
 | `npm run generate:orbs` | Regenerate Angular wrappers from shadercn sources |
 
 ## License
