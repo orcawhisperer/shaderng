@@ -59,7 +59,7 @@ const NAV = [
               }
             </button>
             <a
-              class="text-muted-foreground hover:text-foreground hidden rounded-md px-3 py-1.5 text-sm sm:inline"
+              class="text-muted-foreground hover:text-foreground rounded-md px-3 py-1.5 text-sm"
               href="https://github.com/shadcn-labs/shadercn"
               rel="noreferrer"
               target="_blank"
