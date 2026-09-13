@@ -35,6 +35,21 @@ export const FIELD_LOADERS: Record<FieldSlug, () => Promise<FieldEntry>> = {
       Component: m.FieldCaustics,
       variant: m.causticsField,
     })),
+  cyber: () =>
+    import("@/components/fields/cyber").then((m) => ({
+      Component: m.FieldCyber,
+      variant: m.cyberField,
+    })),
+  nebula: () =>
+    import("@/components/fields/nebula").then((m) => ({
+      Component: m.FieldNebula,
+      variant: m.nebulaField,
+    })),
+  warp: () =>
+    import("@/components/fields/warp").then((m) => ({
+      Component: m.FieldWarp,
+      variant: m.warpField,
+    })),
 };
 
 export const loadField = (slug: string): Promise<FieldEntry> => {

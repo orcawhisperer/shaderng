@@ -76,9 +76,16 @@ const causticsFragment = tgpu
     const water = u.c_water.mul(0.35 + 0.35 * depth);
     const col = water.add(u.c_light.mul(bright * loud));
 
+    const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
+    const darkBase = u.c_base.mul(u.p_fill).mul(1 - bright);
+    const darkCol = darkBase.add(col);
+
+    const waterBlend = std.mix(u.c_base, u.c_water, depth * 0.45);
+    const lightCol = std.mix(waterBlend, u.c_light, std.clamp(bright * loud * 0.7, 0, 1));
+    const finalCol = std.mix(darkCol, lightCol, isLight);
+
     const alpha = std.clamp(std.max(bright * loud, 0.25) + u.p_fill, 0, 1);
-    const base = u.c_base.mul(u.p_fill).mul(1 - bright);
-    return d.vec4f(std.clamp(base.add(col), d.vec3f(), d.vec3f(1)), alpha);
+    return d.vec4f(std.clamp(finalCol, d.vec3f(), d.vec3f(1)), alpha);
   })
   .$name("causticsFragment");
 

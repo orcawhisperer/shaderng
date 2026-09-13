@@ -1,4 +1,5 @@
 import { ORB_STATES, type OrbState, type OrbVariant } from "@/components/orbs/renderer";
+import { isFieldSlug, type FieldSlug } from "@/lib/field-catalog";
 import { isOrbSlug, type OrbSlug } from "@/lib/orb-catalog";
 import type { SnippetDraft } from "@/lib/snippet";
 
@@ -9,6 +10,7 @@ import type { SnippetDraft } from "@/lib/snippet";
  */
 export interface PlaygroundShare {
   orb?: OrbSlug;
+  field?: FieldSlug;
   state?: OrbState;
   size?: number;
   params?: Record<string, number>;
@@ -18,7 +20,7 @@ export interface PlaygroundShare {
 }
 
 /** Query keys. `orb` and `state` are the ones the first release already used. */
-export const SHARE_KEYS = ["orb", "state", "size", "p", "c", "v"] as const;
+export const SHARE_KEYS = ["orb", "state", "size", "p", "c", "v", "field"] as const;
 export type ShareKey = (typeof SHARE_KEYS)[number];
 
 export type ShareQuery = Record<ShareKey, string | null>;
@@ -48,9 +50,9 @@ const decodePairs = (raw: string): [string, string][] =>
  */
 export const encodeShare = (
   variant: Pick<OrbVariant, "params" | "colors" | "statePresets" | "stateColors">,
-  input: { slug: string; state: OrbState; size: number; draft: SnippetDraft },
+  input: { isField?: boolean; slug: string; state: OrbState; size: number; draft: SnippetDraft },
 ): ShareQuery => {
-  const { draft, size, slug, state } = input;
+  const { isField, draft, size, slug, state } = input;
   const params: Record<string, string> = {};
   for (const p of variant.params) {
     const value = draft.params[p.key];
@@ -68,11 +70,12 @@ export const encodeShare = (
     }
   }
   return {
-    orb: slug,
-    state,
-    size: String(size),
-    p: encodePairs(params),
     c: encodePairs(colors),
+    field: isField ? slug : null,
+    orb: isField ? null : slug,
+    p: encodePairs(params),
+    size: isField ? null : String(size),
+    state,
     v: draft.autoDrive ? null : `${num(draft.input)},${num(draft.output)}`,
   };
 };
@@ -80,6 +83,11 @@ export const encodeShare = (
 /** Parses a query back into a share. Unknown or malformed values are dropped, never thrown. */
 export const decodeShare = (get: (key: ShareKey) => string | null): PlaygroundShare => {
   const share: PlaygroundShare = {};
+
+  const field = get("field");
+  if (isFieldSlug(field)) {
+    share.field = field;
+  }
 
   const orb = get("orb");
   if (isOrbSlug(orb)) {

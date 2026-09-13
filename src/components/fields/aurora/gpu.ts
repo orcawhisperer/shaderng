@@ -113,6 +113,9 @@ const auroraFragment = tgpu
     col = col.add(u.c_mid.mul(b));
     col = col.add(u.c_high.mul(c));
 
+    const curtainSum = std.max(a + b + c, 0.001);
+    const ribbonCol = u.c_low.mul(a).add(u.c_mid.mul(b)).add(u.c_high.mul(c)).div(curtainSum);
+
     const loud = 1 + 0.6 * std.clamp(u.outputVol, 0, 1);
     const light = std.clamp((a + b + c) * u.p_glow * loud, 0, 1);
     col = col.mul(u.p_glow * loud);
@@ -121,9 +124,14 @@ const auroraFragment = tgpu
     const star = std.pow(hash21(std.floor(input.uv.mul(u.res).div(3))), 40) * (1 - light);
     col = col.add(d.vec3f(star * 0.6));
 
-    const alpha = std.clamp(std.max(light, star) + u.p_fill, 0, 1);
-    const base = u.c_base.mul(u.p_fill);
-    return d.vec4f(std.clamp(base.add(col), d.vec3f(), d.vec3f(1)), alpha);
+    const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
+    const darkBase = u.c_base.mul(u.p_fill);
+    const darkCol = darkBase.add(col);
+    const lightCol = std.mix(u.c_base, ribbonCol, light);
+    const finalCol = std.mix(darkCol, lightCol, isLight);
+
+    const alpha = std.clamp(std.max(light, star * (1 - isLight)) + u.p_fill, 0, 1);
+    return d.vec4f(std.clamp(finalCol, d.vec3f(), d.vec3f(1)), alpha);
   })
   .$name("auroraFragment");
 

@@ -42,6 +42,7 @@ export type ShaderBackgroundFit = "cover" | "contain" | "fill";
         class="shader-background-orb"
         [variant]="variant()"
         [preset]="preset()"
+        [theme]="theme()"
         [size]="side()"
         [width]="fill() ? box().width : undefined"
         [height]="fill() ? box().height : undefined"

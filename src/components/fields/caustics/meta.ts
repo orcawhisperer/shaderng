@@ -40,5 +40,25 @@ export const causticsField: OrbVariant = {
       focus: 1.4,
     },
   },
+  themeColors: {
+    dark: {
+      base: "#082f49",
+      light: "#e0f2fe",
+      water: "#0369a1",
+    },
+    light: {
+      base: "#f0f9ff",
+      light: "#0369a1",
+      water: "#0284c7",
+    },
+  },
+  themeParams: {
+    dark: {
+      fill: 0,
+    },
+    light: {
+      fill: 1.0,
+    },
+  },
   uniforms: causticsParams,
 };

@@ -1,4 +1,13 @@
-export const FIELD_SLUGS = ["aurora", "flow", "grid", "waves", "caustics"] as const;
+export const FIELD_SLUGS = [
+  "aurora",
+  "flow",
+  "grid",
+  "waves",
+  "caustics",
+  "cyber",
+  "nebula",
+  "warp",
+] as const;
 
 export type FieldSlug = (typeof FIELD_SLUGS)[number];
 
@@ -43,6 +52,24 @@ export const FIELD_CATALOG: FieldCatalogItem[] = [
     name: "Water",
     slug: "caustics",
     title: "Caustics",
+  },
+  {
+    description: "infinite 3D synthwave grid receding to a glowing neon horizon with interactive camera tilt",
+    name: "Synthwave",
+    slug: "cyber",
+    title: "Cyber",
+  },
+  {
+    description: "volumetric cosmic dust and glowing stellar nurseries with a parallax starfield",
+    name: "Cosmic",
+    slug: "nebula",
+    title: "Nebula",
+  },
+  {
+    description: "relativistic hyperspace starfield and warp tunnel with pointer flight steering",
+    name: "Hyperspace",
+    slug: "warp",
+    title: "Warp",
   },
 ];
 

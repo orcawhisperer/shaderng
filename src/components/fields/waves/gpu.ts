@@ -88,10 +88,17 @@ const wavesFragment = tgpu
     }
 
     const light = std.clamp(core + glow, 0, 1);
-    const col = tint.div(std.max(core + glow, 0.001)).mul(light);
+    const lineTint = tint.div(std.max(core + glow, 0.001));
+    const col = lineTint.mul(light);
+
+    const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
+    const darkBase = u.c_base.mul(u.p_fill).mul(1 - light);
+    const darkCol = darkBase.add(col);
+    const lightCol = std.mix(u.c_base, lineTint, light);
+    const finalCol = std.mix(darkCol, lightCol, isLight);
+
     const alpha = std.clamp(light + u.p_fill, 0, 1);
-    const base = u.c_base.mul(u.p_fill).mul(1 - light);
-    return d.vec4f(std.clamp(base.add(col), d.vec3f(), d.vec3f(1)), alpha);
+    return d.vec4f(std.clamp(finalCol, d.vec3f(), d.vec3f(1)), alpha);
   })
   .$name("wavesFragment");
 

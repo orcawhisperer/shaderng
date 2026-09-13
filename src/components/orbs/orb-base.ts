@@ -21,6 +21,8 @@ export abstract class OrbInputs {
   /** Defaults to the preset's size, then 280. */
   readonly size = input<number | undefined>(undefined);
   readonly state = input<OrbState | undefined>(undefined);
+  /** Saved or explicit look theme: 'light', 'dark', or 'auto' (follows document / system). */
+  readonly theme = input<"light" | "dark" | "auto">("auto");
   readonly params = input<OrbParamValues | undefined>(undefined);
   readonly colors = input<OrbColorValues | undefined>(undefined);
   readonly statePresets = input<Partial<Record<OrbState, Record<string, number>>> | undefined>(
@@ -59,6 +61,7 @@ export const ORB_TEMPLATE = `
 <shader-orb
   [variant]="variant"
   [preset]="preset()"
+  [theme]="theme()"
   [size]="size() ?? preset()?.size ?? 280"
   [state]="state()"
   [params]="params()"

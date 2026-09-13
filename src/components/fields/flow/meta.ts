@@ -43,5 +43,27 @@ export const flowField: OrbVariant = {
       contrast: 0.9,
     },
   },
+  themeColors: {
+    dark: {
+      base: "#0b0a14",
+      deep: "#1e1b4b",
+      light: "#f0abfc",
+      mid: "#7c3aed",
+    },
+    light: {
+      base: "#f8fafc",
+      deep: "#6366f1",
+      light: "#e11d48",
+      mid: "#0284c7",
+    },
+  },
+  themeParams: {
+    dark: {
+      fill: 0,
+    },
+    light: {
+      fill: 1.0,
+    },
+  },
   uniforms: flowParams,
 };

@@ -4,6 +4,7 @@ import { ORB_CATALOG, ORB_SLUGS, isOrbSlug } from "./orb-catalog";
 import { loadOrb } from "./orb-loaders";
 import {
   buildAngularSnippet,
+  buildFieldAngularSnippet,
   fieldInstallCommand,
   ngAddCommand,
   ngGenerateFieldCommand,
@@ -45,9 +46,18 @@ describe("orb catalog", () => {
 });
 
 describe("field catalog", () => {
-  it("ships five original fields", () => {
-    expect(FIELD_SLUGS).toEqual(["aurora", "flow", "grid", "waves", "caustics"]);
-    expect(FIELD_CATALOG).toHaveLength(5);
+  it("ships original fields", () => {
+    expect(FIELD_SLUGS).toEqual([
+      "aurora",
+      "flow",
+      "grid",
+      "waves",
+      "caustics",
+      "cyber",
+      "nebula",
+      "warp",
+    ]);
+    expect(FIELD_CATALOG).toHaveLength(8);
   });
 
   it("describes every field", () => {
@@ -57,12 +67,23 @@ describe("field catalog", () => {
 
   it("narrows slugs", () => {
     expect(isFieldSlug("aurora")).toBe(true);
+    expect(isFieldSlug("cyber")).toBe(true);
     expect(isFieldSlug("orb-01")).toBe(false);
     expect(isFieldSlug(undefined)).toBe(false);
   });
 
   it("rejects unknown fields instead of falling back", async () => {
-    await expect(loadField("nebula")).rejects.toThrow('Unknown field "nebula"');
+    await expect(loadField("unknown-field")).rejects.toThrow('Unknown field "unknown-field"');
+  });
+
+  it("registers all 8 fields in the field catalog", () => {
+    expect(FIELD_CATALOG).toHaveLength(8);
+    for (const field of FIELD_CATALOG) {
+      expect(field.slug).toBeTruthy();
+      expect(field.title).toBeTruthy();
+      expect(field.description).toBeTruthy();
+      expect(field.name).toBeTruthy();
+    }
   });
 });
 
@@ -124,6 +145,36 @@ describe("buildAngularSnippet", () => {
     });
     expect(snippet).toContain('[listen]="true"');
     expect(snippet).not.toContain("[volumes]");
+  });
+});
+
+describe("buildFieldAngularSnippet", () => {
+  const variant = {
+    colors: [{ default: "#06b6d4", key: "grid", label: "Grid" }],
+    key: "cyber",
+    label: "Cyber",
+    note: "test",
+    params: [{ default: 0.6, key: "speed", label: "Speed", max: 3, min: 0, step: 0.02 }],
+  };
+
+  const draft: SnippetDraft = {
+    autoDrive: true,
+    colors: { grid: "#06b6d4" },
+    input: 0,
+    output: 0.3,
+    params: { speed: 0.6 },
+  };
+
+  it("emits an Angular field component snippet", () => {
+    const snippet = buildFieldAngularSnippet({
+      draft,
+      slug: "cyber",
+      state: "idle",
+      variant,
+    });
+    expect(snippet).toContain("import { FieldCyber } from");
+    expect(snippet).toContain("<field-cyber");
+    expect(snippet).toContain('state="idle"');
   });
 });
 

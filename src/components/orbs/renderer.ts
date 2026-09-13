@@ -63,6 +63,8 @@ export interface OrbVariant {
   colors: OrbColorDef[];
   statePresets?: Partial<Record<OrbState, Record<string, number>>>;
   stateColors?: Partial<Record<OrbState, Record<string, string>>>;
+  themeColors?: Partial<Record<"light" | "dark", Record<string, string>>>;
+  themeParams?: Partial<Record<"light" | "dark", Record<string, number>>>;
 }
 
 export type OrbParamValues = Partial<Record<string, number>>;
@@ -76,6 +78,7 @@ export type OrbColorValues = Partial<Record<string, string>>;
 export interface OrbPreset {
   state?: OrbState;
   size?: number;
+  theme?: "light" | "dark";
   params?: OrbParamValues;
   colors?: OrbColorValues;
   volumes?: { input?: number; output?: number };
@@ -84,6 +87,7 @@ export interface OrbPreset {
 /** Everything the loop reads each frame — the caller owns it and may mutate it. */
 export interface OrbDrive {
   state: OrbState;
+  theme?: "light" | "dark";
   params?: OrbParamValues;
   colors?: OrbColorValues;
   statePresets?: Partial<Record<OrbState, Record<string, number>>>;
@@ -100,18 +104,22 @@ export interface OrbDrive {
 
 export const defaultValuesFor = (
   variant: OrbVariant,
+  theme?: "light" | "dark",
 ): {
   params: Record<string, number>;
   colors: Record<string, string>;
 } => {
+  const themeParam = theme ? variant.themeParams?.[theme] : undefined;
+  const themeColor = theme ? variant.themeColors?.[theme] : undefined;
+
   const params: Record<string, number> = {};
   for (const p of variant.params) {
-    params[p.key] = p.default;
+    params[p.key] = themeParam?.[p.key] ?? p.default;
   }
 
   const colors: Record<string, string> = {};
   for (const c of variant.colors) {
-    colors[c.key] = c.default;
+    colors[c.key] = themeColor?.[c.key] ?? c.default;
   }
 
   return { colors, params };
@@ -280,18 +288,22 @@ export const createOrbScene = (
   const paramClock = new Float32Array(variant.params.length);
   const colorVel = new Float32Array(variant.colors.length * 3);
 
+  const initThemeParam = drive.theme ? variant.themeParams?.[drive.theme] : undefined;
+  const initThemeColor = drive.theme ? variant.themeColors?.[drive.theme] : undefined;
+
   for (let i = 0; i < variant.params.length; i += 1) {
     const def = variant.params[i];
-    paramCur[i] = def.default;
+    const initVal = initThemeParam?.[def.key] ?? def.default;
+    paramCur[i] = initVal;
     if (def.integrate) {
       paramClock[i] = Math.random() * 100;
       words[paramSlots[i]] = paramClock[i];
     } else {
-      words[paramSlots[i]] = def.default;
+      words[paramSlots[i]] = initVal;
     }
   }
   for (let i = 0; i < variant.colors.length; i += 1) {
-    writeHex(variant.colors[i].default, words, colorSlots[i]);
+    writeHex(initThemeColor?.[variant.colors[i].key] ?? variant.colors[i].default, words, colorSlots[i]);
   }
 
   const [restingIn, restingOut] = targetVolumes(drive.state, 0);
@@ -347,11 +359,13 @@ export const createOrbScene = (
 
   const stepParams = (dt: number, live: OrbDrive) => {
     const preset = live.statePresets?.[live.state] ?? variant.statePresets?.[live.state];
+    const themeParam = live.theme ? variant.themeParams?.[live.theme] : undefined;
 
     for (let i = 0; i < variant.params.length; i += 1) {
       const def = variant.params[i];
       const explicit = live.params?.[def.key];
-      const target = typeof explicit === "number" ? explicit : (preset?.[def.key] ?? def.default);
+      const fallback = themeParam?.[def.key] ?? def.default;
+      const target = typeof explicit === "number" ? explicit : (preset?.[def.key] ?? fallback);
 
       springStep(paramCur[i], paramVel[i], target, dt);
       paramCur[i] = springOut.x;
@@ -368,11 +382,13 @@ export const createOrbScene = (
 
   const stepColors = (dt: number, live: OrbDrive) => {
     const stateColor = live.stateColors?.[live.state] ?? variant.stateColors?.[live.state];
+    const themeColor = live.theme ? variant.themeColors?.[live.theme] : undefined;
 
     for (let i = 0; i < variant.colors.length; i += 1) {
       const def = variant.colors[i];
       const at = colorSlots[i];
-      writeHex(live.colors?.[def.key] ?? stateColor?.[def.key] ?? def.default, colorTarget, 0);
+      const fallback = themeColor?.[def.key] ?? def.default;
+      writeHex(live.colors?.[def.key] ?? stateColor?.[def.key] ?? fallback, colorTarget, 0);
       for (let channel = 0; channel < 3; channel += 1) {
         const velAt = i * 3 + channel;
         springStep(words[at + channel], colorVel[velAt], colorTarget[channel], dt);

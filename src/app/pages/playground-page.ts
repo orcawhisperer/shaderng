@@ -10,10 +10,11 @@ import { decodeShare } from "@/lib/playground-url";
   selector: "app-playground-page",
   imports: [OrbPlayground],
   template: `
-    <div class="container-wrapper px-6">
+    <div class="container-wrapper px-4 xl:px-6">
       <div class="h-[calc(100svh-var(--header-height))] pb-4">
         <app-orb-playground
-          [initialSlug]="share().orb ?? fallbackSlug"
+          [initialMode]="share().field ? 'field' : 'orb'"
+          [initialSlug]="share().field ?? share().orb ?? fallbackSlug"
           [initialState]="share().state ?? 'idle'"
           [initialShare]="share()"
         />

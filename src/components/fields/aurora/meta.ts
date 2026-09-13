@@ -43,5 +43,27 @@ export const auroraField: OrbVariant = {
       glow: 1.6,
     },
   },
+  themeColors: {
+    dark: {
+      base: "#0b1020",
+      high: "#f472b6",
+      low: "#2dd4bf",
+      mid: "#a78bfa",
+    },
+    light: {
+      base: "#f8fafc",
+      high: "#db2777",
+      low: "#0284c7",
+      mid: "#7c3aed",
+    },
+  },
+  themeParams: {
+    dark: {
+      fill: 0,
+    },
+    light: {
+      fill: 1.0,
+    },
+  },
   uniforms: auroraParams,
 };

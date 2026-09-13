@@ -32,6 +32,20 @@ const classNameFor = (slug: string): string =>
 
         <app-field-preview className="min-h-[24rem]" [slug]="field.slug" />
 
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs text-muted-foreground">Move pointer over canvas to test responsiveness.</span>
+          <a
+            [routerLink]="['/playground']"
+            [queryParams]="{ field: field.slug }"
+            class="inline-flex items-center gap-1.5 rounded-md border bg-background hover:bg-muted px-3 py-1.5 text-xs font-medium transition-colors"
+          >
+            <span>Open in Playground</span>
+            <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        </div>
+
         <section class="space-y-3">
           <h2 class="text-xl font-semibold">Install</h2>
           <p class="text-muted-foreground text-sm">
@@ -93,6 +107,51 @@ const classNameFor = (slug: string): string =>
                       <td class="px-3 py-2">{{ p.label }}</td>
                       <td class="text-muted-foreground px-3 py-2">{{ p.min }} – {{ p.max }}</td>
                       <td class="text-muted-foreground px-3 py-2">{{ p.default }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="space-y-3">
+            <h2 class="text-xl font-semibold">Colors and themes</h2>
+            <p class="text-muted-foreground text-sm">
+              Fields automatically adapt to your application's light or dark mode via <code class="bg-muted rounded px-1 py-0.5">theme="auto"</code> (default), or can be locked with <code class="bg-muted rounded px-1 py-0.5">[theme]="'light'"</code> or <code class="bg-muted rounded px-1 py-0.5">[theme]="'dark'"</code>. Override any color via <code class="bg-muted rounded px-1 py-0.5">colors</code>.
+            </p>
+            <div class="overflow-x-auto rounded-xl border">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-muted/50">
+                  <tr>
+                    <th class="px-3 py-2 font-medium">Color key</th>
+                    <th class="px-3 py-2 font-medium">Role</th>
+                    <th class="px-3 py-2 font-medium">Dark default</th>
+                    <th class="px-3 py-2 font-medium">Light default</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of v.colors; track c.key) {
+                    <tr class="border-t">
+                      <td class="px-3 py-2 font-mono text-xs">{{ c.key }}</td>
+                      <td class="px-3 py-2">{{ c.label }}</td>
+                      <td class="px-3 py-2 font-mono text-xs">
+                        <span class="inline-flex items-center gap-1.5">
+                          <span
+                            class="inline-block size-3 rounded-full border border-border/80"
+                            [style.background-color]="v.themeColors?.dark?.[c.key] ?? c.default"
+                          ></span>
+                          <span>{{ v.themeColors?.dark?.[c.key] ?? c.default }}</span>
+                        </span>
+                      </td>
+                      <td class="px-3 py-2 font-mono text-xs">
+                        <span class="inline-flex items-center gap-1.5">
+                          <span
+                            class="inline-block size-3 rounded-full border border-border/80"
+                            [style.background-color]="v.themeColors?.light?.[c.key] ?? c.default"
+                          ></span>
+                          <span>{{ v.themeColors?.light?.[c.key] ?? c.default }}</span>
+                        </span>
+                      </td>
                     </tr>
                   }
                 </tbody>

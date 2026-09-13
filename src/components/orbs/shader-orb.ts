@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   contentChild,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -91,7 +92,12 @@ export interface ShaderOrbFallbackContext {
               [ngTemplateOutletContext]="{ $implicit: errorMessage() ?? WEBGPU_HELP, tint: tint() }"
             />
           } @else {
-            <div class="shader-orb-fallback" [style.--orb-tint]="tint()" aria-hidden="true"></div>
+            <div
+              class="shader-orb-fallback"
+              [class.is-rectangular]="width() !== undefined || height() !== undefined"
+              [style.--orb-tint]="tint()"
+              aria-hidden="true"
+            ></div>
             @if (fallbackMessage()) {
               <p class="shader-orb-message text-muted-foreground" role="status">
                 {{ errorMessage() ?? WEBGPU_HELP }}
@@ -145,6 +151,18 @@ export interface ShaderOrbFallbackContext {
         0 0 48px color-mix(in srgb, var(--orb-tint) 45%, transparent),
         inset 0 -12px 32px color-mix(in srgb, black 35%, transparent);
     }
+    .shader-orb-fallback.is-rectangular {
+      width: 100%;
+      height: 100%;
+      border-radius: 0;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        color-mix(in srgb, var(--orb-tint) 35%, transparent) 0%,
+        color-mix(in srgb, var(--orb-tint) 10%, transparent) 60%,
+        transparent 100%
+      );
+      box-shadow: none;
+    }
     @media (prefers-reduced-motion: no-preference) {
       .shader-orb-fallback {
         animation: shader-orb-breathe 4s ease-in-out infinite;
@@ -166,6 +184,8 @@ export class ShaderOrb {
   /** A saved look; explicit inputs override it and `params` / `colors` merge on top of it. */
   readonly preset = input<OrbPreset | undefined>(undefined);
   readonly state = input<OrbState | undefined>(undefined);
+  /** Saved or explicit look theme: 'light', 'dark', or 'auto' (follows document / system). */
+  readonly theme = input<"light" | "dark" | "auto">("auto");
   readonly size = input<number | undefined>(undefined);
   readonly params = input<OrbParamValues | undefined>(undefined);
   readonly colors = input<OrbColorValues | undefined>(undefined);
@@ -222,6 +242,18 @@ export class ShaderOrb {
   protected readonly unsupported = signal(!hasWebGPU());
   protected readonly WEBGPU_HELP = WEBGPU_HELP;
   protected readonly cn = cn;
+  private readonly documentTheme = signal<"light" | "dark">("dark");
+  protected readonly resolvedTheme = computed<"light" | "dark">(() => {
+    const t = this.theme();
+    if (t === "light" || t === "dark") {
+      return t;
+    }
+    const presetTheme = this.preset()?.theme;
+    if (presetTheme === "light" || presetTheme === "dark") {
+      return presetTheme;
+    }
+    return this.documentTheme();
+  });
   protected readonly resolvedState = computed(() => this.state() ?? this.preset()?.state ?? "idle");
   protected readonly resolvedSize = computed(() => this.size() ?? this.preset()?.size);
   private readonly resolvedParams = computed<OrbParamValues | undefined>(() => {
@@ -241,7 +273,8 @@ export class ShaderOrb {
     if (!first) {
       return "#8b8ba3";
     }
-    return this.resolvedColors()?.[first.key] ?? first.default;
+    const themeDefault = this.variant().themeColors?.[this.resolvedTheme()]?.[first.key];
+    return this.resolvedColors()?.[first.key] ?? themeDefault ?? first.default;
   });
   protected readonly label = computed(
     () => this.ariaLabel() ?? `${this.variant().label} shader orb, ${this.resolvedState()}`,
@@ -254,9 +287,23 @@ export class ShaderOrb {
   private readonly drive: OrbDrive = { state: "idle" };
 
   constructor() {
+    if (typeof document !== "undefined") {
+      const updateDocTheme = () => {
+        const isDark = document.documentElement.classList.contains("dark");
+        this.documentTheme.set(isDark ? "dark" : "light");
+      };
+      updateDocTheme();
+      if (typeof MutationObserver !== "undefined") {
+        const obs = new MutationObserver(updateDocTheme);
+        obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+        inject(DestroyRef).onDestroy(() => obs.disconnect());
+      }
+    }
+
     effect(() => {
       const listening = this.audioSource() !== undefined;
       this.drive.state = this.resolvedState();
+      this.drive.theme = this.resolvedTheme();
       this.drive.params = this.resolvedParams();
       this.drive.colors = this.resolvedColors();
       this.drive.statePresets = this.statePresets();

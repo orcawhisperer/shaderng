@@ -22,6 +22,7 @@ export const FIELD_TEMPLATE = `
   fit="fill"
   [variant]="variant"
   [preset]="preset()"
+  [theme]="theme()"
   [state]="state()"
   [params]="params()"
   [colors]="colors()"

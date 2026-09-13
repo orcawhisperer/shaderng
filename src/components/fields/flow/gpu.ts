@@ -106,12 +106,14 @@ const flowFragment = tgpu
     const loud = 1 + 0.5 * std.clamp(u.outputVol, 0, 1);
     col = col.mul(loud);
 
+    const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
+    const darkBase = u.c_base.mul(u.p_fill);
+    const darkCol = darkBase.mul(1 - shade).add(col.mul(std.max(shade, 0.35)));
+    const lightCol = std.mix(u.c_base, col, std.clamp(shade * 0.9 + veil * 0.2, 0, 1));
+    const finalCol = std.mix(darkCol, lightCol, isLight);
+
     const alpha = std.clamp(std.max(shade, veil * 0.35) + u.p_fill, 0, 1);
-    const base = u.c_base.mul(u.p_fill);
-    return d.vec4f(
-      std.clamp(base.mul(1 - shade).add(col.mul(std.max(shade, 0.35))), d.vec3f(), d.vec3f(1)),
-      alpha,
-    );
+    return d.vec4f(std.clamp(finalCol, d.vec3f(), d.vec3f(1)), alpha);
   })
   .$name("flowFragment");
 

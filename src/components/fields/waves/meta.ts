@@ -43,5 +43,25 @@ export const wavesField: OrbVariant = {
       amplitude: 0.8,
     },
   },
+  themeColors: {
+    dark: {
+      base: "#0b1020",
+      from: "#22d3ee",
+      to: "#f472b6",
+    },
+    light: {
+      base: "#f8fafc",
+      from: "#0284c7",
+      to: "#be123c",
+    },
+  },
+  themeParams: {
+    dark: {
+      fill: 0,
+    },
+    light: {
+      fill: 1.0,
+    },
+  },
   uniforms: wavesParams,
 };

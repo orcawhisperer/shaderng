@@ -49,5 +49,25 @@ export const gridField: OrbVariant = {
       dot: 0.34,
     },
   },
+  themeColors: {
+    dark: {
+      accent: "#38bdf8",
+      base: "#0f172a",
+      dot: "#94a3b8",
+    },
+    light: {
+      accent: "#0284c7",
+      base: "#f8fafc",
+      dot: "#64748b",
+    },
+  },
+  themeParams: {
+    dark: {
+      fill: 0,
+    },
+    light: {
+      fill: 1.0,
+    },
+  },
   uniforms: gridParams,
 };
