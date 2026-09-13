@@ -140,7 +140,9 @@ ng update shaderng                     # after npm i -D shaderng@latest: refresh
 
 Every file the schematics write is recorded with a hash in `shaderng.json`. `ng update shaderng` (or `ng g shaderng:update` at any time) replaces the files you have not edited, adds new ones, and lists the edited ones instead of overwriting them; `--force` takes everything. Projects installed before the lockfile existed are recognised from the published hashes in `schematics/src/update/known-hashes.json`; regenerate an entry for a new release with `node tools/hash-package-files.mjs <unpacked>/files <version>`.
 
-The package lives in [`schematics/`](schematics) and is built into `dist/schematics` by `npm run build:schematics` from the same source files this site ships, so an upstream sync flows into the next publish. `npm run pack:schematics` produces a tarball you can `ng add ./dist/shaderng-0.1.0.tgz` locally.
+The package lives in [`schematics/`](schematics) and is built into `dist/schematics` by `npm run build:schematics` from the same source files this site ships, so an upstream sync flows into the next publish. `npm run pack:schematics` produces a tarball you can `ng add ./dist/shaderng-0.2.0.tgz` locally.
+
+Releasing: bump `version` in `schematics/package.json`, merge, then `git tag v<version> && git push origin v<version>`. The [publish workflow](.github/workflows/publish.yml) tests, packs and runs `npm publish --provenance`, authenticating through npm trusted publishing (GitHub OIDC; the workflow is registered on npmjs.com, no token stored). "Run workflow" on `main` with dry-run unticked publishes the version on `main` without a tag.
 
 Without `ng add`, the [installation page](https://shaderng.vercel.app/docs/installation) has the equivalent manual steps: install the packages, `degit` the runtime files and one folder per orb, register `tools/typegpu.esbuild.ts` in `angular.json`, and add the `@/*` → `src/*` alias. GPU files use `"use gpu"` functions that must be transformed at build time.
 
