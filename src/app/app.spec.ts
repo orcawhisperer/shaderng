@@ -22,4 +22,15 @@ describe("App", () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain("shaderng");
   });
+
+  it("should render the orb logo instead of the ng badge", async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector("app-logo-mark")).toBeTruthy();
+    const ngBadge = Array.from(compiled.querySelectorAll("header span")).find(
+      (el) => el.textContent?.trim() === "ng",
+    );
+    expect(ngBadge).toBeUndefined();
+  });
 });

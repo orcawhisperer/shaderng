@@ -20,7 +20,11 @@ const NAV = [
     <header class="bg-background sticky top-0 z-50 w-full border-b border-border/60">
       <div class="container-wrapper px-4 xl:px-6">
         <div class="relative flex h-(--header-height) items-center gap-3">
-          <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
+          <a
+            routerLink="/"
+            class="flex items-center gap-2 font-semibold tracking-tight"
+            aria-label="shaderng home"
+          >
             <app-logo-mark />
             <span>shaderng</span>
           </a>
