@@ -93,7 +93,7 @@ import { ngAddCommand } from "@/lib/snippet";
     </section>
 
     <section class="container-wrapper pb-16">
-      <div class="container mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="container mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
         @for (item of originals; track item.title) {
           <div class="rounded-xl border p-4 text-left">
             <h2 class="font-medium">{{ item.title }}</h2>
@@ -114,6 +114,11 @@ export class HomePage {
         "ng add shaderng installs the runtime, wires the TypeGPU esbuild plugin and copies the orbs you pick. ng g shaderng:orb adds more.",
     },
     {
+      title: "Backgrounds and presets",
+      description:
+        "<shader-background> puts any orb behind a hero at 30 fps. Save a playground look with --preset and bind it with [preset].",
+    },
+    {
       title: "Live audio",
       description:
         "[audio] drives orb volumes from the microphone, a WebRTC or TTS stream, an <audio> element, or a Web Audio node. shadercn does not have this.",
@@ -127,6 +132,11 @@ export class HomePage {
       title: "Reduced motion",
       description:
         "Orbs pause when the OS asks for prefers-reduced-motion, unless you are using Listen.",
+    },
+    {
+      title: "ng update",
+      description:
+        "The copied files are yours. shaderng.json records what was written, so an update refreshes untouched files and leaves your edits alone.",
     },
   ];
 }

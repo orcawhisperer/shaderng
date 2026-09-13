@@ -8,6 +8,7 @@ Unofficial Angular port of [shadercn](https://github.com/shadcn-labs/shadercn): 
 ```bash
 ng add shaderng              # runtime + orb-01
 ng g shaderng:orb orb-07     # more orbs; --list shows all 33
+ng update shaderng           # later: refresh the copied files you have not edited
 ```
 
 Docs and playground: <https://shaderng.vercel.app>
@@ -37,14 +38,25 @@ shadercn feeds voice levels through `volumes`. shaderng measures them from live 
 
 `[audio]` accepts `"microphone" | MediaStream | AudioNode | HTMLMediaElement`; `[listen]` is shorthand for the microphone. Sources you pass in are never stopped or closed by the orb.
 
-Also original here: one shared WebGPU device and frame loop for every mounted orb, the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
+Also original here: `<shader-background>` (any orb as a full-bleed page or hero background), `[preset]` looks saved straight from the playground, one shared WebGPU device and frame loop for every mounted orb, the TypeGPU esbuild intercept Angular needs, and `prefers-reduced-motion` pause.
+
+```html
+<section class="relative">
+  <shader-background [variant]="orb12Orb" state="thinking" fit="cover" [scale]="1.2" />
+  <h1 class="relative">Hello</h1>
+</section>
+
+<orb-07 [preset]="orb07Hero" />
+<!-- ng g shaderng:orb orb-07 --preset "<playground link>" --name hero -->
+```
 
 ## Features
 
 - **33 orb shaders** — the full shadercn set, from Dispersion to Abyss
 - **Angular 22** — standalone components, signal inputs, zoneless change detection
 - **WebGPU** — the original `renderer.ts` scene loop, wrapped as `<shader-orb>`
-- **Typed inputs** — `state`, `size`, `params`, `colors`, `audio` / `listen`, volumes, and DPR
+- **Typed inputs** — `state`, `size`, `params`, `colors`, `preset`, `audio` / `listen`, volumes, DPR and `maxFps`
+- **Backgrounds** — `<shader-background>` fits or covers any box at 30 fps, no shader changes
 - **Docs + playground** — live previews, credits, per-orb prop tables
 
 ## Quick start
@@ -118,9 +130,15 @@ npx vercel --prod
 ng add shaderng                        # runtime + orb-01
 ng add shaderng --orbs orb-01,orb-07   # pick orbs; "all" for all 33; "" for runtime only
 ng g shaderng:orb 12                   # add more later; --list prints them
+ng g shaderng:orb orb-07 --preset "https://shaderng.vercel.app/playground?orb=orb-07&state=speaking&p=twist:2.5" --name hero
+ng update shaderng                     # after npm i -D shaderng@latest: refresh untouched files
 ```
 
 `ng add` installs `vgpu`, `typegpu` and the build-time TypeGPU tooling, copies the runtime into `src/components/orbs`, `src/lib` and `tools/typegpu.esbuild.ts`, switches the project to `@angular-builders/custom-esbuild` with the plugin registered, adds the `@/*` path alias, and copies the orbs you name. Existing files are kept unless you pass `--force`. It needs the esbuild application builder (the default since Angular 17).
+
+`--preset` takes a playground link ("Copy preset command" in the playground produces the whole line) and writes `<name>.preset.ts` next to the orb: an `OrbPreset` for `<orb-07 [preset]="orb07Hero" />`.
+
+Every file the schematics write is recorded with a hash in `shaderng.json`. `ng update shaderng` (or `ng g shaderng:update` at any time) replaces the files you have not edited, adds new ones, and lists the edited ones instead of overwriting them; `--force` takes everything. Projects installed before the lockfile existed are recognised from the published hashes in `schematics/src/update/known-hashes.json`; regenerate an entry for a new release with `node tools/hash-package-files.mjs <unpacked>/files <version>`.
 
 The package lives in [`schematics/`](schematics) and is built into `dist/schematics` by `npm run build:schematics` from the same source files this site ships, so an upstream sync flows into the next publish. `npm run pack:schematics` produces a tarball you can `ng add ./dist/shaderng-0.1.0.tgz` locally.
 
@@ -129,7 +147,8 @@ Without `ng add`, the [installation page](https://shaderng.vercel.app/docs/insta
 Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state presets), and an Angular wrapper. Shared runtime files:
 
 - `renderer.ts` — WebGPU scene, springs, and the shared device + frame loop (shaderng-maintained fork of shadercn's)
-- `shader-orb.ts` — canvas host, `[audio]`, reduced-motion, `shaderOrbFallback`
+- `shader-orb.ts` — canvas host, `[audio]`, `[preset]`, reduced-motion, `shaderOrbFallback`
+- `shader-background.ts` — `<shader-background>`: an orb sized and clipped to fill its parent
 - `canvas.ts` — public types
 - `orb-base.ts` — shared inputs
 - `src/lib/audio-drive.ts` — volume measurement for any audio source
