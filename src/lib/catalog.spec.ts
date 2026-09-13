@@ -2,6 +2,8 @@ import { ORB_CATALOG, ORB_SLUGS, isOrbSlug } from "./orb-catalog";
 import { loadOrb } from "./orb-loaders";
 import {
   buildAngularSnippet,
+  ngAddCommand,
+  ngGenerateOrbCommand,
   orbInstallCommand,
   RUNTIME_PATHS,
   runtimeInstallCommands,
@@ -106,9 +108,17 @@ describe("install commands", () => {
 
   it("lists every runtime file the orbs import", () => {
     const commands = runtimeInstallCommands();
-    expect(commands.startsWith("npm i vgpu typegpu\n")).toBe(true);
+    expect(commands.startsWith("npm i vgpu typegpu clsx tailwind-merge\n")).toBe(true);
+    expect(commands).toContain("npm i -D @angular-builders/custom-esbuild unplugin-typegpu");
     for (const path of RUNTIME_PATHS) {
       expect(commands).toContain(`npx degit orcawhisperer/shaderng/${path} ${path}`);
     }
+    expect(RUNTIME_PATHS).toContain("src/webgpu.d.ts");
+    expect(RUNTIME_PATHS).toContain("tools/typegpu.esbuild.ts");
+  });
+
+  it("names the ng add package and its orb schematic", () => {
+    expect(ngAddCommand()).toBe("ng add shaderng");
+    expect(ngGenerateOrbCommand("orb-07")).toBe("ng g shaderng:orb orb-07");
   });
 });

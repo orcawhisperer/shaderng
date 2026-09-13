@@ -8,7 +8,7 @@ import { CodeBlock } from "@/app/ui/code-block";
 import type { OrbVariant } from "@/components/orbs/renderer";
 import { ORB_CATALOG_MAP, isOrbSlug } from "@/lib/orb-catalog";
 import { loadOrb } from "@/lib/orb-loaders";
-import { orbInstallCommand } from "@/lib/snippet";
+import { ngGenerateOrbCommand, orbInstallCommand } from "@/lib/snippet";
 
 @Component({
   selector: "app-orb-docs-page",
@@ -32,13 +32,15 @@ import { orbInstallCommand } from "@/lib/snippet";
         <section class="space-y-3">
           <h2 class="text-xl font-semibold">Install</h2>
           <p class="text-muted-foreground text-sm">
-            Needs the shared runtime from the
+            After
+            <code class="bg-muted rounded px-1 py-0.5">ng add shaderng</code> (see the
             <a class="text-foreground underline underline-offset-4" routerLink="/docs/installation"
               >installation guide</a
-            >
-            once; then one command per orb.
+            >), one command per orb:
           </p>
           <app-code-block [code]="install()" />
+          <p class="text-muted-foreground text-sm">Or fetch the folder directly with degit:</p>
+          <app-code-block [code]="installDegit()" />
         </section>
 
         <section class="space-y-3">
@@ -157,7 +159,10 @@ export class OrbDocsPage {
 export class Example {}`;
   });
 
-  protected readonly install = computed(() => orbInstallCommand(this.item()?.slug ?? "orb-01"));
+  protected readonly install = computed(() => ngGenerateOrbCommand(this.item()?.slug ?? "orb-01"));
+  protected readonly installDegit = computed(() =>
+    orbInstallCommand(this.item()?.slug ?? "orb-01"),
+  );
 
   protected readonly componentInputs = [
     { name: "state", type: '"idle" | "thinking" | "speaking"', fallback: '"idle"' },
