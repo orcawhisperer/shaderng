@@ -3,6 +3,7 @@ import { Component, computed, signal } from "@angular/core";
 import { OrbPreview } from "@/app/orbs/orb-preview";
 import { CopyButton } from "@/app/ui/copy-button";
 import { ORB_CATALOG } from "@/lib/orb-catalog";
+import { orbInstallCommand } from "@/lib/snippet";
 import { cn } from "@/lib/utils";
 
 @Component({
@@ -27,15 +28,19 @@ import { cn } from "@/lib/utils";
           <span class="text-sm font-semibold">Components</span>
         </div>
         <div class="hidden items-center justify-end px-4 py-3 sm:flex">
-          <app-copy-button [value]="installCommand()">
-            <span class="max-w-[28rem] truncate">{{ installCommand() }}</span>
+          <app-copy-button label="Copy install command" [value]="installCommand()">
+            <span class="max-w-[28rem] truncate font-mono text-xs">{{ installCommand() }}</span>
           </app-copy-button>
         </div>
       </div>
 
       <div class="border-b px-4 py-3 sm:hidden">
-        <app-copy-button className="w-full justify-start" [value]="installCommand()">
-          <span class="min-w-0 truncate">{{ installCommand() }}</span>
+        <app-copy-button
+          className="w-full justify-start"
+          label="Copy install command"
+          [value]="installCommand()"
+        >
+          <span class="min-w-0 truncate font-mono text-xs">{{ installCommand() }}</span>
         </app-copy-button>
       </div>
 
@@ -98,7 +103,5 @@ export class HomeShowcase {
     );
   });
 
-  protected readonly installCommand = computed(
-    () => `npm i vgpu typegpu && copy ${this.slug()} into src/components/orbs`,
-  );
+  protected readonly installCommand = computed(() => orbInstallCommand(this.slug()));
 }

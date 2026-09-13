@@ -1,6 +1,12 @@
 import { ORB_CATALOG, ORB_SLUGS, isOrbSlug } from "./orb-catalog";
 import { loadOrb } from "./orb-loaders";
-import { buildAngularSnippet, type SnippetDraft } from "./snippet";
+import {
+  buildAngularSnippet,
+  orbInstallCommand,
+  RUNTIME_PATHS,
+  runtimeInstallCommands,
+  type SnippetDraft,
+} from "./snippet";
 import { cn } from "./utils";
 
 describe("orb catalog", () => {
@@ -88,5 +94,21 @@ describe("buildAngularSnippet", () => {
     });
     expect(snippet).toContain('[listen]="true"');
     expect(snippet).not.toContain("[volumes]");
+  });
+});
+
+describe("install commands", () => {
+  it("fetches one orb folder from the GitHub repo with degit", () => {
+    expect(orbInstallCommand("orb-07")).toBe(
+      "npx degit orcawhisperer/shaderng/src/components/orbs/orb-07 src/components/orbs/orb-07",
+    );
+  });
+
+  it("lists every runtime file the orbs import", () => {
+    const commands = runtimeInstallCommands();
+    expect(commands.startsWith("npm i vgpu typegpu\n")).toBe(true);
+    for (const path of RUNTIME_PATHS) {
+      expect(commands).toContain(`npx degit orcawhisperer/shaderng/${path} ${path}`);
+    }
   });
 });

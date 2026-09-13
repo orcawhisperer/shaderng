@@ -4,6 +4,7 @@ import { RouterLink } from "@angular/router";
 import { CloneOptions } from "@/app/ui/clone-options";
 import { CodeBlock } from "@/app/ui/code-block";
 import { SITE } from "@/lib/site";
+import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
 
 @Component({
   selector: "app-installation-page",
@@ -52,7 +53,12 @@ import { SITE } from "@/lib/site";
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">1. Install dependencies</h2>
+        <h2 class="text-xl font-semibold">1. Install dependencies and the runtime</h2>
+        <p class="text-muted-foreground">
+          Runtime packages, the build-time TypeGPU tooling, and the shared files every orb imports.
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">degit</code> downloads single files and
+          folders from GitHub without cloning the repository.
+        </p>
         <app-code-block [code]="installDeps" />
       </section>
 
@@ -67,15 +73,16 @@ import { SITE } from "@/lib/site";
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-xl font-semibold">3. Copy the components</h2>
+        <h2 class="text-xl font-semibold">3. Add an orb</h2>
         <p class="text-muted-foreground">
-          Copy <code class="bg-muted rounded px-1 py-0.5 text-sm">src/components/orbs</code> into your
-          app and add a path alias for <code class="bg-muted rounded px-1 py-0.5 text-sm">@/*</code>.
-          Each orb needs the shared runtime (<code class="bg-muted rounded px-1 py-0.5 text-sm">renderer.ts</code>,
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">shader-orb.ts</code>,
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">canvas.ts</code>,
-          <code class="bg-muted rounded px-1 py-0.5 text-sm">orb-base.ts</code>) plus that orb's folder.
+          One command per orb. The same command is on the home page and every component page, with
+          that orb's slug filled in. Add a path alias for
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">@/*</code> pointing at
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">src/*</code> in your
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">tsconfig.json</code>.
         </p>
+        <app-code-block [code]="installOrb" />
+        <app-code-block [code]="pathAlias" />
       </section>
 
       <section class="space-y-3">
@@ -96,8 +103,12 @@ import { SITE } from "@/lib/site";
 })
 export class InstallationPage {
   protected readonly site = SITE;
-  protected readonly installDeps = `npm i vgpu typegpu
-npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild`;
+  protected readonly installDeps = runtimeInstallCommands();
+  protected readonly installOrb = orbInstallCommand("orb-01");
+  protected readonly pathAlias = `"compilerOptions": {
+  "baseUrl": ".",
+  "paths": { "@/*": ["src/*"] }
+}`;
   protected readonly esbuildPlugin = `"builder": "@angular-builders/custom-esbuild:application",
 "options": {
   "plugins": ["tools/typegpu.esbuild.ts"]
