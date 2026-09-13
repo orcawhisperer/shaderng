@@ -235,6 +235,10 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
           }
         </div>
       </ng-template>
+    } @else if (loadError()) {
+      <div class="text-muted-foreground flex h-full items-center justify-center px-6 text-center text-sm">
+        {{ loadError() }}
+      </div>
     } @else {
       <div class="text-muted-foreground flex h-full items-center justify-center text-sm">
         Loading playground…
@@ -260,6 +264,7 @@ export class OrbPlayground {
   protected readonly panelOpen = signal(false);
   protected readonly entry = signal<OrbEntry | null>(null);
   protected readonly drafts = signal<Drafts | null>(null);
+  protected readonly loadError = signal<string | null>(null);
 
   protected readonly draft = computed(() => this.drafts()?.[this.state()] ?? null);
 
@@ -298,13 +303,24 @@ export class OrbPlayground {
       const slug = this.slug();
       let cancelled = false;
       this.entry.set(null);
-      void loadOrb(slug).then((loaded) => {
-        if (cancelled) {
-          return;
-        }
-        this.entry.set(loaded);
-        this.drafts.set(draftsFromPreset(loaded.variant));
-      });
+      this.loadError.set(null);
+      void loadOrb(slug)
+        .then((loaded) => {
+          if (cancelled) {
+            return;
+          }
+          this.entry.set(loaded);
+          this.drafts.set(draftsFromPreset(loaded.variant));
+        })
+        .catch((error: unknown) => {
+          if (cancelled) {
+            return;
+          }
+          console.error(`[shadercn-angular] failed to load ${slug}`, error);
+          this.loadError.set(
+            error instanceof Error ? error.message : `Failed to load ${slug}`,
+          );
+        });
       onCleanup(() => {
         cancelled = true;
       });

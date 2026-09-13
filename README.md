@@ -56,7 +56,7 @@ Drive states (`idle`, `thinking`, `speaking`) ease the shader uniforms. Override
 
    ```bash
    npm i vgpu typegpu
-   npm i -D unplugin-typegpu @webgpu/types @angular-builders/custom-esbuild
+   npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild
    ```
 
 2. Copy `src/components/orbs` into your app and add the `@/*` path alias.

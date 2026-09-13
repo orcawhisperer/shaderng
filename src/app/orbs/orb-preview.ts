@@ -22,6 +22,8 @@ const STATE_LABELS: Record<OrbState, string> = {
           [ngComponentOutlet]="current.Component"
           [ngComponentOutletInputs]="inputs()"
         />
+      } @else if (loadError()) {
+        <p class="text-muted-foreground max-w-md px-6 text-center text-sm">{{ loadError() }}</p>
       } @else {
         <p class="text-muted-foreground text-sm">Loading shader…</p>
       }
@@ -58,6 +60,7 @@ export class OrbPreview {
   protected readonly labels = STATE_LABELS;
   protected readonly state = signal<OrbState>("idle");
   protected readonly entry = signal<OrbEntry | null>(null);
+  protected readonly loadError = signal<string | null>(null);
 
   protected readonly hostClass = computed(() =>
     cn(
@@ -77,11 +80,22 @@ export class OrbPreview {
       const slug = this.slug();
       let cancelled = false;
       this.entry.set(null);
-      void loadOrb(slug).then((loaded) => {
-        if (!cancelled) {
-          this.entry.set(loaded);
-        }
-      });
+      this.loadError.set(null);
+      void loadOrb(slug)
+        .then((loaded) => {
+          if (!cancelled) {
+            this.entry.set(loaded);
+          }
+        })
+        .catch((error: unknown) => {
+          if (cancelled) {
+            return;
+          }
+          console.error(`[shadercn-angular] failed to load ${slug}`, error);
+          this.loadError.set(
+            error instanceof Error ? error.message : `Failed to load ${slug}`,
+          );
+        });
       onCleanup(() => {
         cancelled = true;
       });

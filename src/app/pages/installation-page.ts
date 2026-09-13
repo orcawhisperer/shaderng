@@ -26,7 +26,7 @@ import { Component } from "@angular/core";
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">1. Install dependencies</h2>
         <pre class="bg-code overflow-x-auto rounded-lg p-4 font-mono text-sm"><code>npm i vgpu typegpu
-npm i -D unplugin-typegpu @webgpu/types @angular-builders/custom-esbuild</code></pre>
+npm i -D unplugin-typegpu @babel/core @babel/preset-typescript @webgpu/types @angular-builders/custom-esbuild</code></pre>
       </section>
 
       <section class="space-y-3">
