@@ -1,13 +1,27 @@
 import { NgComponentOutlet, NgTemplateOutlet } from "@angular/common";
-import { Component, computed, effect, inject, input, linkedSignal, signal } from "@angular/core";
+import {
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+  untracked,
+} from "@angular/core";
 import { Router } from "@angular/router";
 
 import { ORB_STATES, type OrbState, type OrbVariant } from "@/components/orbs/canvas";
 import { CopyButton } from "@/app/ui/copy-button";
 import { loadOrb, type OrbEntry } from "@/lib/orb-loaders";
 import { ORB_CATALOG, ORB_SLUGS } from "@/lib/orb-catalog";
+import { applyShare, encodeShare, type PlaygroundShare } from "@/lib/playground-url";
 import { SITE } from "@/lib/site";
 import { buildAngularSnippet, formatControlValue, type SnippetDraft } from "@/lib/snippet";
+
+/** Slider drags fire many times a second; the URL only needs the resting value. */
+const URL_SYNC_MS = 200;
 
 const STATE_LABELS: Record<OrbState, string> = {
   idle: "Idle",
@@ -108,6 +122,9 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
               >
                 {{ paused() ? "Play" : "Pause" }}
               </button>
+              <app-copy-button label="Copy link to this look" [value]="shareUrl()">
+                Copy link
+              </app-copy-button>
               <app-copy-button variant="default" [value]="snippet()">Copy template</app-copy-button>
             </div>
           </div>
@@ -262,8 +279,12 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
 export class OrbPlayground {
   readonly initialSlug = input<string>(ORB_SLUGS[0]);
   readonly initialState = input<OrbState>("idle");
+  /** Params, colors, volumes and size from a shared link; applied once, to the first load. */
+  readonly initialShare = input<PlaygroundShare | undefined>(undefined);
 
   private readonly router = inject(Router);
+  private shareApplied = false;
+  private syncTimer: ReturnType<typeof setTimeout> | undefined;
 
   protected readonly catalog = ORB_CATALOG;
   protected readonly states = ORB_STATES;
@@ -298,6 +319,34 @@ export class OrbPlayground {
     });
   });
 
+  /** The query that reproduces the current look; null values drop the key from the URL. */
+  private readonly shareQuery = computed(() => {
+    const entry = this.entry();
+    const draft = this.draft();
+    if (!entry || !draft) {
+      return null;
+    }
+    return encodeShare(entry.variant, {
+      draft,
+      size: this.size(),
+      slug: this.slug(),
+      state: this.state(),
+    });
+  });
+
+  protected readonly shareUrl = computed(() => {
+    const query = this.shareQuery();
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(query ?? {})) {
+      if (value !== null) {
+        params.set(key, value);
+      }
+    }
+    const tree = this.router.createUrlTree(["/playground"]);
+    const path = this.router.serializeUrl(tree).replace(/^\//, "");
+    return `${new URL(path, document.baseURI).href}?${params}`;
+  });
+
   protected readonly inputs = computed(() => {
     const draft = this.draft();
     return {
@@ -326,7 +375,17 @@ export class OrbPlayground {
             return;
           }
           this.entry.set(loaded);
-          this.drafts.set(draftsFromPreset(loaded.variant));
+          const drafts = draftsFromPreset(loaded.variant);
+          const share = untracked(() => this.initialShare());
+          if (share && !this.shareApplied) {
+            this.shareApplied = true;
+            const state = untracked(() => this.state());
+            drafts[state] = applyShare(loaded.variant, drafts[state], share);
+            if (share.size) {
+              this.size.set(share.size);
+            }
+          }
+          this.drafts.set(drafts);
         })
         .catch((error: unknown) => {
           if (cancelled) {
@@ -341,6 +400,23 @@ export class OrbPlayground {
       });
     });
 
+    // Keep the address bar in step with the look, so the URL is always shareable as-is.
+    effect(() => {
+      const query = this.shareQuery();
+      if (!query) {
+        return;
+      }
+      clearTimeout(this.syncTimer);
+      this.syncTimer = setTimeout(() => {
+        void this.router.navigate([], {
+          queryParams: query,
+          queryParamsHandling: "merge",
+          replaceUrl: true,
+        });
+      }, URL_SYNC_MS);
+    });
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.syncTimer));
+
     const max = Math.max(120, window.innerWidth - 96);
     this.size.update((prev) => Math.min(prev, max));
   }
@@ -351,12 +427,10 @@ export class OrbPlayground {
 
   protected selectOrb(next: string) {
     this.slug.set(next);
-    this.syncQuery(next, this.state());
   }
 
   protected selectState(next: OrbState) {
     this.state.set(next);
-    this.syncQuery(this.slug(), next);
   }
 
   protected toggleListen() {
@@ -364,7 +438,6 @@ export class OrbPlayground {
     this.listen.set(next);
     if (next) {
       this.state.set("speaking");
-      this.syncQuery(this.slug(), "speaking");
     }
   }
 
@@ -396,13 +469,5 @@ export class OrbPlayground {
       return;
     }
     this.patchDraft({ colors: { ...draft.colors, [key]: value } });
-  }
-
-  private syncQuery(orb: string, state: OrbState) {
-    void this.router.navigate([], {
-      queryParams: { orb, state },
-      queryParamsHandling: "merge",
-      replaceUrl: true,
-    });
   }
 }
