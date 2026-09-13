@@ -52,11 +52,21 @@ const NAV = [
             >
               @if (menuOpen()) {
                 <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               } @else {
                 <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               }
             </button>
@@ -80,7 +90,9 @@ const NAV = [
               class="hover:bg-muted size-8 rounded-md"
               type="button"
               (click)="theme.toggle()"
-              [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+              [attr.aria-label]="
+                theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+              "
             >
               @if (theme.theme() === "dark") {
                 <svg class="mx-auto size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

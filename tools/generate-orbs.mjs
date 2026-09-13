@@ -4,10 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 // Override with SHADERCN_DIR=/path/to/shadercn-checkout to sync from another clone.
-const sourceOrbs = join(
-  process.env.SHADERCN_DIR ?? "/tmp/shadercn",
-  "registry/components/orbs",
-);
+const sourceOrbs = join(process.env.SHADERCN_DIR ?? "/tmp/shadercn", "registry/components/orbs");
 if (!existsSync(sourceOrbs)) {
   console.error(
     `shadercn sources not found at ${sourceOrbs}. Clone https://github.com/shadcn-labs/shadercn and set SHADERCN_DIR.`,
@@ -77,7 +74,10 @@ for (const slug of slugs) {
   cpSync(join(sourceOrbs, slug, "gpu.ts"), join(dest, "gpu.ts"));
 
   let meta = readFileSync(join(sourceOrbs, slug, "meta.ts"), "utf8");
-  meta = meta.replace('files: ["index.tsx", "meta.ts", "gpu.ts"]', `files: ["${slug}.ts", "meta.ts", "gpu.ts"]`);
+  meta = meta.replace(
+    'files: ["index.tsx", "meta.ts", "gpu.ts"]',
+    `files: ["${slug}.ts", "meta.ts", "gpu.ts"]`,
+  );
   writeFileSync(join(dest, "meta.ts"), meta);
 
   const title = meta.match(/title:\s*"([^"]+)"/)?.[1] ?? slug.toUpperCase();
@@ -124,7 +124,9 @@ export class ${className} extends OrbBase {
   loaderLines.push(
     `  "${slug}": () =>\n    import("@/components/orbs/${slug}").then((m) => ({\n      Component: m.${className},\n      variant: m.${variantName},\n    })),`,
   );
-  exportLines.push(`export { ${className}, ${variantName}, meta as meta${n} } from "@/components/orbs/${slug}";`);
+  exportLines.push(
+    `export { ${className}, ${variantName}, meta as meta${n} } from "@/components/orbs/${slug}";`,
+  );
 }
 
 writeFileSync(

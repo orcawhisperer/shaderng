@@ -33,7 +33,9 @@ import { orbInstallCommand } from "@/lib/snippet";
           <h2 class="text-xl font-semibold">Install</h2>
           <p class="text-muted-foreground text-sm">
             Needs the shared runtime from the
-            <a class="text-foreground underline underline-offset-4" routerLink="/docs/installation">installation guide</a>
+            <a class="text-foreground underline underline-offset-4" routerLink="/docs/installation"
+              >installation guide</a
+            >
             once; then one command per orb.
           </p>
           <app-code-block [code]="install()" />
@@ -101,7 +103,13 @@ import { orbInstallCommand } from "@/lib/snippet";
 
         <p class="text-muted-foreground text-sm">
           Based on original work by
-          <a class="text-foreground underline underline-offset-4" href="https://x.com/XorDev" rel="noreferrer" target="_blank">XorDev</a>.
+          <a
+            class="text-foreground underline underline-offset-4"
+            href="https://x.com/XorDev"
+            rel="noreferrer"
+            target="_blank"
+            >XorDev</a
+          >.
         </p>
       </article>
     } @else {

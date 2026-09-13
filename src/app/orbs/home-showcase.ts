@@ -60,14 +60,14 @@ import { cn } from "@/lib/utils";
                 type="button"
                 class="flex flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-left transition-colors"
                 [class]="
-                  item.slug === slug()
-                    ? 'bg-accent text-accent-foreground'
-                    : 'hover:bg-muted/60'
+                  item.slug === slug() ? 'bg-accent text-accent-foreground' : 'hover:bg-muted/60'
                 "
                 (click)="slug.set(item.slug)"
               >
                 <span class="text-sm font-medium">{{ item.title }}</span>
-                <span class="text-muted-foreground line-clamp-1 text-xs">{{ item.description }}</span>
+                <span class="text-muted-foreground line-clamp-1 text-xs">{{
+                  item.description
+                }}</span>
               </button>
             } @empty {
               <p class="text-muted-foreground px-2 py-6 text-center text-sm">No orbs found.</p>
@@ -76,10 +76,7 @@ import { cn } from "@/lib/utils";
         </aside>
 
         <div class="h-[60vh] overflow-hidden">
-          <app-orb-preview
-            className="h-full min-h-0 rounded-none border-0 p-0"
-            [slug]="slug()"
-          />
+          <app-orb-preview className="h-full min-h-0 rounded-none border-0 p-0" [slug]="slug()" />
         </div>
       </div>
     </div>

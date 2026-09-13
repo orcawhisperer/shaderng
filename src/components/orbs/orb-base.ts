@@ -15,14 +15,15 @@ export abstract class OrbBase {
   readonly state = input<OrbState>("idle");
   readonly params = input<OrbParamValues | undefined>(undefined);
   readonly colors = input<OrbColorValues | undefined>(undefined);
-  readonly statePresets =
-    input<Partial<Record<OrbState, Record<string, number>>> | undefined>(undefined);
-  readonly stateColors =
-    input<Partial<Record<OrbState, Record<string, string>>> | undefined>(undefined);
-  readonly stateVolumes =
-    input<Partial<Record<OrbState, { input?: number; output?: number }>> | undefined>(
-      undefined,
-    );
+  readonly statePresets = input<Partial<Record<OrbState, Record<string, number>>> | undefined>(
+    undefined,
+  );
+  readonly stateColors = input<Partial<Record<OrbState, Record<string, string>>> | undefined>(
+    undefined,
+  );
+  readonly stateVolumes = input<
+    Partial<Record<OrbState, { input?: number; output?: number }>> | undefined
+  >(undefined);
   readonly volumes = input<{ input?: number; output?: number } | undefined>(undefined);
   readonly listen = input(false);
   readonly paused = input(false);

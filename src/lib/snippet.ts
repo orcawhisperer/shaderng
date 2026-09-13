@@ -29,18 +29,10 @@ export const buildAngularSnippet = ({
 }): string => {
   const component = `Orb${slug.slice(-2)}`;
   const params = variant.params
-    .filter(
-      (p) =>
-        draft.params[p.key] !==
-        (variant.statePresets?.[state]?.[p.key] ?? p.default),
-    )
+    .filter((p) => draft.params[p.key] !== (variant.statePresets?.[state]?.[p.key] ?? p.default))
     .map((p) => `${p.key}: ${formatNumber(draft.params[p.key])}`);
   const colors = variant.colors
-    .filter(
-      (c) =>
-        draft.colors[c.key] !==
-        (variant.stateColors?.[state]?.[c.key] ?? c.default),
-    )
+    .filter((c) => draft.colors[c.key] !== (variant.stateColors?.[state]?.[c.key] ?? c.default))
     .map((c) => `${c.key}: "${draft.colors[c.key]}"`);
 
   const lines = [

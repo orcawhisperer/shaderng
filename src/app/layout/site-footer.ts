@@ -9,7 +9,9 @@ import { SITE } from "@/lib/site";
   template: `
     <footer class="border-t border-border/60">
       <div class="container-wrapper px-4 xl:px-6">
-        <div class="text-muted-foreground flex min-h-14 flex-col items-center justify-center gap-1 py-6 text-center text-xs leading-loose sm:text-sm">
+        <div
+          class="text-muted-foreground flex min-h-14 flex-col items-center justify-center gap-1 py-6 text-center text-xs leading-loose sm:text-sm"
+        >
           <p>
             {{ site.name }} is an unofficial Angular port of
             <a
@@ -30,7 +32,11 @@ import { SITE } from "@/lib/site";
               target="_blank"
               >XorDev</a
             >, used with permission.
-            <a routerLink="/docs/credits" class="text-foreground mx-1 font-medium underline underline-offset-4">Full credits</a>
+            <a
+              routerLink="/docs/credits"
+              class="text-foreground mx-1 font-medium underline underline-offset-4"
+              >Full credits</a
+            >
           </p>
         </div>
       </div>

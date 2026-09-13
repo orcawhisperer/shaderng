@@ -1,13 +1,5 @@
 import { NgComponentOutlet, NgTemplateOutlet } from "@angular/common";
-import {
-  Component,
-  computed,
-  effect,
-  inject,
-  input,
-  linkedSignal,
-  signal,
-} from "@angular/core";
+import { Component, computed, effect, inject, input, linkedSignal, signal } from "@angular/core";
 import { Router } from "@angular/router";
 
 import { ORB_STATES, type OrbState, type OrbVariant } from "@/components/orbs/canvas";
@@ -15,11 +7,7 @@ import { CopyButton } from "@/app/ui/copy-button";
 import { loadOrb, type OrbEntry } from "@/lib/orb-loaders";
 import { ORB_CATALOG, ORB_SLUGS } from "@/lib/orb-catalog";
 import { SITE } from "@/lib/site";
-import {
-  buildAngularSnippet,
-  formatControlValue,
-  type SnippetDraft,
-} from "@/lib/snippet";
+import { buildAngularSnippet, formatControlValue, type SnippetDraft } from "@/lib/snippet";
 
 const STATE_LABELS: Record<OrbState, string> = {
   idle: "Idle",
@@ -187,8 +175,8 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
             <div class="flex flex-col gap-3 p-4">
               <span class="text-muted-foreground text-xs">Drive</span>
               <p class="text-muted-foreground text-xs leading-relaxed">
-                Microphone is driving <code class="bg-muted rounded px-1">volumes</code>.
-                Speak or play audio — this is original to shaderng, not shadercn.
+                Microphone is driving <code class="bg-muted rounded px-1">volumes</code>. Speak or
+                play audio — this is original to shaderng, not shadercn.
               </p>
             </div>
           } @else if (draft(); as live) {
@@ -259,7 +247,9 @@ const draftsFromPreset = (variant: OrbVariant): Drafts => ({
         </div>
       </ng-template>
     } @else if (loadError()) {
-      <div class="text-muted-foreground flex h-full items-center justify-center px-6 text-center text-sm">
+      <div
+        class="text-muted-foreground flex h-full items-center justify-center px-6 text-center text-sm"
+      >
         {{ loadError() }}
       </div>
     } @else {
@@ -318,9 +308,10 @@ export class OrbPlayground {
       paused: this.paused(),
       size: this.size(),
       state: this.state(),
-      volumes: this.listen() || draft?.autoDrive
-        ? undefined
-        : { input: draft?.input ?? 0, output: draft?.output ?? 0 },
+      volumes:
+        this.listen() || draft?.autoDrive
+          ? undefined
+          : { input: draft?.input ?? 0, output: draft?.output ?? 0 },
     };
   });
 
@@ -343,9 +334,7 @@ export class OrbPlayground {
           }
           console.error(`[${SITE.log}] failed to load ${slug}`, error);
           this.entry.set(null);
-          this.loadError.set(
-            error instanceof Error ? error.message : `Failed to load ${slug}`,
-          );
+          this.loadError.set(error instanceof Error ? error.message : `Failed to load ${slug}`);
         });
       onCleanup(() => {
         cancelled = true;

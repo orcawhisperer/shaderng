@@ -9,9 +9,7 @@ describe("analyticsPageview", () => {
   });
 
   it("replaces dynamic segments with the route pattern", () => {
-    expect(
-      analyticsPageview("/docs/components/orb-01", { slug: "orb-01" }),
-    ).toEqual({
+    expect(analyticsPageview("/docs/components/orb-01", { slug: "orb-01" })).toEqual({
       path: "/docs/components/orb-01",
       route: "/docs/components/[slug]",
     });

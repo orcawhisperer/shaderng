@@ -35,8 +35,7 @@ export const routes: Routes = [
       {
         path: "installation",
         title: "Installation",
-        loadComponent: () =>
-          import("./pages/installation-page").then((m) => m.InstallationPage),
+        loadComponent: () => import("./pages/installation-page").then((m) => m.InstallationPage),
       },
       {
         path: "changelog",
@@ -51,8 +50,7 @@ export const routes: Routes = [
       {
         path: "components",
         title: "Components",
-        loadComponent: () =>
-          import("./pages/components-page").then((m) => m.ComponentsPage),
+        loadComponent: () => import("./pages/components-page").then((m) => m.ComponentsPage),
       },
       {
         path: "components/:slug",

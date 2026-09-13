@@ -13,11 +13,17 @@ import { SITE } from "@/lib/site";
         <h2 class="text-xl font-semibold">shaderng</h2>
         <p class="text-muted-foreground">
           Unofficial Angular 22 port of
-          <a class="text-foreground underline underline-offset-4" [href]="site.original">{{ site.originalName }}</a>.
+          <a class="text-foreground underline underline-offset-4" [href]="site.original">{{
+            site.originalName
+          }}</a
+          >.
         </p>
         <ul class="list-disc space-y-1 pl-5">
           <li>33 orb shaders with the original TypeGPU GPU programs (XorDev / shadercn)</li>
-          <li>Shared WebGPU renderer from shadercn, wrapped as <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code></li>
+          <li>
+            Shared WebGPU renderer from shadercn, wrapped as
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-orb&gt;</code>
+          </li>
           <li>Standalone Angular components with typed signal inputs</li>
           <li>
             Original: microphone

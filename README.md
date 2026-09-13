@@ -118,19 +118,19 @@ Each orb folder is `gpu.ts` (TypeGPU shader), `meta.ts` (uniforms, colors, state
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm start` | Dev server on port 4200 |
-| `npm test` | Unit tests (Vitest) |
-| `npm run typecheck` | `tsc --noEmit` for app and spec configs |
+| Command                           | Description                                          |
+| --------------------------------- | ---------------------------------------------------- |
+| `npm start`                       | Dev server on port 4200                              |
+| `npm test`                        | Unit tests (Vitest)                                  |
+| `npm run typecheck`               | `tsc --noEmit` for app and spec configs              |
 | `npm run format` / `format:check` | Prettier (upstream `gpu.ts` / `meta.ts` are ignored) |
-| `npm run build` | Production build |
-| `npm run build:pages` | GitHub Pages build |
-| `npm run generate:orbs` | Regenerate Angular wrappers from shadercn sources |
+| `npm run build`                   | Production build                                     |
+| `npm run build:pages`             | GitHub Pages build                                   |
+| `npm run generate:orbs`           | Regenerate Angular wrappers from shadercn sources    |
 
 ## License
 
 Two licenses apply. Read both before shipping.
 
 - **MIT** ([LICENSE](LICENSE)) — the runtime (`renderer.ts`), orb presets, Angular wrappers, docs site, esbuild intercept, `[listen]`, and reduced-motion handling.
-- **Non-commercial, attribution required** — every `src/components/orbs/*/gpu.ts`. Those are XorDev’s shaders, ported with permission. The header in each file is the license: *“Non-commercial use only, with attribution to XorDev; keep this notice with the file.”* Copying an orb into your app copies that restriction. Commercial use of the shader programs needs XorDev’s permission.
+- **Non-commercial, attribution required** — every `src/components/orbs/*/gpu.ts`. Those are XorDev’s shaders, ported with permission. The header in each file is the license: _“Non-commercial use only, with attribution to XorDev; keep this notice with the file.”_ Copying an orb into your app copies that restriction. Commercial use of the shader programs needs XorDev’s permission.

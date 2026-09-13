@@ -16,7 +16,9 @@ import { ORB_CATALOG } from "@/lib/orb-catalog";
             <ng-container [ngTemplateOutlet]="docsNav" />
           </div>
         </details>
-        <aside class="no-scrollbar hidden h-[calc(100svh-var(--header-height))] overflow-y-auto py-8 lg:sticky lg:top-(--header-height) lg:block">
+        <aside
+          class="no-scrollbar hidden h-[calc(100svh-var(--header-height))] overflow-y-auto py-8 lg:sticky lg:top-(--header-height) lg:block"
+        >
           <ng-container [ngTemplateOutlet]="docsNav" />
         </aside>
         <div class="min-w-0 py-8 lg:py-10">

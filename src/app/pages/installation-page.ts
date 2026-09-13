@@ -15,9 +15,13 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
       <h1 class="text-3xl font-semibold tracking-tight">Installation</h1>
       <p class="text-muted-foreground text-lg">
         Add GPU shader components to an Angular 22 app. Components use
-        <a class="text-foreground underline underline-offset-4" href="https://vgpu.labs.vercel.dev/">vgpu</a>
+        <a class="text-foreground underline underline-offset-4" href="https://vgpu.labs.vercel.dev/"
+          >vgpu</a
+        >
         as the shader runtime and
-        <a class="text-foreground underline underline-offset-4" href="https://typegpu.com/">TypeGPU</a>
+        <a class="text-foreground underline underline-offset-4" href="https://typegpu.com/"
+          >TypeGPU</a
+        >
         for type-safe GPU code.
       </p>
 
@@ -25,8 +29,13 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
         <h2 class="text-xl font-semibold">Clone</h2>
         <p class="text-muted-foreground">
           Source lives at
-          <a class="text-foreground underline underline-offset-4" [href]="site.github" rel="noreferrer" target="_blank">{{ site.github }}</a>.
-          Copy HTTPS, SSH, or the raw git URL.
+          <a
+            class="text-foreground underline underline-offset-4"
+            [href]="site.github"
+            rel="noreferrer"
+            target="_blank"
+            >{{ site.github }}</a
+          >. Copy HTTPS, SSH, or the raw git URL.
         </p>
         <app-clone-options />
       </section>
@@ -36,10 +45,13 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
         <p class="text-muted-foreground">
           The runtime, presets, and Angular wrappers are MIT. Every
           <code class="bg-muted rounded px-1 py-0.5">gpu.ts</code> is XorDev’s shader, ported with
-          permission, and is <strong class="text-foreground">non-commercial use only, with attribution</strong>.
-          Keep the header notice in the file. Commercial use of the shader programs needs XorDev’s
+          permission, and is
+          <strong class="text-foreground">non-commercial use only, with attribution</strong>. Keep
+          the header notice in the file. Commercial use of the shader programs needs XorDev’s
           permission. Details on the
-          <a class="text-foreground underline underline-offset-4" routerLink="/docs/credits">credits page</a>.
+          <a class="text-foreground underline underline-offset-4" routerLink="/docs/credits"
+            >credits page</a
+          >.
         </p>
       </section>
 
@@ -65,8 +77,9 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">2. Enable the TypeGPU esbuild plugin</h2>
         <p class="text-muted-foreground">
-          GPU files use <code class="bg-muted rounded px-1 py-0.5 text-sm">"use gpu"</code> functions
-          that must be transformed at build time. Point the Angular application builder at
+          GPU files use
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">"use gpu"</code> functions that must be
+          transformed at build time. Point the Angular application builder at
           <code class="bg-muted rounded px-1 py-0.5 text-sm">tools/typegpu.esbuild.ts</code>.
         </p>
         <app-code-block [code]="esbuildPlugin" />
@@ -93,8 +106,9 @@ import { orbInstallCommand, runtimeInstallCommands } from "@/lib/snippet";
       <section class="space-y-3">
         <h2 class="text-xl font-semibold">5. Microphone drive (shaderng original)</h2>
         <p class="text-muted-foreground">
-          shadercn feeds voice levels as <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>.
-          shaderng adds a microphone listener that writes those volumes for you:
+          shadercn feeds voice levels as
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">volumes</code>. shaderng adds a
+          microphone listener that writes those volumes for you:
         </p>
         <app-code-block [code]="listenSnippet" />
       </section>
