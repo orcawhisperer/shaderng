@@ -1,0 +1,24 @@
+{
+  "$comment": "Files every orb depends on, relative to the repo root. Read by the installation docs and by tools/build-schematics.mjs.",
+  "source": [
+    "src/components/orbs/renderer.ts",
+    "src/components/orbs/canvas.ts",
+    "src/components/orbs/orb-base.ts",
+    "src/components/orbs/shader-orb.ts",
+    "src/lib/audio-drive.ts",
+    "src/lib/mic-drive.ts",
+    "src/lib/reduced-motion.ts",
+    "src/lib/site.ts",
+    "src/lib/utils.ts",
+    "src/webgpu.d.ts"
+  ],
+  "tools": ["tools/typegpu.esbuild.ts"],
+  "dependencies": ["vgpu", "typegpu", "clsx", "tailwind-merge"],
+  "devDependencies": [
+    "@angular-builders/custom-esbuild",
+    "unplugin-typegpu",
+    "@babel/core",
+    "@babel/preset-typescript",
+    "@webgpu/types"
+  ]
+}

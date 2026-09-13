@@ -6,6 +6,9 @@ import typegpuBabel from "unplugin-typegpu/babel";
 
 const GPU_IMPORT = /(?:^|[\\/])gpu(?:\.[cm]?[jt]sx?)?$/;
 
+/** Where the `@/*` path alias points, relative to the workspace root. `ng add shaderng` rewrites this. */
+const SOURCE_ROOT = "src";
+
 const toGpuFile = (args: OnResolveArgs, workspaceRoot: string): string | null => {
   if (!GPU_IMPORT.test(args.path)) {
     return null;
@@ -13,7 +16,7 @@ const toGpuFile = (args: OnResolveArgs, workspaceRoot: string): string | null =>
 
   let filePath: string;
   if (args.path.startsWith("@/")) {
-    filePath = path.join(workspaceRoot, "src", args.path.slice(2));
+    filePath = path.join(workspaceRoot, SOURCE_ROOT, args.path.slice(2));
   } else if (path.isAbsolute(args.path)) {
     filePath = args.path;
   } else {
