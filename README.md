@@ -74,9 +74,13 @@ Drive states (`idle`, `thinking`, `speaking`) ease the shader uniforms. Override
 
 ## GitHub Pages
 
-1. Use GitHub repository **`shaderng`** for `https://<user>.github.io/shaderng/`.
-2. Settings → Pages → Source: **GitHub Actions**.
-3. Merge to `main` (or run the **GitHub Pages** workflow). The action sets `<base href>` from the repo name and copies `index.html` to `404.html` so Angular routes work.
+Pages must be enabled **before** the deploy job can succeed. A 404 from `actions/deploy-pages` means the site is not turned on yet.
+
+1. Open [Settings → Pages](https://github.com/orcawhisperer/shaderng/settings/pages).
+2. Under **Build and deployment → Source**, choose **GitHub Actions** and save.
+3. Re-run the **GitHub Pages** workflow (Actions → GitHub Pages → Run workflow), or push to `main`.
+
+The site URL is `https://orcawhisperer.github.io/shaderng/`. The workflow sets `<base href>` from the repo name and copies `index.html` to `404.html` so Angular routes work.
 
 Local Pages build:
 
