@@ -1,0 +1,93 @@
+import { Component, inject } from "@angular/core";
+import { RouterLink, RouterLinkActive } from "@angular/router";
+
+import { ThemeService } from "@/lib/theme";
+
+const NAV = [
+  { href: "/docs", label: "Docs" },
+  { href: "/docs/components", label: "Components" },
+  { href: "/playground", label: "Playground" },
+];
+
+@Component({
+  selector: "app-site-header",
+  imports: [RouterLink, RouterLinkActive],
+  template: `
+    <header class="bg-background sticky top-0 z-50 w-full border-b border-border/60">
+      <div class="container-wrapper px-4 xl:px-6">
+        <div class="relative flex h-(--header-height) items-center gap-3">
+          <a routerLink="/" class="flex items-center gap-2 font-semibold tracking-tight">
+            <span
+              class="bg-foreground text-background flex size-6 items-center justify-center rounded-md text-[11px]"
+              >s</span
+            >
+            <span>shadercn</span>
+            <span class="text-muted-foreground font-normal">angular</span>
+          </a>
+
+          <nav class="ml-4 hidden items-center gap-1 lg:flex">
+            @for (item of nav; track item.href) {
+              <a
+                [routerLink]="item.href"
+                routerLinkActive="bg-muted text-foreground"
+                [routerLinkActiveOptions]="{ exact: item.href === '/docs' }"
+                class="text-muted-foreground hover:text-foreground rounded-md px-3 py-1.5 text-sm transition-colors"
+              >
+                {{ item.label }}
+              </a>
+            }
+          </nav>
+
+          <div class="ml-auto flex items-center gap-1">
+            <a
+              class="text-muted-foreground hover:text-foreground hidden rounded-md px-3 py-1.5 text-sm sm:inline"
+              href="https://github.com/shadcn-labs/shadercn"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Original
+            </a>
+            <a
+              class="text-muted-foreground hover:text-foreground rounded-md px-3 py-1.5 text-sm"
+              href="https://github.com/orcawhisperer/shadercn-angular"
+              rel="noreferrer"
+              target="_blank"
+            >
+              GitHub
+            </a>
+            <button
+              class="hover:bg-muted size-8 rounded-md"
+              type="button"
+              (click)="theme.toggle()"
+              [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+            >
+              @if (theme.theme() === "dark") {
+                <svg class="mx-auto size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 3v1m0 16v1m8.66-9.66-.7.7M4.04 4.04l-.7.7M21 12h-1M4 12H3m16.66 4.66-.7-.7M4.04 19.96l-.7-.7M12 8a4 4 0 100 8 4 4 0 000-8z"
+                  />
+                </svg>
+              } @else {
+                <svg class="mx-auto size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+                  />
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  `,
+})
+export class SiteHeader {
+  protected readonly nav = NAV;
+  protected readonly theme = inject(ThemeService);
+}
