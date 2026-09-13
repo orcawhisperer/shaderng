@@ -36,8 +36,15 @@ for (const file of ["collection.json", "package.json", "README.md"]) {
   cpSync(join(source, file), join(out, file));
 }
 cpSync(join(root, "LICENSE"), join(out, "LICENSE"));
-for (const schematic of ["ng-add", "orb"]) {
+for (const schematic of ["ng-add", "orb", "update"]) {
   cpSync(join(source, "src", schematic, "schema.json"), join(out, schematic, "schema.json"));
+}
+cpSync(
+  join(source, "src/migrations/migration-collection.json"),
+  join(out, "migrations/migration-collection.json"),
+);
+if (!existsSync(join(out, "update/known-hashes.json"))) {
+  throw new Error("tsc did not emit update/known-hashes.json; is resolveJsonModule on?");
 }
 
 for (const relative of [...runtime.source, ...runtime.tools]) {

@@ -68,6 +68,7 @@ export class DocsLayout {
     { href: "/docs", label: "Introduction" },
     { href: "/docs/installation", label: "Installation" },
     { href: "/docs/components", label: "Components" },
+    { href: "/docs/background", label: "Background" },
     { href: "/docs/changelog", label: "Changelog" },
     { href: "/docs/credits", label: "Credits" },
   ];

@@ -38,6 +38,11 @@ export const routes: Routes = [
         loadComponent: () => import("./pages/installation-page").then((m) => m.InstallationPage),
       },
       {
+        path: "background",
+        title: "Background",
+        loadComponent: () => import("./pages/background-page").then((m) => m.BackgroundPage),
+      },
+      {
         path: "changelog",
         title: "Changelog",
         loadComponent: () => import("./pages/changelog-page").then((m) => m.ChangelogPage),

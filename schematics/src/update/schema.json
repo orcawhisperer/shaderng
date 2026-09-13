@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "shaderng-update",
+  "title": "Refresh the copied shaderng files",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "The application project to update. Defaults to the first application in angular.json.",
+      "$default": {
+        "$source": "projectName"
+      }
+    },
+    "force": {
+      "type": "boolean",
+      "description": "Also replace files the project has edited.",
+      "default": false
+    }
+  },
+  "required": []
+}

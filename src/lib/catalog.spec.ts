@@ -4,6 +4,8 @@ import {
   buildAngularSnippet,
   ngAddCommand,
   ngGenerateOrbCommand,
+  ngPresetCommand,
+  ngUpdateCommand,
   orbInstallCommand,
   RUNTIME_PATHS,
   runtimeInstallCommands,
@@ -120,5 +122,10 @@ describe("install commands", () => {
   it("names the ng add package and its orb schematic", () => {
     expect(ngAddCommand()).toBe("ng add shaderng");
     expect(ngGenerateOrbCommand("orb-07")).toBe("ng g shaderng:orb orb-07");
+    expect(ngPresetCommand("orb-07", "https://x/playground?orb=orb-07&state=idle")).toBe(
+      'ng g shaderng:orb orb-07 --preset "https://x/playground?orb=orb-07&state=idle" --name look',
+    );
+    expect(ngPresetCommand("orb-07", "?p=a:1", "hero")).toContain("--name hero");
+    expect(ngUpdateCommand()).toBe("ng update shaderng");
   });
 });

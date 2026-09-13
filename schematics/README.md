@@ -30,6 +30,24 @@ ng g shaderng:orb 12,13,14
 ng g shaderng:orb --list
 ```
 
+Save a look from the [playground](https://shaderng.vercel.app/playground) ("Copy preset command"):
+
+```bash
+ng g shaderng:orb orb-07 --preset "https://shaderng.vercel.app/playground?orb=orb-07&state=speaking&p=twist:2.5" --name hero
+# writes src/components/orbs/orb-07/hero.preset.ts -> <orb-07 [preset]="orb07Hero" />
+```
+
+## Update
+
+```bash
+npm i -D shaderng@latest
+ng update shaderng        # or: ng g shaderng:update [--force]
+```
+
+The files `ng add` copies are yours to edit. Everything the schematics write is recorded with a
+hash in `shaderng.json`; the update replaces files you have not touched, adds new ones, and lists
+the edited ones instead of overwriting them. Formatting differences do not count as edits.
+
 ## Use
 
 ```ts
@@ -46,6 +64,18 @@ export class Hero {}
 `[listen]` drives the orb from the microphone; `[audio]` accepts any `MediaStream`, Web Audio
 node or `<audio>` element. Where WebGPU is missing the orb shows a CSS fallback, replaceable with
 `<ng-template shaderOrbFallback>`.
+
+As a background:
+
+```html
+<section class="relative">
+  <shader-background [variant]="orb12Orb" state="thinking" fit="cover" [scale]="1.2" />
+  <h1 class="relative">Hello</h1>
+</section>
+```
+
+`ShaderBackground` (from `@/components/orbs/shader-background`) fills its positioned parent, crops
+(`cover`) or fits (`contain`) the orb, and paints at 30 fps unless `maxFps` says otherwise.
 
 ## Requirements
 

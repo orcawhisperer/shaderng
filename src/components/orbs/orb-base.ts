@@ -3,18 +3,24 @@ import { contentChild, Directive, input } from "@angular/core";
 import type {
   OrbColorValues,
   OrbParamValues,
+  OrbPreset,
   OrbState,
   OrbVariant,
 } from "@/components/orbs/renderer";
 import { ShaderOrbFallback } from "@/components/orbs/shader-orb";
 import type { OrbAudioSource } from "@/lib/audio-drive";
 
+/**
+ * The inputs every orb element accepts, mirrored onto `<shader-orb>`. Shared by the generated
+ * `<orb-xx>` wrappers (through {@link OrbBase}) and `<shader-background>`.
+ */
 @Directive()
-export abstract class OrbBase {
-  abstract readonly variant: OrbVariant;
-
-  readonly size = input(280);
-  readonly state = input<OrbState>("idle");
+export abstract class OrbInputs {
+  /** A saved look from the playground; explicit inputs on the element override it. */
+  readonly preset = input<OrbPreset | undefined>(undefined);
+  /** Defaults to the preset's size, then 280. */
+  readonly size = input<number | undefined>(undefined);
+  readonly state = input<OrbState | undefined>(undefined);
   readonly params = input<OrbParamValues | undefined>(undefined);
   readonly colors = input<OrbColorValues | undefined>(undefined);
   readonly statePresets = input<Partial<Record<OrbState, Record<string, number>>> | undefined>(
@@ -33,6 +39,7 @@ export abstract class OrbBase {
   readonly pauseOffscreen = input(true);
   readonly respectReducedMotion = input(true);
   readonly maxDpr = input(2);
+  readonly maxFps = input(0);
   readonly className = input<string | undefined>(undefined);
   readonly style = input<Record<string, string> | undefined>(undefined);
   readonly ariaLabel = input<string | undefined>(undefined);
@@ -41,10 +48,16 @@ export abstract class OrbBase {
   readonly fallbackTemplate = contentChild(ShaderOrbFallback);
 }
 
+@Directive()
+export abstract class OrbBase extends OrbInputs {
+  abstract readonly variant: OrbVariant;
+}
+
 export const ORB_TEMPLATE = `
 <shader-orb
   [variant]="variant"
-  [size]="size()"
+  [preset]="preset()"
+  [size]="size() ?? preset()?.size ?? 280"
   [state]="state()"
   [params]="params()"
   [colors]="colors()"
@@ -58,6 +71,7 @@ export const ORB_TEMPLATE = `
   [pauseOffscreen]="pauseOffscreen()"
   [respectReducedMotion]="respectReducedMotion()"
   [maxDpr]="maxDpr()"
+  [maxFps]="maxFps()"
   [className]="className()"
   [style]="style()"
   [ariaLabel]="ariaLabel()"

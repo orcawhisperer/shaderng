@@ -68,6 +68,19 @@ export interface OrbVariant {
 export type OrbParamValues = Partial<Record<string, number>>;
 export type OrbColorValues = Partial<Record<string, string>>;
 
+/**
+ * A saved look, as exported from the playground (`ng g shaderng:orb <slug> --preset <link>`).
+ * Bind it with `[preset]`; explicit inputs on the same element win, and `params` / `colors`
+ * merge on top of the preset's.
+ */
+export interface OrbPreset {
+  state?: OrbState;
+  size?: number;
+  params?: OrbParamValues;
+  colors?: OrbColorValues;
+  volumes?: { input?: number; output?: number };
+}
+
 /** Everything the loop reads each frame — the caller owns it and may mutate it. */
 export interface OrbDrive {
   state: OrbState;
@@ -390,8 +403,15 @@ interface HostEntry {
   readonly visible: () => boolean;
   readonly onFirstFrame?: () => void;
   readonly onError: (error: unknown) => void;
+  /** Seconds between paints for a capped entry, 0 for every frame. */
+  readonly interval: number;
+  /** Time waiting to be simulated since this entry last painted. */
+  pending: number;
   painted: boolean;
 }
+
+/** The longest single simulation step; a capped entry advances by at most this much per paint. */
+const MAX_CAPPED_STEP = 0.1;
 
 /**
  * One WebGPU device shared by every mounted orb, driven by a single frame loop
@@ -440,7 +460,12 @@ class OrbHost {
         if (live.paused || !entry.visible()) {
           continue;
         }
-        entry.scene.advance(dt, live);
+        entry.pending += dt;
+        if (entry.interval > 0 && entry.pending < entry.interval) {
+          continue;
+        }
+        entry.scene.advance(Math.min(entry.pending, MAX_CAPPED_STEP), live);
+        entry.pending = 0;
         frame.pass(entry.output, entry.scene.shader);
         if (!entry.painted) {
           entry.painted = true;
@@ -512,6 +537,11 @@ export interface OrbRendererOptions {
   /** Read once per frame, so the caller can mutate its drive in place. */
   readonly drive: () => OrbDrive;
   readonly maxDpr?: number;
+  /**
+   * Cap on paints per second for this canvas; `0` or `undefined` paints every frame.
+   * Backgrounds and decorative orbs look the same at 30 and cost half as much.
+   */
+  readonly maxFps?: number;
   /** Skip frames while the canvas is scrolled out of view. */
   readonly pauseOffscreen?: boolean;
   readonly onFirstFrame?: () => void;
@@ -529,6 +559,7 @@ export const createOrbRenderer = ({
   variant,
   drive,
   maxDpr = 2,
+  maxFps,
   pauseOffscreen = true,
   onFirstFrame,
   onError,
@@ -589,7 +620,9 @@ export const createOrbRenderer = ({
         },
         onFirstFrame,
         output,
+        interval: maxFps && maxFps > 0 ? 1 / maxFps : 0,
         painted: false,
+        pending: 0,
         scene,
         visible: () => visible,
       };

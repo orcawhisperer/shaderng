@@ -7,6 +7,8 @@ import { SITE } from "@/lib/site";
 import {
   ngAddCommand,
   ngGenerateOrbCommand,
+  ngPresetCommand,
+  ngUpdateCommand,
   orbInstallCommand,
   runtimeInstallCommands,
 } from "@/lib/snippet";
@@ -111,6 +113,48 @@ import {
       </section>
 
       <section class="space-y-3">
+        <h2 class="text-xl font-semibold">4. Save a look from the playground</h2>
+        <p class="text-muted-foreground">
+          "Copy preset command" in the
+          <a class="text-foreground underline underline-offset-4" routerLink="/playground"
+            >playground</a
+          >
+          gives you this line. It copies the orb if needed and writes
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;name&gt;.preset.ts</code> next to
+          it, an <code class="bg-muted rounded px-1 py-0.5 text-sm">OrbPreset</code> with the state,
+          size, params, colours and volumes behind the link.
+        </p>
+        <app-code-block [code]="presetCommand" />
+        <app-code-block [code]="presetUsage" />
+        <p class="text-muted-foreground text-sm">
+          Explicit inputs on the element win over the preset;
+          <code class="bg-muted rounded px-1 py-0.5">params</code> and
+          <code class="bg-muted rounded px-1 py-0.5">colors</code> merge on top of it.
+        </p>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold">5. Update</h2>
+        <p class="text-muted-foreground">
+          The copied files are yours to edit, and updates respect that.
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">ng add</code> and
+          <code class="bg-muted rounded px-1 py-0.5 text-sm">ng g shaderng:orb</code> record what
+          they wrote in <code class="bg-muted rounded px-1 py-0.5 text-sm">shaderng.json</code>.
+          When a new version ships, the update replaces files you have not touched, adds new ones,
+          and lists the ones with local edits instead of overwriting them.
+        </p>
+        <app-code-block [code]="updateCommand" />
+        <p class="text-muted-foreground text-sm">
+          Projects installed before
+          <code class="bg-muted rounded px-1 py-0.5">shaderng.json</code> existed are recognised by
+          the published file hashes, so the first update works the same way. Pass
+          <code class="bg-muted rounded px-1 py-0.5">--force</code> to the schematic to take every
+          file. Formatting differences (the CLI runs Prettier over generated files) do not count as
+          edits.
+        </p>
+      </section>
+
+      <section class="space-y-3">
         <h2 class="text-xl font-semibold">Without ng add</h2>
         <p class="text-muted-foreground">
           The same result by hand, for projects that cannot run schematics.
@@ -170,6 +214,19 @@ ${ngAddCommand()} --orbs ""              # runtime only`;
   protected readonly generateOrb = `${ngGenerateOrbCommand("orb-07")}
 ${ngGenerateOrbCommand("12,13,14")}
 ${ngGenerateOrbCommand("--list")}`;
+  protected readonly presetCommand = ngPresetCommand(
+    "orb-07",
+    `${SITE.url}/playground?orb=orb-07&state=speaking&p=twist:2.5&c=tint:ff8800`,
+    "hero",
+  );
+  protected readonly presetUsage = `import { Orb07 } from "@/components/orbs/orb-07";
+import { orb07Hero } from "@/components/orbs/orb-07/hero.preset";
+
+<orb-07 [preset]="orb07Hero" />
+<orb-07 [preset]="orb07Hero" state="idle" />   // preset, but idle`;
+  protected readonly updateCommand = `npm i -D shaderng@latest
+${ngUpdateCommand()}                 # runs the migration: refresh untouched files
+ng g shaderng:update               # the same, any time; --force takes every file`;
   protected readonly installDeps = runtimeInstallCommands();
   protected readonly installOrb = orbInstallCommand("orb-01");
   protected readonly pathAlias = `"compilerOptions": {

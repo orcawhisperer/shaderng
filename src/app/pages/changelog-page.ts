@@ -39,6 +39,20 @@ import { SITE } from "@/lib/site";
             Instant fallback where WebGPU is missing, shareable playground links, per-route titles
           </li>
           <li>
+            0.2.0:
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">&lt;shader-background&gt;</code>
+            (any orb as a full-bleed, 30 fps background with
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">fit</code> and
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">scale</code>),
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">[preset]</code> input and
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">ng g shaderng:orb --preset</code>
+            to save a playground look into a project,
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">maxFps</code>,
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">shaderng.json</code> lockfile and
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">ng update shaderng</code> that
+            refreshes untouched files and keeps edited ones
+          </li>
+          <li>
             <code class="bg-muted rounded px-1 py-0.5 text-sm">ng add shaderng</code> installs the
             runtime, wires the TypeGPU esbuild plugin and copies orbs;
             <code class="bg-muted rounded px-1 py-0.5 text-sm">ng g shaderng:orb</code> adds more.

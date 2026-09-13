@@ -7,8 +7,8 @@ import { SchematicsException, type Tree } from "@angular-devkit/schematics";
  * The built package root: `<package>/shared/package-files.js` sits one level below it.
  * `files/` and `versions.json` are generated there by `tools/build-schematics.mjs`.
  */
-const PACKAGE_ROOT = join(__dirname, "..");
-const FILES_ROOT = join(PACKAGE_ROOT, "files");
+export const PACKAGE_ROOT = join(__dirname, "..");
+export const FILES_ROOT = join(PACKAGE_ROOT, "files");
 
 export const RUNTIME_SOURCE_DIR = join(FILES_ROOT, "runtime", "src");
 export const RUNTIME_TOOLS_DIR = join(FILES_ROOT, "runtime", "tools");
@@ -82,6 +82,17 @@ export const copyDirectory = (
   }
   return result;
 };
+
+/**
+ * The esbuild plugin resolves "@/..." imports itself, against `src` by default; point the copy
+ * at this project's sourceRoot.
+ */
+export const transformForProject =
+  (sourceRoot: string) =>
+  (path: string, content: string): string =>
+    path.endsWith("typegpu.esbuild.ts") && sourceRoot !== "src"
+      ? content.replace('const SOURCE_ROOT = "src";', `const SOURCE_ROOT = "${sourceRoot}";`)
+      : content;
 
 /** Slugs of the orbs bundled with this package, e.g. `orb-01` … `orb-33`. */
 export const availableOrbs = (): string[] => {
