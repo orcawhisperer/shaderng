@@ -28,5 +28,7 @@ jobs:
         run: npm run typecheck
       - name: Test
         run: npm test -- --watch=false
+      - name: Schematics
+        run: npm run test:schematics
       - name: Build
         run: npm run build
