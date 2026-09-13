@@ -67,7 +67,7 @@ export interface ShaderOrbFallbackContext {
   imports: [NgTemplateOutlet],
   template: `
     <div
-      [class]="cn('relative', className())"
+      [class]="cn('shader-orb-root', className())"
       [style.width.px]="size()"
       [style.height.px]="size()"
       [style]="style()"
@@ -75,7 +75,7 @@ export interface ShaderOrbFallbackContext {
       @if (!unsupported()) {
         <canvas
           #canvas
-          class="block size-full transition-opacity duration-300"
+          class="shader-orb-canvas"
           role="img"
           [style.opacity]="painted() ? 1 : 0"
           [attr.aria-label]="label()"
@@ -83,11 +83,7 @@ export interface ShaderOrbFallbackContext {
         ></canvas>
       }
       @if (unsupported() || errorMessage()) {
-        <div
-          class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center"
-          role="img"
-          [attr.aria-label]="label()"
-        >
+        <div class="shader-orb-overlay" role="img" [attr.aria-label]="label()">
           @if (fallbackTemplate(); as template) {
             <ng-container
               [ngTemplateOutlet]="template"
@@ -95,7 +91,7 @@ export interface ShaderOrbFallbackContext {
             />
           } @else {
             <div class="shader-orb-fallback" [style.--orb-tint]="tint()" aria-hidden="true"></div>
-            <p class="text-muted-foreground text-xs" role="status">
+            <p class="shader-orb-message text-muted-foreground" role="status">
               {{ errorMessage() ?? WEBGPU_HELP }}
             </p>
           }
@@ -103,7 +99,34 @@ export interface ShaderOrbFallbackContext {
       }
     </div>
   `,
+  /* Layout lives here rather than in utility classes so the orb works in apps without Tailwind. */
   styles: `
+    .shader-orb-root {
+      position: relative;
+    }
+    .shader-orb-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transition: opacity 300ms;
+    }
+    .shader-orb-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      text-align: center;
+    }
+    .shader-orb-message {
+      margin: 0;
+      font-size: 0.75rem;
+      line-height: 1rem;
+      opacity: 0.8;
+    }
     .shader-orb-fallback {
       --orb-tint: #8b8ba3;
       width: 62%;
