@@ -101,11 +101,17 @@ import { FIELD_CATALOG } from "@/lib/field-catalog";
                 >
                   <div class="flex items-baseline justify-between gap-2">
                     <h2 class="font-medium text-foreground text-base">{{ field.title }}</h2>
-                    <span class="text-muted-foreground text-xs font-mono uppercase">{{ field.name }}</span>
+                    <span class="text-muted-foreground text-xs font-mono uppercase">{{
+                      field.name
+                    }}</span>
                   </div>
-                  <p class="text-muted-foreground mt-1 line-clamp-2 text-sm">{{ field.description }}</p>
+                  <p class="text-muted-foreground mt-1 line-clamp-2 text-sm">
+                    {{ field.description }}
+                  </p>
                 </a>
-                <div class="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-xs">
+                <div
+                  class="mt-4 flex items-center justify-between border-t border-border/60 pt-3 text-xs"
+                >
                   <a
                     class="font-medium text-primary hover:underline"
                     [routerLink]="['/docs/fields', field.slug]"

@@ -303,7 +303,11 @@ export const createOrbScene = (
     }
   }
   for (let i = 0; i < variant.colors.length; i += 1) {
-    writeHex(initThemeColor?.[variant.colors[i].key] ?? variant.colors[i].default, words, colorSlots[i]);
+    writeHex(
+      initThemeColor?.[variant.colors[i].key] ?? variant.colors[i].default,
+      words,
+      colorSlots[i],
+    );
   }
 
   const [restingIn, restingOut] = targetVolumes(drive.state, 0);

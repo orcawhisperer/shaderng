@@ -21,7 +21,15 @@ export const nebulaField: OrbVariant = {
   label: meta.title,
   note: meta.description,
   params: [
-    { default: 0.4, integrate: true, key: "speed", label: "Cosmic drift", max: 3, min: 0, step: 0.02 },
+    {
+      default: 0.4,
+      integrate: true,
+      key: "speed",
+      label: "Cosmic drift",
+      max: 3,
+      min: 0,
+      step: 0.02,
+    },
     { default: 1.5, key: "scale", label: "Scale", max: 4, min: 0.5, step: 0.05 },
     { default: 1.4, key: "density", label: "Cloud density", max: 3, min: 0.2, step: 0.05 },
     { default: 1.2, key: "glow", label: "Core radiance", max: 3, min: 0.1, step: 0.05 },

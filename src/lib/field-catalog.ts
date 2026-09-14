@@ -54,7 +54,8 @@ export const FIELD_CATALOG: FieldCatalogItem[] = [
     title: "Caustics",
   },
   {
-    description: "infinite 3D synthwave grid receding to a glowing neon horizon with interactive camera tilt",
+    description:
+      "infinite 3D synthwave grid receding to a glowing neon horizon with interactive camera tilt",
     name: "Synthwave",
     slug: "cyber",
     title: "Cyber",

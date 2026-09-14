@@ -4,7 +4,8 @@ import { cyberParams, cyberShader } from "@/components/fields/cyber/gpu";
 /* Original to shaderng. MIT, like the runtime: usable commercially, unlike the orb shaders. */
 
 export const meta = {
-  description: "infinite 3D synthwave grid receding to a glowing neon horizon with interactive camera tilt",
+  description:
+    "infinite 3D synthwave grid receding to a glowing neon horizon with interactive camera tilt",
   files: ["cyber.ts", "meta.ts", "gpu.ts"],
   slug: "cyber",
   title: "Cyber",
@@ -21,7 +22,15 @@ export const cyberField: OrbVariant = {
   label: meta.title,
   note: meta.description,
   params: [
-    { default: 0.6, integrate: true, key: "speed", label: "Grid speed", max: 3, min: 0, step: 0.02 },
+    {
+      default: 0.6,
+      integrate: true,
+      key: "speed",
+      label: "Grid speed",
+      max: 3,
+      min: 0,
+      step: 0.02,
+    },
     { default: 1.0, key: "grid", label: "Grid scale", max: 3, min: 0.2, step: 0.05 },
     { default: 1.2, key: "glow", label: "Neon glow", max: 3, min: 0.1, step: 0.05 },
     { default: 0.5, key: "horizon", label: "Horizon height", max: 0.8, min: 0.2, step: 0.02 },

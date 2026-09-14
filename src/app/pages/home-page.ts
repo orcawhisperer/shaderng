@@ -138,7 +138,12 @@ import { ngAddCommand } from "@/lib/snippet";
             >
               <span>Customize</span>
               <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </a>
           </div>
@@ -181,7 +186,9 @@ export class HomePage {
 
   protected readonly heroKeys = Object.keys(this.heroOptions);
   protected readonly activeHero = signal("aurora");
-  protected readonly activeHeroVariant = computed(() => this.heroOptions[this.activeHero()].variant);
+  protected readonly activeHeroVariant = computed(
+    () => this.heroOptions[this.activeHero()].variant,
+  );
 
   protected readonly originals = [
     {

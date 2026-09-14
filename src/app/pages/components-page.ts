@@ -16,7 +16,8 @@ import { ORB_CATALOG } from "@/lib/orb-catalog";
         <code class="bg-muted rounded px-1 py-0.5 text-base">ng add shaderng</code>, each one is a
         single <code class="bg-muted rounded px-1 py-0.5 text-base">ng g shaderng:orb</code> away.
         Rectangular, MIT-licensed backgrounds live under
-        <a class="text-foreground underline underline-offset-4" routerLink="/docs/fields">fields</a>.
+        <a class="text-foreground underline underline-offset-4" routerLink="/docs/fields">fields</a
+        >.
       </p>
 
       <!-- Instant Filter Bar -->

@@ -26,7 +26,15 @@ describe("encodeShare", () => {
   it("omits params and colors equal to the preset", () => {
     expect(
       encodeShare(variant, { draft: preset, size: 420, slug: "orb-01", state: "idle" }),
-    ).toEqual({ c: null, field: null, orb: "orb-01", p: null, size: "420", state: "idle", v: null });
+    ).toEqual({
+      c: null,
+      field: null,
+      orb: "orb-01",
+      p: null,
+      size: "420",
+      state: "idle",
+      v: null,
+    });
   });
 
   it("writes only the differences, hex colors without the hash", () => {

@@ -226,7 +226,7 @@ export interface PlaygroundEntry {
                 [attr.aria-label]="'Toggle theme, currently ' + theme()"
                 (click)="toggleTheme()"
               >
-                @if (theme() === 'dark') {
+                @if (theme() === "dark") {
                   <span>🌙 Dark</span>
                 } @else {
                   <span>☀️ Light</span>
@@ -308,19 +308,24 @@ export interface PlaygroundEntry {
           } @else {
             <div class="bg-muted/30 p-4 text-xs text-muted-foreground leading-relaxed">
               <span class="font-medium text-foreground">Rectangular MIT Field:</span>
-              Fills its positioned parent container (<code class="bg-muted rounded px-1 font-mono">fit="fill"</code>).
-              Responsive to aspect ratio, cursor tilt, and voice volume.
+              Fills its positioned parent container (<code class="bg-muted rounded px-1 font-mono"
+                >fit="fill"</code
+              >). Responsive to aspect ratio, cursor tilt, and voice volume.
             </div>
           }
 
           @if (current.variant.colors.length > 0 && draft(); as live) {
             <div class="flex flex-col gap-3 p-4">
-              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Colors</span>
+              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider"
+                >Colors</span
+              >
               @for (c of current.variant.colors; track c.key) {
                 <label class="flex items-center justify-between gap-3 text-xs">
                   <span>{{ c.label }}</span>
                   <div class="flex items-center gap-2">
-                    <span class="font-mono text-[11px] text-muted-foreground">{{ live.colors[c.key] }}</span>
+                    <span class="font-mono text-[11px] text-muted-foreground">{{
+                      live.colors[c.key]
+                    }}</span>
                     <input
                       class="size-7 cursor-pointer rounded border bg-transparent"
                       type="color"
@@ -335,15 +340,19 @@ export interface PlaygroundEntry {
 
           @if (listen()) {
             <div class="flex flex-col gap-3 p-4">
-              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Audio Drive</span>
+              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider"
+                >Audio Drive</span
+              >
               <p class="text-muted-foreground text-xs leading-relaxed">
-                Microphone is actively driving <code class="bg-muted rounded px-1">volumes</code>. Speak or
-                play audio to watch the shader respond in real time.
+                Microphone is actively driving <code class="bg-muted rounded px-1">volumes</code>.
+                Speak or play audio to watch the shader respond in real time.
               </p>
             </div>
           } @else if (draft(); as live) {
             <div class="flex flex-col gap-3 p-4">
-              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Audio Drive</span>
+              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider"
+                >Audio Drive</span
+              >
               <button
                 class="inline-flex h-8 items-center justify-center rounded-md border px-3 text-xs font-medium"
                 [class]="live.autoDrive ? 'bg-secondary' : 'bg-background'"
@@ -387,7 +396,9 @@ export interface PlaygroundEntry {
 
           @if (draft(); as live) {
             <div class="flex flex-col gap-3 p-4">
-              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider">Shader Uniforms</span>
+              <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider"
+                >Shader Uniforms</span
+              >
               @for (p of current.variant.params; track p.key) {
                 <label class="flex flex-col gap-2 text-xs">
                   <span class="flex items-center justify-between">
@@ -574,7 +585,10 @@ export class OrbPlayground {
             return;
           }
           this.entry.set(loaded);
-          const drafts = draftsFromPreset(loaded.variant, untracked(() => this.theme()));
+          const drafts = draftsFromPreset(
+            loaded.variant,
+            untracked(() => this.theme()),
+          );
           const share = untracked(() => this.initialShare());
           if (share && !this.shareApplied) {
             this.shareApplied = true;

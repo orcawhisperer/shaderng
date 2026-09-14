@@ -21,7 +21,15 @@ export const warpField: OrbVariant = {
   label: meta.title,
   note: meta.description,
   params: [
-    { default: 1.0, integrate: true, key: "speed", label: "Warp speed", max: 4, min: 0.1, step: 0.05 },
+    {
+      default: 1.0,
+      integrate: true,
+      key: "speed",
+      label: "Warp speed",
+      max: 4,
+      min: 0.1,
+      step: 0.05,
+    },
     { default: 1.0, key: "stars", label: "Star density", max: 2, min: 0.2, step: 0.05 },
     { default: 1.2, key: "streak", label: "Streak length", max: 3, min: 0.2, step: 0.05 },
     { default: 0.8, key: "rings", label: "Warp rings", max: 2, min: 0, step: 0.05 },

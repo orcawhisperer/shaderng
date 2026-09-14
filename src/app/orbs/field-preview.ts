@@ -48,7 +48,7 @@ const STATE_LABELS: Record<OrbState, string> = {
           class="bg-background/90 hover:bg-muted text-foreground inline-flex h-7 items-center gap-1 rounded-md border px-2 text-xs font-medium backdrop-blur transition-colors"
           [attr.aria-label]="'Toggle theme, currently ' + effectiveTheme()"
         >
-          @if (effectiveTheme() === 'dark') {
+          @if (effectiveTheme() === "dark") {
             <span>🌙 Dark</span>
           } @else {
             <span>☀️ Light</span>
@@ -88,7 +88,9 @@ export class FieldPreview {
   protected readonly hostClass = computed(() =>
     cn(
       "relative min-h-[22rem] overflow-hidden rounded-xl border transition-colors",
-      this.effectiveTheme() === "light" ? "bg-slate-50 border-slate-200" : "bg-[#09090b] border-border",
+      this.effectiveTheme() === "light"
+        ? "bg-slate-50 border-slate-200"
+        : "bg-[#09090b] border-border",
       this.className(),
     ),
   );

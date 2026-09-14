@@ -107,7 +107,11 @@ const cyberFragment = tgpu
       col = col.add(u.c_glow.mul(groundHaze * 0.7));
 
       const isLightGround = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
-      const lightGround = std.mix(u.c_base, groundCol, std.clamp(gridIntensity * 1.2 + groundHaze * 0.5, 0, 1));
+      const lightGround = std.mix(
+        u.c_base,
+        groundCol,
+        std.clamp(gridIntensity * 1.2 + groundHaze * 0.5, 0, 1),
+      );
       col = std.mix(col, lightGround, isLightGround);
 
       alpha = std.clamp(gridIntensity + groundHaze * 0.5 + u.p_fill, 0, 1);
@@ -129,7 +133,11 @@ const cyberFragment = tgpu
       col = col.add(d.vec3f(star * (1 + 0.5 * voice)));
 
       const isLightSky = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
-      const lightSky = std.mix(u.c_base, skyCol, std.clamp(horizonGlow * 0.7 + skyGrad * 0.35, 0, 1));
+      const lightSky = std.mix(
+        u.c_base,
+        skyCol,
+        std.clamp(horizonGlow * 0.7 + skyGrad * 0.35, 0, 1),
+      );
       col = std.mix(col, lightSky, isLightSky);
 
       alpha = std.clamp(horizonGlow + star * (1 - isLightSky) + 0.15 + u.p_fill, 0, 1);
