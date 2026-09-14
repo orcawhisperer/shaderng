@@ -59,7 +59,7 @@ Also original here: eight **fields** (cyber, nebula, warp, aurora, flow, grid, w
 ## Features
 
 - **33 orb shaders** — the full shadercn set, from Dispersion to Abyss
-- **8 field shaders** — original MIT backgrounds drawn for rectangles, not spheres
+- **10 field shaders** — original MIT backgrounds drawn for rectangles, not spheres
 - **Adaptive themes** — dual-mode light and dark color palettes across all fields and orbs
 - **Angular 22** — standalone components, signal inputs, zoneless change detection
 - **WebGPU** — the original `renderer.ts` scene loop, wrapped as `<shader-orb>`

@@ -1,6 +1,6 @@
 {
   "name": "shaderng",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "ng add shaderng: GPU shader orbs and rectangular fields for Angular 22, copied into your project. Unofficial Angular port of shadercn.",
   "license": "MIT",
   "homepage": "https://shaderng.vercel.app",

@@ -15,6 +15,11 @@
       "version": "0.4.0",
       "description": "shaderng 0.4.0: add cyber, nebula, warp fields, dual-mode light/dark support, and refresh unmodified files.",
       "factory": "../update/index#update"
+    },
+    "refresh-files-0-5-0": {
+      "version": "0.5.0",
+      "description": "shaderng 0.5.0: add paint and singularity fields, rework every field shader (tone mapping, round stars, structural state presets), and refresh unmodified files.",
+      "factory": "../update/index#update"
     }
   }
 }

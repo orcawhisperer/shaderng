@@ -39,6 +39,20 @@ import { SITE } from "@/lib/site";
             Instant fallback where WebGPU is missing, shareable playground links, per-route titles
           </li>
           <li>
+            0.5.0: two new MIT
+            <a routerLink="/docs/fields" class="underline underline-offset-4">fields</a>
+            (paint watercolour landscape, singularity black hole with gravitational lensing); every
+            one of the 10 field shaders reworked with ACES tone mapping, resolution-independent
+            round starfields, depth-ordered compositing, dispersive caustics, analytic grid
+            anti-aliasing and a slotted retro sun; structural
+            <code class="bg-muted rounded px-1 py-0.5 text-sm">idle</code>/<code
+              class="bg-muted rounded px-1 py-0.5 text-sm"
+              >thinking</code
+            >/<code class="bg-muted rounded px-1 py-0.5 text-sm">speaking</code> state presets
+            across every field; playground resolution and aspect presets plus in-browser video
+            recording
+          </li>
+          <li>
             0.4.0: three new MIT
             <a routerLink="/docs/fields" class="underline underline-offset-4">fields</a>
             (cyber 3D, cosmic nebula, hyperspace warp); dual-mode light/dark theme support across
