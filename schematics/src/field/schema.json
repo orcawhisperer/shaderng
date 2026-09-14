@@ -6,7 +6,7 @@
   "properties": {
     "fields": {
       "type": "string",
-      "description": "Comma-separated field slugs (aurora, caustics, cyber, flow, grid, nebula, warp, waves), or \"all\".",
+      "description": "Comma-separated field slugs (aurora, caustics, cyber, flow, grid, nebula, paint, singularity, warp, waves), or \"all\".",
       "$default": {
         "$source": "argv",
         "index": 0

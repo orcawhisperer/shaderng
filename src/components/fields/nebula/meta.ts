@@ -37,19 +37,28 @@ export const nebulaField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: nebulaShader,
+  // The camera effectively moves between states: thinking pulls back into deep fine
+  // structure with strong parallax, speaking pushes right up into the bright core.
   statePresets: {
     idle: {
-      glow: 1.0,
-      speed: 0.3,
+      density: 1.1,
+      drift: 0.4,
+      glow: 0.9,
+      scale: 1.3,
+      speed: 0.28,
     },
     thinking: {
       density: 1.8,
-      glow: 1.6,
-      speed: 0.8,
+      drift: 1.1,
+      glow: 1.5,
+      scale: 2.4,
+      speed: 0.85,
     },
     speaking: {
-      density: 2.0,
-      glow: 2.2,
+      density: 1.9,
+      drift: 0.7,
+      glow: 1.7,
+      scale: 1.1,
       speed: 1.2,
     },
   },

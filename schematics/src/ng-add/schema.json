@@ -19,9 +19,9 @@
     },
     "fields": {
       "type": "string",
-      "description": "Comma-separated field slugs to copy right away (aurora, flow, grid, waves, caustics), \"all\", or empty for none.",
+      "description": "Comma-separated field slugs to copy right away (aurora, caustics, cyber, flow, grid, nebula, paint, singularity, warp, waves), \"all\", or empty for none.",
       "default": "",
-      "x-prompt": "Which fields should be copied now? (aurora, flow, grid, waves, caustics, \"all\", or leave empty)"
+      "x-prompt": "Which fields should be copied now? (aurora, caustics, cyber, flow, grid, nebula, paint, singularity, warp, waves, \"all\", or leave empty)"
     },
     "force": {
       "type": "boolean",

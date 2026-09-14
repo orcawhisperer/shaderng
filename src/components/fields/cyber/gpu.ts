@@ -100,8 +100,14 @@ const cyberFragment = tgpu
       // Horizon ground haze
       const groundHaze = std.exp(-dy * 12) * glowMult;
 
+      // Analytic anti-aliasing. Near the horizon one grid cell shrinks below a pixel and
+      // `fract` turns into moire noise, so fade the wires out as the cell footprint
+      // approaches pixel size. This is the derivative of groundZ with respect to screen y.
+      const cellPerPixel = (depth * depth * u.p_grid * 1.2) / std.max(u.res.y, 1);
+      const aa = 1 / (1 + cellPerPixel * 3.5);
+
       // Combine grid colors
-      const gridIntensity = (lines + bloom * 0.7 + energyPulse * 1.5) * distanceFade;
+      const gridIntensity = (lines + bloom * 0.7 + energyPulse * 1.5) * distanceFade * aa;
       const groundCol = std.mix(u.c_grid, u.c_glow, energyPulse + fog * 0.5);
       col = col.add(groundCol.mul(gridIntensity));
       col = col.add(u.c_glow.mul(groundHaze * 0.7));
@@ -125,11 +131,29 @@ const cyberFragment = tgpu
       const skyCol = std.mix(u.c_glow, u.c_sky, skyGrad);
       col = col.add(skyCol.mul(horizonGlow * 0.8 + 0.15 * (1 - skyGrad)));
 
-      // Distant stars glittering in the upper sky
-      const starCoord = std.floor(input.uv.mul(u.res).div(2.5));
-      const starRand = hash21(starCoord);
+      // Retro sun: the one element the synthwave look really needs. Horizontal slots
+      // widen toward the base of the disc, the way the classic poster art does it.
+      const sunV = p.sub(d.vec2f(tiltX * 0.6, hz - 0.3));
+      const sd = std.length(d.vec2f(sunV.x, sunV.y * 1.04));
+      const disc = std.smoothstep(0.26, 0.243, sd);
+      const down = std.clamp((sunV.y + 0.26) / 0.52, 0, 1);
+      const duty = std.mix(1, 0.3, down * down);
+      const slots = std.step(std.fract(p.y * 34), duty);
+      const sunCol = std.mix(u.c_sky, u.c_glow, down);
+      col = col.add(sunCol.mul(disc * slots * (1.15 + 0.5 * voice)));
+
+      // Distant stars glittering in the upper sky. A jittered cell lattice in
+      // aspect-corrected space keeps them round and the same size on every display,
+      // unlike a screen-pixel grid which turns into square confetti at high DPR.
+      const starUV = p.mul(38);
+      const starCell = std.floor(starUV);
+      const starRand = hash21(starCell);
+      const starPos = d.vec2f(0.25 + 0.5 * starRand, 0.25 + 0.5 * std.fract(starRand * 31.7));
+      const starD = std.length(std.fract(starUV).sub(starPos));
+      const starDisc = std.smoothstep(0.16, 0, starD);
       const twinkle = 0.5 + 0.5 * std.sin(u.time * 3 + starRand * 40);
-      const star = std.pow(starRand, 45) * twinkle * std.smoothstep(0.05, 0.4, distFromHz);
+      const star =
+        std.pow(starRand, 24) * starDisc * twinkle * std.smoothstep(0.05, 0.4, distFromHz) * 2.4;
       col = col.add(d.vec3f(star * (1 + 0.5 * voice)));
 
       const isLightSky = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));

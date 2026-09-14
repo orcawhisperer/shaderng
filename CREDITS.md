@@ -58,10 +58,15 @@
 
 Original to shaderng. MIT, like the runtime.
 
-| Field      | Title    |
-| ---------- | -------- |
-| `aurora`   | Aurora   |
-| `flow`     | Flow     |
-| `grid`     | Grid     |
-| `waves`    | Waves    |
-| `caustics` | Caustics |
+| Field         | Title       | Based on / Credit                                                 |
+| ------------- | ----------- | ----------------------------------------------------------------- |
+| `aurora`      | Aurora      | Original to shaderng                                              |
+| `flow`        | Flow        | Original to shaderng                                              |
+| `grid`        | Grid        | Original to shaderng                                              |
+| `waves`       | Waves       | Original to shaderng                                              |
+| `caustics`    | Caustics    | Original to shaderng                                              |
+| `cyber`       | Cyber       | Original to shaderng                                              |
+| `nebula`      | Nebula      | Original to shaderng                                              |
+| `warp`        | Warp        | Original to shaderng                                              |
+| `paint`       | Paint       | Inspired by "Aurora Paint" by Noztol (ported to WebGPU / TypeGPU) |
+| `singularity` | Singularity | Original to shaderng (Einsteinian gravitational lensing)          |

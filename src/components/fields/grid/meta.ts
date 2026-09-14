@@ -36,17 +36,29 @@ export const gridField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: gridShader,
+  // The lattice itself changes density: thinking packs it into a fine mesh with tight fast
+  // ripples, speaking spaces it out into big bold dots with broad slow rings.
   statePresets: {
     idle: {
-      speed: 0.4,
+      dot: 0.24,
+      reach: 0.3,
+      ripple: 22,
+      spacing: 0.075,
+      speed: 0.35,
     },
     thinking: {
-      speed: 1.1,
-      reach: 0.5,
+      dot: 0.2,
+      reach: 0.55,
+      ripple: 42,
+      spacing: 0.05,
+      speed: 1.15,
     },
     speaking: {
-      speed: 1.4,
-      dot: 0.34,
+      dot: 0.36,
+      reach: 0.8,
+      ripple: 16,
+      spacing: 0.09,
+      speed: 1.45,
     },
   },
   themeColors: {

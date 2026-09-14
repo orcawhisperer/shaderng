@@ -56,8 +56,10 @@ describe("field catalog", () => {
       "cyber",
       "nebula",
       "warp",
+      "paint",
+      "singularity",
     ]);
-    expect(FIELD_CATALOG).toHaveLength(8);
+    expect(FIELD_CATALOG).toHaveLength(10);
   });
 
   it("describes every field", () => {
@@ -68,6 +70,8 @@ describe("field catalog", () => {
   it("narrows slugs", () => {
     expect(isFieldSlug("aurora")).toBe(true);
     expect(isFieldSlug("cyber")).toBe(true);
+    expect(isFieldSlug("paint")).toBe(true);
+    expect(isFieldSlug("singularity")).toBe(true);
     expect(isFieldSlug("orb-01")).toBe(false);
     expect(isFieldSlug(undefined)).toBe(false);
   });
@@ -76,8 +80,8 @@ describe("field catalog", () => {
     await expect(loadField("unknown-field")).rejects.toThrow('Unknown field "unknown-field"');
   });
 
-  it("registers all 8 fields in the field catalog", () => {
-    expect(FIELD_CATALOG).toHaveLength(8);
+  it("registers all 10 fields in the field catalog", () => {
+    expect(FIELD_CATALOG).toHaveLength(10);
     for (const field of FIELD_CATALOG) {
       expect(field.slug).toBeTruthy();
       expect(field.title).toBeTruthy();

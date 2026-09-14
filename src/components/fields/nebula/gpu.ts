@@ -72,6 +72,17 @@ const cosmicFbm = tgpu.fn(
   return value;
 });
 
+/** ACES filmic curve: overlapping dust, gas and core keep their colour instead of clipping. */
+const aces = tgpu.fn(
+  [d.vec3f],
+  d.vec3f,
+)((x) => {
+  "use gpu";
+  const a = x.mul(x.mul(2.51).add(0.03));
+  const b = x.mul(x.mul(2.43).add(0.59)).add(0.14);
+  return std.clamp(a.div(b), d.vec3f(0), d.vec3f(1));
+});
+
 const nebulaFragment = tgpu
   .fragmentFn({
     in: { uv: d.vec2f },
@@ -110,13 +121,20 @@ const nebulaFragment = tgpu
     );
     const gasDensity = cosmicFbm(rotP.add(q2.mul(2.2)));
 
-    // Density contrast curve
-    const dust = std.pow(std.clamp(gasDensity * 1.5 - 0.2, 0, 1), 1.2) * u.p_density;
-    const ionizedGas = std.pow(std.clamp(q2.x * q2.y * 2.8, 0, 1), 1.5) * (1 + 0.5 * breath);
+    // Density shapes how much of the frame the clouds cover, via the contrast curve,
+    // rather than scaling their brightness: multiplying past 1 drove the whole frame to
+    // white and lost the black of space entirely.
+    const dustShape = std.clamp(gasDensity * 1.5 - 0.2, 0, 1);
+    const dust = std.pow(dustShape, 2.6 / std.max(u.p_density, 0.3));
+    // Thresholded, not just shaped: without a floor this term is non-zero nearly
+    // everywhere and acts as a bright veil over the entire frame.
+    const gasShape = std.clamp(q2.x * q2.y * 3.4 - 0.8, 0, 1);
+    const ionizedGas = std.pow(gasShape, 1.4) * (1 + 0.5 * breath);
 
-    // Central stellar nursery core glow
+    // Central stellar nursery core glow. Gaussian, not linear: a linear falloff is still
+    // bright at the frame edge and washes the whole nebula out at speaking volume.
     const coreDist = std.length(p);
-    const coreGlow = std.exp(-coreDist * 3.2) * u.p_glow * (1 + 0.8 * voice);
+    const coreGlow = std.exp(-coreDist * coreDist * 6) * u.p_glow * (1 + 0.5 * voice);
     // Core 4-point stellar diffraction rays
     const rayDist = std.min(std.abs(p.x), std.abs(p.y));
     const coreRays = std.exp(-rayDist * 25) * std.exp(-coreDist * 1.8) * 0.4 * u.p_glow;
@@ -124,29 +142,33 @@ const nebulaFragment = tgpu
     // Color compositing
     let col = d.vec3f();
     // Deep dust in violet/purple
-    col = col.add(u.c_dust.mul(dust * 0.85));
+    col = col.add(u.c_dust.mul(dust * 0.7));
     // Ionized gas in glowing cyan
-    col = col.add(u.c_gas.mul(ionizedGas * 1.3));
+    col = col.add(u.c_gas.mul(ionizedGas * 0.75));
     // Stellar core in golden light
-    col = col.add(u.c_core.mul(coreGlow * 1.4 + coreRays));
+    col = col.add(u.c_core.mul(coreGlow * 0.5 + coreRays));
 
-    // Parallax Starfield: 2 layers of stars (distant faint + close bright)
-    const starGrid = std.floor(input.uv.sub(parallax.mul(0.4)).mul(u.res).div(3));
-    const starR = hash21(starGrid);
+    // Parallax starfield. Jittered round points rather than screen-pixel cells: the old
+    // version drew square stars on a lattice and changed size with device pixel ratio.
+    const starUV = uv0.sub(parallax.mul(0.4)).mul(46);
+    const cell = std.floor(starUV);
+    const starR = hash21(cell);
+    const jit = d.vec2f(
+      hash21(cell.add(d.vec2f(23.1, 57.7))),
+      hash21(cell.add(d.vec2f(71.3, 9.4))),
+    );
+    const ds = std.length(std.fract(starUV).sub(jit.mul(0.7).add(0.15)));
     const twinkle = 0.5 + 0.5 * std.sin(u.time * 2.5 + starR * 30);
-    const star = std.pow(starR, 42) * twinkle * (1 - dust * 0.5);
-
-    // Occasional bright stars with cross flares
-    const brightThreshold = std.pow(starR, 80);
+    const star = std.smoothstep(0.08, 0, ds) * std.pow(starR, 14) * twinkle * (1 - dust * 0.5);
     const starCol = std.mix(d.vec3f(1, 0.95, 0.8), u.c_gas, starR);
-    col = col.add(starCol.mul(star * 0.8 + brightThreshold * 1.5));
+    col = col.add(starCol.mul(star * 1.8));
 
     const totalLight = std.clamp(dust + ionizedGas + coreGlow + star, 0, 1);
     const alpha = std.clamp(totalLight + u.p_fill, 0, 1);
 
     const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
     const darkBase = u.c_base.mul(u.p_fill);
-    const darkCol = darkBase.add(col);
+    const darkCol = darkBase.add(aces(col.mul(0.95)));
 
     const cloudTint = std.mix(u.c_dust, u.c_gas, std.clamp(ionizedGas * 1.2, 0, 1));
     const nebulaTint = std.mix(cloudTint, u.c_core, std.clamp(coreGlow * 1.5, 0, 1));
@@ -155,7 +177,9 @@ const nebulaFragment = tgpu
       nebulaTint,
       std.clamp(dust * 0.75 + ionizedGas * 0.85 + coreGlow * 1.2, 0, 1),
     );
-    const finalCol = std.mix(darkCol, lightCol, isLight);
+    let finalCol = std.mix(darkCol, lightCol, isLight);
+    // Sub-LSB dither: deep-space gradients band heavily without it.
+    finalCol = finalCol.add(d.vec3f((starR - 0.5) * 0.005));
 
     return d.vec4f(std.clamp(finalCol, d.vec3f(), d.vec3f(1)), alpha);
   })

@@ -29,6 +29,17 @@ const layout = tgpu
   })
   .$idx(0);
 
+/** Filmic tone curve, so overlapping caustic filaments roll off instead of clipping. */
+const aces = tgpu.fn(
+  [d.vec3f],
+  d.vec3f,
+)((x) => {
+  "use gpu";
+  const a = x.mul(x.mul(2.51).add(0.03));
+  const b = x.mul(x.mul(2.43).add(0.59)).add(0.14);
+  return std.clamp(a.div(b), d.vec3f(), d.vec3f(1));
+});
+
 const causticsFragment = tgpu
   .fragmentFn({
     in: { uv: d.vec2f },
@@ -53,8 +64,12 @@ const causticsFragment = tgpu
     const t = u.p_speed + u.anim * 0.25;
     const breath = 1 + 0.4 * std.clamp(u.inputVol, 0, 1);
 
-    // Fold the plane through a few sine layers; the product of the folds is the caustic.
-    let light = d.f32(1);
+    // Fold the plane through a few sine layers. Each fold contributes a thin bright ridge
+    // where it crosses zero -- multiplying the folds together instead just averages to
+    // grey. Sampling the crossing at three slightly offset phases splits each filament
+    // into R/G/B, which is where real caustics get their prismatic edges.
+    let web = d.vec3f();
+    let haze = d.f32(0);
     for (let i = 0; i < FOLDS; i += 1) {
       const k = d.f32(i) + 1;
       p = p.add(
@@ -65,16 +80,25 @@ const causticsFragment = tgpu
           )
           .div(k),
       );
-      light *= 0.5 + 0.5 * std.sin(p.x * 2.1 + p.y * 1.7 + t * 0.3);
+      const s = std.sin(p.x * 2.1 + p.y * 1.7 + t * 0.3);
+      const sv = d.vec3f(s + 0.055, s, s - 0.055);
+      const e = d.vec3f(0.02);
+      web = web.add(e.div(e.add(sv.mul(sv))).div(k));
+      // Same ridge with a much wider falloff: the light the filaments bleed into the water.
+      haze += 0.45 / (0.45 + s * s) / k;
     }
 
     const focus = std.max(u.p_focus, 0.1);
-    const bright = std.pow(std.clamp(light * 1.6, 0, 1), focus);
     const loud = 1 + 0.7 * std.clamp(u.outputVol, 0, 1);
+    const shaped = std.pow(
+      std.clamp(web.mul(0.55), d.vec3f(), d.vec3f(1)),
+      d.vec3f(0.3 + focus * 0.7),
+    );
+    const bright = std.dot(shaped, d.vec3f(0.299, 0.587, 0.114));
 
     const depth = std.clamp(0.5 + 0.5 * std.sin(p.x * 0.7 + p.y * 0.9), 0, 1);
-    const water = u.c_water.mul(0.35 + 0.35 * depth);
-    const col = water.add(u.c_light.mul(bright * loud));
+    const water = u.c_water.mul(0.35 + 0.35 * depth).add(u.c_light.mul(haze * 0.09));
+    const col = aces(water.add(u.c_light.mul(shaped).mul(loud * 1.7)));
 
     const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
     const darkBase = u.c_base.mul(u.p_fill).mul(1 - bright);

@@ -71,6 +71,17 @@ const fbm = tgpu.fn(
   return value;
 });
 
+/** ACES filmic curve: dense smoke keeps its colour instead of clipping to a flat patch. */
+const aces = tgpu.fn(
+  [d.vec3f],
+  d.vec3f,
+)((x) => {
+  "use gpu";
+  const a = x.mul(x.mul(2.51).add(0.03));
+  const b = x.mul(x.mul(2.43).add(0.59)).add(0.14);
+  return std.clamp(a.div(b), d.vec3f(0), d.vec3f(1));
+});
+
 const flowFragment = tgpu
   .fragmentFn({
     in: { uv: d.vec2f },
@@ -101,16 +112,25 @@ const flowFragment = tgpu
     const shade = std.pow(std.clamp(v * 1.4 - 0.15, 0, 1), contrast);
     const veil = std.clamp(std.length(q) * 0.9, 0, 1);
 
+    // Iso-surface wisps: a bright band where the field crosses a level set, which reads
+    // as filament structure inside the smoke instead of one smooth blob.
+    const wisp = std.pow(std.clamp(1 - std.abs(v * 2.6 - 1), 0, 1), 4) * 0.6;
+
     let col = std.mix(u.c_deep, u.c_mid, shade);
     col = std.mix(col, u.c_light, std.clamp(r.x * r.y * 2.2, 0, 1) * shade);
+    col = col.add(u.c_light.mul(wisp * shade));
     const loud = 1 + 0.5 * std.clamp(u.outputVol, 0, 1);
     col = col.mul(loud);
 
     const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
     const darkBase = u.c_base.mul(u.p_fill);
-    const darkCol = darkBase.mul(1 - shade).add(col.mul(std.max(shade, 0.35)));
+    const darkLit = darkBase.mul(1 - shade).add(col.mul(std.max(shade, 0.35)));
+    const darkCol = aces(darkLit.mul(1.2));
     const lightCol = std.mix(u.c_base, col, std.clamp(shade * 0.9 + veil * 0.2, 0, 1));
-    const finalCol = std.mix(darkCol, lightCol, isLight);
+    let finalCol = std.mix(darkCol, lightCol, isLight);
+
+    // Sub-LSB dither: smoke is one broad gradient and bands badly on 8-bit displays.
+    finalCol = finalCol.add(d.vec3f((hash21(input.uv.mul(u.res)) - 0.5) * 0.004));
 
     const alpha = std.clamp(std.max(shade, veil * 0.35) + u.p_fill, 0, 1);
     return d.vec4f(std.clamp(finalCol, d.vec3f(), d.vec3f(1)), alpha);

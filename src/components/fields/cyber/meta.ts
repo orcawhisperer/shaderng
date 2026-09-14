@@ -38,20 +38,30 @@ export const cyberField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: cyberShader,
+  // The shot is reframed per state: thinking lifts the horizon and tightens the grid into
+  // a restless fine mesh, speaking drops the camera toward the deck with the grid wide
+  // open and the neon at full burn.
   statePresets: {
     idle: {
-      glow: 1.0,
-      speed: 0.4,
+      glow: 1,
+      grid: 0.9,
+      horizon: 0.5,
+      speed: 0.35,
+      tilt: 0.6,
     },
     thinking: {
-      glow: 1.6,
-      speed: 1.0,
-      tilt: 1.2,
+      glow: 1.5,
+      grid: 1.6,
+      horizon: 0.62,
+      speed: 1.1,
+      tilt: 1.3,
     },
     speaking: {
-      glow: 2.0,
-      grid: 1.2,
-      speed: 1.4,
+      glow: 2.2,
+      grid: 0.75,
+      horizon: 0.34,
+      speed: 1.6,
+      tilt: 0.8,
     },
   },
   themeColors: {

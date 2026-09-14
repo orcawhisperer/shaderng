@@ -7,6 +7,8 @@ export const FIELD_SLUGS = [
   "cyber",
   "nebula",
   "warp",
+  "paint",
+  "singularity",
 ] as const;
 
 export type FieldSlug = (typeof FIELD_SLUGS)[number];
@@ -71,6 +73,20 @@ export const FIELD_CATALOG: FieldCatalogItem[] = [
     name: "Hyperspace",
     slug: "warp",
     title: "Warp",
+  },
+  {
+    description:
+      "watercolor auroras drifting over a forested fjord with paint splatters, pine silhouettes, and water reflections",
+    name: "Painterly",
+    slug: "paint",
+    title: "Paint",
+  },
+  {
+    description:
+      "Einsteinian gravitational lensing black hole with relativistic accretion disk, Doppler beaming, and photon sphere",
+    name: "Black Hole",
+    slug: "singularity",
+    title: "Singularity",
   },
 ];
 

@@ -29,18 +29,29 @@ export const flowField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: flowShader,
+  // Idle rolls in big soft masses, thinking breaks the field into a fine tangled weave,
+  // speaking opens it back out into broad high-contrast swells.
   statePresets: {
     idle: {
-      speed: 0.35,
-      warp: 2,
+      contrast: 1.5,
+      pull: 0.5,
+      scale: 1.9,
+      speed: 0.3,
+      warp: 2.8,
     },
     thinking: {
-      speed: 0.9,
-      warp: 3.5,
+      contrast: 1.9,
+      pull: 0.9,
+      scale: 2.8,
+      speed: 0.95,
+      warp: 4.2,
     },
     speaking: {
-      speed: 1.2,
-      contrast: 0.9,
+      contrast: 1.35,
+      pull: 0.6,
+      scale: 1.6,
+      speed: 1.25,
+      warp: 3.2,
     },
   },
   themeColors: {

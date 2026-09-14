@@ -29,18 +29,32 @@ export const wavesField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: wavesShader,
+  // The silhouette changes, not just the tempo: thinking fans out many thin, fast, tightly
+  // spaced lines, speaking collapses to a few fat slow swells filling the frame.
   statePresets: {
     idle: {
-      speed: 0.5,
-      amplitude: 0.35,
+      amplitude: 0.3,
+      frequency: 3,
+      lines: 5,
+      speed: 0.45,
+      spread: 0.5,
+      thickness: 0.005,
     },
     thinking: {
-      speed: 1.2,
-      frequency: 5,
+      amplitude: 0.45,
+      frequency: 6.5,
+      lines: 10,
+      speed: 1.25,
+      spread: 0.85,
+      thickness: 0.004,
     },
     speaking: {
-      speed: 1.6,
-      amplitude: 0.8,
+      amplitude: 0.95,
+      frequency: 3.2,
+      lines: 7,
+      speed: 1.5,
+      spread: 1,
+      thickness: 0.009,
     },
   },
   themeColors: {

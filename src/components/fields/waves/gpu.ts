@@ -50,6 +50,17 @@ const lineHeight = tgpu.fn(
   return (a + b + c) * amp * 0.25 + bump;
 });
 
+/** Filmic tone curve: keeps bright line crossings from clipping to a flat white blob. */
+const aces = tgpu.fn(
+  [d.vec3f],
+  d.vec3f,
+)((x) => {
+  "use gpu";
+  const a = x.mul(x.mul(2.51).add(0.03));
+  const b = x.mul(x.mul(2.43).add(0.59)).add(0.14);
+  return std.clamp(a.div(b), d.vec3f(), d.vec3f(1));
+});
+
 const wavesFragment = tgpu
   .fragmentFn({
     in: { uv: d.vec2f },
@@ -70,7 +81,7 @@ const wavesFragment = tgpu
 
     let glow = d.f32(0);
     let core = d.f32(0);
-    let tint = d.vec3f();
+    let lit = d.vec3f();
     for (let i = 0; i < LINES; i += 1) {
       const k = d.f32(i);
       if (k < count) {
@@ -78,18 +89,27 @@ const wavesFragment = tgpu
         const yBase = (t - 0.5) * spread;
         const y = yBase + lineHeight(p.x, k, phase, amp * (0.6 + 0.4 * t));
         const dist = std.abs(p.y - y);
-        const line = 1 - std.smoothstep(0, thickness, dist);
-        const halo = std.exp((-dist * dist) / (thickness * thickness * 30)) * 0.35;
-        const c = std.mix(u.c_from, u.c_to, t);
-        tint = tint.add(c.mul(line + halo));
+
+        // Lines lower in the stack read as nearer: fatter, brighter, and painted last so
+        // they occlude the ones behind instead of every crossing summing to white.
+        const depth = 0.5 + 0.5 * t;
+        const w = thickness * (0.7 + 0.6 * t);
+        const line = 1 - std.smoothstep(0, w, dist);
+        const halo = std.exp((-dist * dist) / (w * w * 30)) * 0.35 * depth;
+
+        // A packet of brightness running along the line, offset per line so the stack
+        // reads as energy travelling through it rather than a static wobble.
+        const crest = std.pow(0.5 + 0.5 * std.sin(p.x * 2.2 - phase * 2.4 + t * 5), 6);
+        const c = std.mix(u.c_from, u.c_to, t).mul(depth * (1 + crest * (0.5 + voice)));
+        lit = std.mix(lit.add(c.mul(halo)), c, line);
         core = std.max(core, line);
         glow += halo;
       }
     }
 
     const light = std.clamp(core + glow, 0, 1);
-    const lineTint = tint.div(std.max(core + glow, 0.001));
-    const col = lineTint.mul(light);
+    const lineTint = lit.div(std.max(light, 0.001));
+    const col = aces(lit.mul(1.2));
 
     const isLight = std.step(0.5, std.dot(u.c_base, d.vec3f(0.299, 0.587, 0.114)));
     const darkBase = u.c_base.mul(u.p_fill).mul(1 - light);

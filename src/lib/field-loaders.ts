@@ -50,6 +50,16 @@ export const FIELD_LOADERS: Record<FieldSlug, () => Promise<FieldEntry>> = {
       Component: m.FieldWarp,
       variant: m.warpField,
     })),
+  paint: () =>
+    import("@/components/fields/paint").then((m) => ({
+      Component: m.FieldPaint,
+      variant: m.paintField,
+    })),
+  singularity: () =>
+    import("@/components/fields/singularity").then((m) => ({
+      Component: m.FieldSingularity,
+      variant: m.singularityField,
+    })),
 };
 
 export const loadField = (slug: string): Promise<FieldEntry> => {

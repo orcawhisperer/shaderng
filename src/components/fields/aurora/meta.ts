@@ -29,18 +29,31 @@ export const auroraField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: auroraShader,
+  // Each state changes the shape of the curtains, not just how bright they are: idle is
+  // wide, low and lazy, thinking pulls them into narrow tight threads, speaking throws
+  // them into big dramatic swings. Width stays modest throughout -- wide curtains have
+  // long upward tails that overlap into a single pale wash.
   statePresets: {
     idle: {
-      speed: 0.3,
-      glow: 1,
+      curl: 0.25,
+      glow: 1.25,
+      height: 0.38,
+      speed: 0.25,
+      width: 0.09,
     },
     thinking: {
-      speed: 0.8,
-      curl: 0.55,
+      curl: 0.5,
+      glow: 1.45,
+      height: 0.5,
+      speed: 0.85,
+      width: 0.05,
     },
     speaking: {
-      speed: 1,
-      glow: 1.6,
+      curl: 0.88,
+      glow: 1.7,
+      height: 0.58,
+      speed: 1.1,
+      width: 0.07,
     },
   },
   themeColors: {

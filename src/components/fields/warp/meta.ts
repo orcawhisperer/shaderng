@@ -37,22 +37,29 @@ export const warpField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: warpShader,
+  // Star density drops as the speed climbs: fewer, much longer streaks reads as genuinely
+  // faster than simply adding more of them.
   statePresets: {
     idle: {
-      rings: 0.5,
-      speed: 0.7,
-      streak: 0.9,
+      rings: 0.4,
+      speed: 0.6,
+      stars: 0.7,
+      steer: 0.6,
+      streak: 0.8,
     },
     thinking: {
       rings: 1.2,
       speed: 1.4,
-      steer: 1.2,
-      streak: 1.8,
+      stars: 1.4,
+      steer: 1.3,
+      streak: 1.6,
     },
     speaking: {
-      rings: 1.6,
-      speed: 2.2,
-      streak: 2.5,
+      rings: 1.7,
+      speed: 2.3,
+      stars: 1,
+      steer: 0.8,
+      streak: 2.6,
     },
   },
   themeColors: {

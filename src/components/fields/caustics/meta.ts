@@ -27,17 +27,26 @@ export const causticsField: OrbVariant = {
     { default: 0, key: "fill", label: "Base fill", max: 1, min: 0, step: 0.01 },
   ],
   shader: causticsShader,
+  // Thinking zooms into a fine, agitated, tightly focused mesh; speaking pulls back out to
+  // broad soft pools of blooming light.
   statePresets: {
     idle: {
-      speed: 0.35,
+      focus: 2.2,
+      scale: 2,
+      speed: 0.3,
+      stir: 0.5,
     },
     thinking: {
-      speed: 0.9,
-      stir: 1.4,
+      focus: 3.2,
+      scale: 4.2,
+      speed: 0.95,
+      stir: 1.6,
     },
     speaking: {
+      focus: 1.3,
+      scale: 1.6,
       speed: 1.2,
-      focus: 1.4,
+      stir: 0.9,
     },
   },
   themeColors: {

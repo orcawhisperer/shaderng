@@ -4,12 +4,14 @@ import {
   computed,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   linkedSignal,
   signal,
   type Type,
   untracked,
+  viewChild,
 } from "@angular/core";
 import { Router } from "@angular/router";
 
@@ -85,14 +87,31 @@ export interface PlaygroundEntry {
     @if (entry(); as current) {
       <div class="grid h-full min-h-0 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div
+          #previewArea
           class="border-border relative flex h-full min-h-0 items-center justify-center overflow-hidden rounded-xl border transition-colors"
+          [class.p-4]="framePreset() !== 'fill'"
           [class.bg-slate-50]="theme() === 'light'"
           [class.bg-background]="theme() === 'dark'"
         >
-          <ng-container
-            [ngComponentOutlet]="current.Component"
-            [ngComponentOutletInputs]="inputs()"
-          />
+          <div
+            class="relative flex items-center justify-center transition-all duration-300"
+            [class]="frameClass()"
+          >
+            <ng-container
+              [ngComponentOutlet]="current.Component"
+              [ngComponentOutletInputs]="inputs()"
+            />
+
+            @if (framePreset() !== "fill") {
+              <div
+                class="bg-background/85 text-muted-foreground absolute top-2 right-2 z-10 flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[10px] backdrop-blur shadow-xs pointer-events-none"
+              >
+                <span class="font-semibold text-foreground">{{ framePreset() }}</span>
+                <span>·</span>
+                <span>{{ dpr() }}x DPR</span>
+              </div>
+            }
+          </div>
 
           @if (showFps()) {
             <div
@@ -221,6 +240,54 @@ export interface PlaygroundEntry {
                 <span>Snapshot</span>
               </button>
               <button
+                class="inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-sm transition-colors"
+                [class]="
+                  recording()
+                    ? 'bg-rose-500/15 border-rose-500/50 text-rose-600 dark:text-rose-400 font-medium'
+                    : 'hover:bg-muted bg-background'
+                "
+                type="button"
+                [title]="
+                  recording()
+                    ? 'Click to stop recording and download video'
+                    : 'Record canvas video (WebM/MP4)'
+                "
+                (click)="toggleRecording()"
+              >
+                @if (recording()) {
+                  <span class="size-2 rounded-full bg-rose-500 animate-ping"></span>
+                  <span class="font-mono text-xs">Rec {{ recordingDuration() }}s</span>
+                } @else {
+                  <span class="size-2 rounded-full bg-rose-500"></span>
+                  <span>Record</span>
+                }
+              </button>
+              <div class="flex items-center rounded-md border bg-muted/40 p-0.5 text-xs">
+                <select
+                  class="bg-transparent h-7 rounded px-1.5 font-medium text-xs border-0 focus:outline-none cursor-pointer"
+                  title="Viewport aspect ratio / frame"
+                  (change)="framePreset.set($any($event.target).value)"
+                >
+                  @for (opt of frameOptions; track opt.value) {
+                    <option [value]="opt.value" [selected]="framePreset() === opt.value">
+                      {{ opt.label }}
+                    </option>
+                  }
+                </select>
+                <span class="text-border px-0.5">/</span>
+                <select
+                  class="bg-transparent h-7 rounded px-1.5 font-mono text-xs border-0 focus:outline-none cursor-pointer"
+                  title="Render scale / device pixel ratio"
+                  (change)="dpr.set(numberValue($event))"
+                >
+                  @for (scale of dprOptions; track scale.value) {
+                    <option [value]="scale.value" [selected]="dpr() === scale.value">
+                      {{ scale.label }}
+                    </option>
+                  }
+                </select>
+              </div>
+              <button
                 class="hover:bg-muted bg-background inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-xs font-medium transition-colors"
                 type="button"
                 [attr.aria-label]="'Toggle theme, currently ' + theme()"
@@ -313,6 +380,91 @@ export interface PlaygroundEntry {
               >). Responsive to aspect ratio, cursor tilt, and voice volume.
             </div>
           }
+
+          <div class="flex flex-col gap-3 p-4">
+            <span class="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+              Resolution & Export
+            </span>
+            <div class="flex flex-col gap-1.5 text-xs">
+              <span class="text-muted-foreground">Frame Aspect Ratio</span>
+              <div class="grid grid-cols-5 gap-1 font-mono text-[11px]">
+                @for (opt of frameOptions; track opt.value) {
+                  <button
+                    type="button"
+                    class="rounded border py-1 transition-colors text-center"
+                    [class]="
+                      framePreset() === opt.value
+                        ? 'bg-secondary font-semibold text-foreground border-border'
+                        : 'bg-background text-muted-foreground hover:text-foreground'
+                    "
+                    (click)="framePreset.set(opt.value)"
+                  >
+                    {{ opt.label }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5 text-xs">
+              <span class="text-muted-foreground">Render Scale (DPR)</span>
+              <div class="grid grid-cols-4 gap-1 font-mono text-[11px]">
+                @for (scale of dprOptions; track scale.value) {
+                  <button
+                    type="button"
+                    class="rounded border py-1 transition-colors text-center"
+                    [class]="
+                      dpr() === scale.value
+                        ? 'bg-secondary font-semibold text-foreground border-border'
+                        : 'bg-background text-muted-foreground hover:text-foreground'
+                    "
+                    (click)="dpr.set(scale.value)"
+                  >
+                    {{ scale.label }}
+                  </button>
+                }
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button
+                class="hover:bg-muted bg-background flex-1 inline-flex h-8 items-center justify-center gap-1.5 rounded-md border text-xs font-medium transition-colors"
+                type="button"
+                (click)="captureSnapshot()"
+              >
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                  />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                <span>Snapshot</span>
+              </button>
+              <button
+                class="flex-1 inline-flex h-8 items-center justify-center gap-1.5 rounded-md border text-xs font-medium transition-colors"
+                [class]="
+                  recording()
+                    ? 'bg-rose-500/15 border-rose-500/50 text-rose-600 dark:text-rose-400 font-semibold'
+                    : 'hover:bg-muted bg-background'
+                "
+                type="button"
+                (click)="toggleRecording()"
+              >
+                <span
+                  class="size-2 rounded-full bg-rose-500"
+                  [class.animate-ping]="recording()"
+                ></span>
+                <span>{{
+                  recording() ? "Stop (" + recordingDuration() + "s)" : "Record Video"
+                }}</span>
+              </button>
+            </div>
+          </div>
 
           @if (current.variant.colors.length > 0 && draft(); as live) {
             <div class="flex flex-col gap-3 p-4">
@@ -484,6 +636,48 @@ export class OrbPlayground {
       : "dark",
   );
 
+  protected readonly previewArea = viewChild<ElementRef<HTMLDivElement>>("previewArea");
+
+  protected readonly framePreset = signal<"fill" | "16:9" | "9:16" | "1:1" | "4:3">("fill");
+  protected readonly dpr = signal<number>(1.5);
+  protected readonly recording = signal(false);
+  protected readonly recordingDuration = signal(0);
+
+  private mediaRecorder: MediaRecorder | null = null;
+  private recordChunks: Blob[] = [];
+  private recordingTimer: number | null = null;
+
+  protected readonly frameOptions = [
+    { label: "Full", value: "fill" },
+    { label: "16:9", value: "16:9" },
+    { label: "9:16", value: "9:16" },
+    { label: "1:1", value: "1:1" },
+    { label: "4:3", value: "4:3" },
+  ] as const;
+
+  protected readonly dprOptions = [
+    { label: "0.75x", value: 0.75 },
+    { label: "1x", value: 1 },
+    { label: "1.5x", value: 1.5 },
+    { label: "2x", value: 2 },
+  ] as const;
+
+  protected readonly frameClass = computed(() => {
+    switch (this.framePreset()) {
+      case "16:9":
+        return "w-full max-w-5xl aspect-video max-h-[calc(100%-4.5rem)] rounded-xl overflow-hidden border border-border/80 shadow-2xl bg-black/40";
+      case "9:16":
+        return "h-full max-h-[calc(100%-4.5rem)] aspect-[9/16] rounded-xl overflow-hidden border border-border/80 shadow-2xl bg-black/40";
+      case "1:1":
+        return "h-full max-h-[calc(100%-4.5rem)] aspect-square rounded-xl overflow-hidden border border-border/80 shadow-2xl bg-black/40";
+      case "4:3":
+        return "w-full max-w-4xl aspect-[4/3] max-h-[calc(100%-4.5rem)] rounded-xl overflow-hidden border border-border/80 shadow-2xl bg-black/40";
+      case "fill":
+      default:
+        return "w-full h-full";
+    }
+  });
+
   protected readonly entry = signal<PlaygroundEntry | null>(null);
   protected readonly drafts = signal<Drafts | null>(null);
   protected readonly loadError = signal<string | null>(null);
@@ -558,6 +752,7 @@ export class OrbPlayground {
       ariaLabel: `${this.slug()} ${this.mode()}, ${this.state()}`,
       colors: draft?.colors,
       listen: this.listen(),
+      maxDpr: this.dpr(),
       params: draft?.params,
       paused: this.paused(),
       size: this.mode() === "orb" ? this.size() : undefined,
@@ -636,6 +831,7 @@ export class OrbPlayground {
       if (this.fpsTimer) {
         cancelAnimationFrame(this.fpsTimer);
       }
+      this.stopRecording();
     });
 
     const max = Math.max(120, window.innerWidth - 96);
@@ -702,7 +898,8 @@ export class OrbPlayground {
   }
 
   protected captureSnapshot() {
-    const canvas = document.querySelector("canvas") as HTMLCanvasElement | null;
+    const container = this.previewArea()?.nativeElement ?? document;
+    const canvas = container.querySelector("canvas") as HTMLCanvasElement | null;
     if (!canvas) {
       return;
     }
@@ -710,10 +907,112 @@ export class OrbPlayground {
       const url = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${this.slug()}-${this.state()}-shaderng.png`;
+      const frameTag = this.framePreset() === "fill" ? "" : `-${this.framePreset()}`;
+      a.download = `${this.slug()}-${this.state()}${frameTag}-shaderng.png`;
       a.click();
     } catch (err) {
       console.warn("[shaderng] canvas capture not supported:", err);
+    }
+  }
+
+  protected toggleRecording() {
+    if (this.recording()) {
+      this.stopRecording();
+    } else {
+      this.startRecording();
+    }
+  }
+
+  private startRecording() {
+    const container = this.previewArea()?.nativeElement ?? document;
+    const canvas = container.querySelector("canvas") as HTMLCanvasElement | null;
+    if (!canvas) {
+      return;
+    }
+    if (
+      typeof (canvas as unknown as { captureStream?: (fps?: number) => MediaStream })
+        .captureStream !== "function"
+    ) {
+      alert("Canvas video capture is not supported in this browser.");
+      return;
+    }
+
+    try {
+      const stream = (
+        canvas as unknown as { captureStream: (fps?: number) => MediaStream }
+      ).captureStream(60);
+      const candidates = [
+        "video/webm;codecs=vp9",
+        "video/webm;codecs=vp8",
+        "video/webm",
+        "video/mp4",
+      ];
+      let mimeType = "";
+      if (typeof MediaRecorder !== "undefined") {
+        for (const candidate of candidates) {
+          if (MediaRecorder.isTypeSupported(candidate)) {
+            mimeType = candidate;
+            break;
+          }
+        }
+      }
+
+      this.mediaRecorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType, videoBitsPerSecond: 12_000_000 } : undefined,
+      );
+      this.recordChunks = [];
+
+      this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
+        if (event.data && event.data.size > 0) {
+          this.recordChunks.push(event.data);
+        }
+      };
+
+      this.mediaRecorder.onstop = () => {
+        const type = mimeType || "video/webm";
+        const blob = new Blob(this.recordChunks, { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const ext = type.includes("mp4") ? "mp4" : "webm";
+        const frameTag = this.framePreset() === "fill" ? "" : `-${this.framePreset()}`;
+        a.download = `${this.slug()}-${this.state()}${frameTag}-shaderng.${ext}`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        this.recording.set(false);
+        this.stopRecordingTimer();
+      };
+
+      this.mediaRecorder.start(250);
+      this.recording.set(true);
+      this.recordingDuration.set(0);
+
+      this.recordingTimer = window.setInterval(() => {
+        const next = this.recordingDuration() + 1;
+        this.recordingDuration.set(next);
+        if (next >= 30) {
+          this.stopRecording();
+        }
+      }, 1000);
+    } catch (err) {
+      console.warn("[shaderng] MediaRecorder failed:", err);
+      this.recording.set(false);
+      this.stopRecordingTimer();
+    }
+  }
+
+  private stopRecording() {
+    if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+      this.mediaRecorder.stop();
+    }
+    this.stopRecordingTimer();
+  }
+
+  private stopRecordingTimer() {
+    if (this.recordingTimer !== null) {
+      clearInterval(this.recordingTimer);
+      this.recordingTimer = null;
     }
   }
 
