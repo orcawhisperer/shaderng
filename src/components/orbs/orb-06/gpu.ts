@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { luma } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -13,7 +15,6 @@ export const orb06Params = d.struct({
   c_sheen: d.vec3f,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_bulge: d.f32,
   p_contrast: d.f32,
@@ -38,16 +39,6 @@ const layout = tgpu
     params: { uniform: orb06Params },
   })
   .$idx(0);
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
 
 const moireRender = tgpu.fn(
   [d.vec2f, d.f32, d.f32, d.f32],
@@ -128,11 +119,11 @@ const moireRender = tgpu.fn(
    * map: it crushes the field between the glows.
    */
   const v = acc.div(d.f32(LAYERS));
-  let col = tanh3(v.mul(v).div(std.max(u.p_exposure, 0.0001)));
+  let col = std.tanh(v.mul(v).div(std.max(u.p_exposure, 0.0001)));
   col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
   // saturation about luminance, then the tint
-  const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+  const lum = luma(col);
   col = std.mix(d.vec3f(lum), col, u.p_saturation).mul(u.c_tint);
 
   /*
@@ -140,7 +131,7 @@ const moireRender = tgpu.fn(
    * ball, so a hard lambert reads as a shadow thrown across the inside of
    * a lamp rather than as a lit surface.
    */
-  const n = d.vec3f(pl.x, pl.y, z);
+  const n = d.vec3f(pl, z);
   const lambert = std.clamp(
     std.dot(n, std.normalize(d.vec3f(-0.45, 0.55, 0.72))),
     0,

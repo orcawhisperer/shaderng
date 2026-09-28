@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { edgeFade, luma } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -13,7 +15,6 @@ export const orb22Params = d.struct({
   anim: d.f32,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_alphaGain: d.f32,
   p_camDist: d.f32,
@@ -47,16 +48,6 @@ const layout = tgpu
   })
   .$idx(0);
 
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
-
 const hash = tgpu.fn(
   [d.vec2f],
   d.f32
@@ -75,7 +66,7 @@ const vectorsRender = tgpu.fn(
 
   const uv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
   const ro = d.vec3f(0, 0, u.p_camDist);
-  const rd = std.normalize(d.vec3f(uv.x, uv.y, -u.p_focal));
+  const rd = std.normalize(d.vec3f(uv, -u.p_focal));
 
   // the wandering rotation axis — unit by construction, which is what
   // makes the 90-degree Rodrigues below exact
@@ -111,14 +102,14 @@ const vectorsRender = tgpu.fn(
     for (const j of std.range(TURB)) {
       const dj = d.f32(j) + 3;
       const wave = std.sin(std.ceil(a.mul(dj)).sub(animTime));
-      a = a.add(d.vec3f(wave.y, wave.z, wave.x).mul(vectorsTurb).div(dj));
+      a = a.add(wave.yzx.mul(vectorsTurb).div(dj));
     }
 
     // the density product — turbulent detail times clean streak surfaces
     let dens =
       u.p_stepScale *
       std.length(std.sin(a.mul(a))) *
-      std.sqrt(std.length(v.mul(std.sin(d.vec3f(v.y, v.z, v.x)))));
+      std.sqrt(std.length(v.mul(std.sin(v.yzx))));
     dens = std.max(dens, 1e-4);
 
     /*
@@ -171,7 +162,7 @@ const vectorsRender = tgpu.fn(
     w = w.add(u.p_fill).mul(env);
 
     acc = acc.add(w.mul(T));
-    T *= std.exp(-std.dot(w, d.vec3f(0.299, 0.587, 0.114)) * u.p_scatter);
+    T *= std.exp(-luma(w) * u.p_scatter);
 
     z += dens;
     if (T < 0.004 || z > zEnd) {
@@ -199,17 +190,17 @@ const orb22Fragment = tgpu
 
     const acc = vectorsRender(fragCoord, vectorsTurb, vectorsGlow);
 
-    let col = tanh3(acc.div(std.max(vectorsExposure, 1)));
+    let col = std.tanh(acc.div(std.max(vectorsExposure, 1)));
     col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
-    const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+    const lum = luma(col);
     col = std.mix(d.vec3f(lum), col, u.p_saturation);
     col = col.mul(u.c_tint);
 
     const peak = std.max(col.x, std.max(col.y, col.z));
     let a = std.clamp(peak * u.p_alphaGain, 0, 1);
 
-    const mrd = std.normalize(d.vec3f(orbUv.x, orbUv.y, -u.p_focal));
+    const mrd = std.normalize(d.vec3f(orbUv, -u.p_focal));
     const closest = std.length(std.cross(d.vec3f(0, 0, u.p_camDist), mrd));
     const band = std.mix(0.35, 0.012, std.clamp(u.p_edge, 0, 1));
     const mask =
@@ -223,7 +214,7 @@ const orb22Fragment = tgpu
     a *= mask;
 
     const r2d = std.length(orbUv);
-    const fade = 1 - std.smoothstep(u.p_edgeFade, 1, r2d);
+    const fade = edgeFade(u.p_edgeFade, r2d);
     col = col.mul(fade);
     a *= fade;
 

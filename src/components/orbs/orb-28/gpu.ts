@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { edgeFade, rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -15,7 +17,6 @@ export const orb28Params = d.struct({
   c_lineB: d.vec3f,
   c_rim: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_body: d.f32,
   p_contrast: d.f32,
@@ -41,16 +42,6 @@ const layout = tgpu
     params: { uniform: orb28Params },
   })
   .$idx(0);
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
 
 const orb28Fragment = tgpu
   .fragmentFn({
@@ -83,7 +74,7 @@ const orb28Fragment = tgpu
     // stereographic pole blow-up.
     let sp = d.vec3f(n);
     const tilted = std.mul(rot2(u.p_tilt), d.vec2f(sp.y, sp.z));
-    sp = d.vec3f(sp.x, tilted.x, tilted.y);
+    sp = d.vec3f(sp.x, tilted);
     // integrated clock
     const spun = std.mul(rot2(u.p_spin), d.vec2f(sp.x, sp.z));
     sp = d.vec3f(spun.x, sp.y, spun.y);
@@ -156,7 +147,7 @@ const orb28Fragment = tgpu
     col = std.pow(std.max(col, d.vec3f()), d.vec3f(u.p_contrast));
 
     // coverage alpha; safety taper fades colour AND alpha, as always
-    const fade = 1 - std.smoothstep(u.p_edgeFade, 1, std.length(orbUv));
+    const fade = edgeFade(u.p_edgeFade, std.length(orbUv));
     const a = mask * fade;
 
     // Surface-lit orb bounded by a mask: alpha IS coverage, so premultiply —

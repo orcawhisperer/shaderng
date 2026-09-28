@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -12,7 +14,6 @@ const WARP = 9;
 export const orb02Params = d.struct({
   anim: d.f32,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_alphaGain: d.f32,
   p_baseVis: d.f32,
@@ -38,26 +39,6 @@ const layout = tgpu
     params: { uniform: orb02Params },
   })
   .$idx(0);
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
 
 const orb02Fragment = tgpu
   .fragmentFn({
@@ -122,7 +103,7 @@ const orb02Fragment = tgpu
       );
     }
 
-    let col = tanh3(acc.xyz.mul(acc.xyz).mul(gain));
+    let col = std.tanh(acc.xyz.mul(acc.xyz).mul(gain));
 
     const fresnel = std.pow(1 - z, u.p_rimPow);
     col = col.add(d.vec3f(fresnel).mul(u.p_rim));

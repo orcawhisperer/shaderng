@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -19,7 +21,6 @@ export const orb24Params = d.struct({
   c_stone: d.vec3f,
   c_water: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_blocks: d.f32,
   p_cave: d.f32,
@@ -64,16 +65,6 @@ const TreeCell = d.struct({
   dir: d.vec3f,
   h1: d.f32,
   h2: d.f32,
-});
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
 });
 
 const hash = tgpu.fn(
@@ -185,7 +176,7 @@ const ckTreeCell = tgpu.fn(
   } else if (face < 3.5) {
     cp = d.vec3f(auv.x, std.select(-1, 1, face < 2.5), auv.y);
   } else {
-    cp = d.vec3f(auv.x, auv.y, std.select(-1, 1, face < 4.5));
+    cp = d.vec3f(auv, std.select(-1, 1, face < 4.5));
   }
   return TreeCell({
     dir: std.normalize(cp),
@@ -370,16 +361,16 @@ const orb24Fragment = tgpu
     const tiltM = rot2(u.p_tilt);
     const spinM = rot2(-u.p_spin);
     const roYZ = std.mul(tiltM, d.vec2f(ro.y, ro.z));
-    ro = d.vec3f(ro.x, roYZ.x, roYZ.y);
+    ro = d.vec3f(ro.x, roYZ);
     const roXZ = std.mul(spinM, d.vec2f(ro.x, ro.z));
     ro = d.vec3f(roXZ.x, ro.y, roXZ.y);
     const rdYZ = std.mul(tiltM, d.vec2f(rd.y, rd.z));
-    rd = d.vec3f(rd.x, rdYZ.x, rdYZ.y);
+    rd = d.vec3f(rd.x, rdYZ);
     const rdXZ = std.mul(spinM, d.vec2f(rd.x, rd.z));
     rd = d.vec3f(rdXZ.x, rd.y, rdXZ.y);
     let Lo = std.normalize(d.vec3f(-0.5, 0.7, 0.55));
     const loYZ = std.mul(tiltM, d.vec2f(Lo.y, Lo.z));
-    Lo = d.vec3f(Lo.x, loYZ.x, loYZ.y);
+    Lo = d.vec3f(Lo.x, loYZ);
     const loXZ = std.mul(spinM, d.vec2f(Lo.x, Lo.z));
     Lo = d.vec3f(loXZ.x, Lo.y, loXZ.y);
 
@@ -427,8 +418,8 @@ const orb24Fragment = tgpu
         mask = d.vec3f(0, 1, 0);
       } else {
         tCur = tMax.z;
-        tMax = d.vec3f(tMax.x, tMax.y, tMax.z + tDelta.z);
-        vp = d.vec3f(vp.x, vp.y, vp.z + sgn.z);
+        tMax = d.vec3f(tMax.xy, tMax.z + tDelta.z);
+        vp = d.vec3f(vp.xy, vp.z + sgn.z);
         mask = d.vec3f(0, 0, 1);
       }
       if (tCur > tSpan) {

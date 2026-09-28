@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { luma, rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -14,7 +16,6 @@ export const orb25Params = d.struct({
   c_sheen: d.vec3f,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_blur: d.f32,
   p_bulge: d.f32,
@@ -43,26 +44,6 @@ const layout = tgpu
     params: { uniform: orb25Params },
   })
   .$idx(0);
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
-
-const tanh1 = tgpu.fn(
-  [d.f32],
-  d.f32
-)((xIn) => {
-  "use gpu";
-  const x = std.clamp(xIn, -10, 10);
-  const e = std.exp(2 * x);
-  return (e - 1) / (e + 1);
-});
 
 /*
  * The whole chain for one pixel centre: dome, stereographic wrap, then the
@@ -144,7 +125,7 @@ const creaseRender = tgpu.fn(
     const delta = std
       .abs(std.sin(px.mul(u.p_ripple).add(ph)).sub(v0))
       .add(std.abs(std.sin(py.mul(u.p_ripple).add(ph)).sub(v0)));
-    const m = tanh1(
+    const m = std.tanh(
       (std.length(delta) * creaseGain) / std.max(u.p_exposure, 0.001)
     );
     if (c === 0) {
@@ -152,7 +133,7 @@ const creaseRender = tgpu.fn(
     } else if (c === 1) {
       e = d.vec3f(e.x, m, e.z);
     } else {
-      e = d.vec3f(e.x, e.y, m);
+      e = d.vec3f(e.xy, m);
     }
   }
 
@@ -163,7 +144,7 @@ const creaseRender = tgpu.fn(
   // a dark body under the filigree, so the flat regions read as the ball
   col = col.add(u.c_body.mul(u.p_floorLevel));
 
-  const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+  const lum = luma(col);
   col = std.mix(d.vec3f(lum), col, u.p_saturation);
 
   // dome shading keeps the ball a ball under the folds
@@ -173,7 +154,7 @@ const creaseRender = tgpu.fn(
     .div(std.min(u.res.x, u.res.y))
     .div(std.max(u.p_radius, 0.001));
   const z = std.sqrt(std.max(1 - std.dot(pl, pl), 0));
-  const n = d.vec3f(pl.x, pl.y, z);
+  const n = d.vec3f(pl, z);
   const lambert = std.clamp(
     std.dot(n, std.normalize(d.vec3f(-0.45, 0.55, 0.72))),
     0,

@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { edgeFade, luma } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -18,7 +20,6 @@ export const orb32Params = d.struct({
   c_rim: d.vec3f,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_absorb: d.f32,
   p_alphaGain: d.f32,
@@ -70,16 +71,6 @@ const hash = tgpu.fn(
 )((p) =>
   std.fract(std.sin(std.dot(p, d.vec2f(127.1, 311.7))) * 43_758.545_312_3)
 );
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
 
 /*
  * The galactic density at a point in the galaxy's own frame: the disc lies
@@ -298,11 +289,11 @@ const orb32Fragment = tgpu
     }
 
     // tanh tone map per channel, tunable knee
-    let col = tanh3(acc.xyz.div(std.max(u.p_exposure, 0.01)));
+    let col = std.tanh(acc.xyz.div(std.max(u.p_exposure, 0.01)));
     col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
     // saturation about luminance, then the tint
-    const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+    const lum = luma(col);
     col = std.mix(d.vec3f(lum), col, u.p_saturation);
     col = col.mul(u.c_tint);
 
@@ -335,7 +326,7 @@ const orb32Fragment = tgpu
 
     // safety taper at the frame boundary — colour as well as alpha
     const r2d = std.length(orbUv);
-    const fade = 1 - std.smoothstep(u.p_edgeFade, 1, r2d);
+    const fade = edgeFade(u.p_edgeFade, r2d);
     col = col.mul(fade);
     a *= fade;
 

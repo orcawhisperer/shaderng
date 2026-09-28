@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { luma, rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -12,7 +14,6 @@ export const orb05Params = d.struct({
   c_sheen: d.vec3f,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_bulge: d.f32,
   p_contrast: d.f32,
@@ -39,16 +40,6 @@ const layout = tgpu
     params: { uniform: orb05Params },
   })
   .$idx(0);
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
 
 /*
  * Softened tangent. Equal to sin/cos wherever cos is not near zero, capped
@@ -117,7 +108,7 @@ const causticRender = tgpu.fn(
 
   col = std.pow(col, d.vec3f(u.p_contrast));
 
-  const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+  const lum = luma(col);
   col = std.mix(d.vec3f(lum), col, u.p_saturation).mul(u.c_tint);
 
   // a dark body under the bands, so the black half of the cosine reads as
@@ -125,7 +116,7 @@ const causticRender = tgpu.fn(
   col = col.add(u.c_body.mul(u.p_floorLevel));
 
   // dome shading keeps the ball a ball under the lattice
-  const n = d.vec3f(pl.x, pl.y, z);
+  const n = d.vec3f(pl, z);
   const lambert = std.clamp(
     std.dot(n, std.normalize(d.vec3f(-0.45, 0.55, 0.72))),
     0,

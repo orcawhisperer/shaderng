@@ -11,7 +11,6 @@ export const orb14Params = d.struct({
   c_ink: d.vec3f,
   c_paper: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_cells: d.f32,
   p_contrast: d.f32,
@@ -84,7 +83,7 @@ const orb14Fragment = tgpu
     const mask = 1 - std.step(1, r2);
 
     const z = std.sqrt(std.max(1 - r2, 0));
-    const n = d.vec3f(puv.x, puv.y, z);
+    const n = d.vec3f(puv, z);
 
     /*
      * Plasma in a ROTATING frame: the dome point spins about Y so wavefronts

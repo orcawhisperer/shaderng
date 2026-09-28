@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { luma, rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -14,7 +16,6 @@ export const orb13Params = d.struct({
   c_inner: d.vec3f,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_alphaGain: d.f32,
   p_camDist: d.f32,
@@ -56,26 +57,6 @@ const hash = tgpu.fn(
   std.fract(std.sin(std.dot(p, d.vec2f(127.1, 311.7))) * 43_758.545_312_3)
 );
 
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
-
 const ionRender = tgpu.fn(
   [d.vec2f, d.f32, d.f32, d.f32, d.f32],
   d.vec3f
@@ -87,7 +68,7 @@ const ionRender = tgpu.fn(
 
   const uv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
   const ro = d.vec3f(0, 0, u.p_camDist);
-  const rd = std.normalize(d.vec3f(uv.x, uv.y, -u.p_focal));
+  const rd = std.normalize(d.vec3f(uv, -u.p_focal));
 
   // exact ray/sphere chord — the march never leaves the globe
   const proj = std.dot(ro.mul(-1), rd);
@@ -101,16 +82,20 @@ const ionRender = tgpu.fn(
   let acc = d.vec3f();
   let T = d.f32(1);
 
+  // Both rotations are constant for the whole march: build them once.
+  const spinMat = rot2(spinAng);
+  const tiltMat = rot2(u.p_tilt);
+
   for (const i of std.range(STEPS)) {
     const p = ro.add(rd.mul(zNear + (d.f32(i) + 0.5) * stepLen));
 
     // precess the whole filament array; a static tilt keeps the spin axis
     // off-vertical so the motion reads in 3D
     let pr = d.vec3f(p);
-    const prSpun = std.mul(rot2(spinAng), d.vec2f(pr.x, pr.z));
+    const prSpun = std.mul(spinMat, d.vec2f(pr.x, pr.z));
     pr = d.vec3f(prSpun.x, pr.y, prSpun.y);
-    const prTilt = std.mul(rot2(u.p_tilt), d.vec2f(pr.y, pr.z));
-    pr = d.vec3f(pr.x, prTilt.x, prTilt.y);
+    const prTilt = std.mul(tiltMat, d.vec2f(pr.y, pr.z));
+    pr = d.vec3f(pr.x, prTilt);
 
     const rad = std.length(pr);
     const dir = pr.div(std.max(rad, 1e-4));
@@ -157,7 +142,7 @@ const ionRender = tgpu.fn(
     w = w.mul(stepLen);
 
     acc = acc.add(w.mul(T));
-    T *= std.exp(-std.dot(w, d.vec3f(0.299, 0.587, 0.114)) * u.p_scatter);
+    T *= std.exp(-luma(w) * u.p_scatter);
     if (T < 0.004) {
       break;
     }
@@ -186,16 +171,16 @@ const orb13Fragment = tgpu
 
     const acc = ionRender(fragCoord, ionSharp, ionWrithe, ionCore, ionRadius);
 
-    let col = tanh3(acc.div(std.max(ionExposure, 0.01)));
+    let col = std.tanh(acc.div(std.max(ionExposure, 0.01)));
     col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
-    const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+    const lum = luma(col);
     col = std.mix(d.vec3f(lum), col, u.p_saturation).mul(u.c_tint);
 
     const peak = std.max(col.x, std.max(col.y, col.z));
     let alpha = std.clamp(peak * u.p_alphaGain, 0, 1);
 
-    const mrd = std.normalize(d.vec3f(orbUv.x, orbUv.y, -u.p_focal));
+    const mrd = std.normalize(d.vec3f(orbUv, -u.p_focal));
     const closest = std.length(std.cross(d.vec3f(0, 0, u.p_camDist), mrd));
     const band = std.mix(0.35, 0.012, std.clamp(u.p_edge, 0, 1));
     const mask =

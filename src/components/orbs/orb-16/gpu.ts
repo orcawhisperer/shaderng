@@ -12,7 +12,6 @@ export const orb16Params = d.struct({
   c_sheen: d.vec3f,
   c_sun: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_contrast: d.f32,
   p_edge: d.f32,
@@ -36,16 +35,6 @@ const layout = tgpu
     params: { uniform: orb16Params },
   })
   .$idx(0);
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
 
 /*
  * The water. The plane is folded on its own sines three times, each octave
@@ -125,7 +114,7 @@ const orb16Fragment = tgpu
 
     const pl = uv.div(R);
     const z = std.sqrt(std.max(1 - std.dot(pl, pl), 0));
-    const n = d.vec3f(pl.x, pl.y, z);
+    const n = d.vec3f(pl, z);
 
     const cr = std.cos(u.p_spin);
     const sr = std.sin(u.p_spin);
@@ -179,7 +168,7 @@ const orb16Fragment = tgpu
     col = col.add(u.c_sheen.mul(u.p_rim * fres));
 
     col = std.pow(std.max(col, d.vec3f()), d.vec3f(u.p_contrast));
-    col = tanh3(col);
+    col = std.tanh(col);
 
     const alpha = mask;
     return d.vec4f(std.max(col, d.vec3f()).mul(alpha), alpha);

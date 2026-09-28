@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -16,7 +18,6 @@ export const orb12Params = d.struct({
   c_brickD: d.vec3f,
   c_brickE: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_contrast: d.f32,
   p_gain: d.f32,
@@ -67,16 +68,6 @@ const noise = tgpu.fn(
     std.mix(hash(i.add(d.vec2f(0, 1))), hash(i.add(d.vec2f(1, 1))), ff.x),
     ff.y
   );
-});
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
 });
 
 /*
@@ -159,21 +150,21 @@ const orb12Fragment = tgpu
     const tiltM = rot2(u.p_tilt);
     const spinM = rot2(-u.p_spin);
     const roT = std.mul(tiltM, d.vec2f(ro.y, ro.z));
-    ro = d.vec3f(ro.x, roT.x, roT.y);
+    ro = d.vec3f(ro.x, roT);
     const roS = std.mul(spinM, d.vec2f(ro.x, ro.z));
     ro = d.vec3f(roS.x, ro.y, roS.y);
     const rdT = std.mul(tiltM, d.vec2f(rd.y, rd.z));
-    rd = d.vec3f(rd.x, rdT.x, rdT.y);
+    rd = d.vec3f(rd.x, rdT);
     const rdS = std.mul(spinM, d.vec2f(rd.x, rd.z));
     rd = d.vec3f(rdS.x, rd.y, rdS.y);
     let Lo = std.normalize(d.vec3f(-0.5, 0.7, 0.55));
     const loT = std.mul(tiltM, d.vec2f(Lo.y, Lo.z));
-    Lo = d.vec3f(Lo.x, loT.x, loT.y);
+    Lo = d.vec3f(Lo.x, loT);
     const loS = std.mul(spinM, d.vec2f(Lo.x, Lo.z));
     Lo = d.vec3f(loS.x, Lo.y, loS.y);
     let Vo = d.vec3f(0, 0, 1);
     const voT = std.mul(tiltM, d.vec2f(Vo.y, Vo.z));
-    Vo = d.vec3f(Vo.x, voT.x, voT.y);
+    Vo = d.vec3f(Vo.x, voT);
     const voS = std.mul(spinM, d.vec2f(Vo.x, Vo.z));
     Vo = d.vec3f(voS.x, Vo.y, voS.y);
 
@@ -219,8 +210,8 @@ const orb12Fragment = tgpu
         mask = d.vec3f(0, 1, 0);
       } else {
         tCur = tMax.z;
-        tMax = d.vec3f(tMax.x, tMax.y, tMax.z + tDelta.z);
-        vp = d.vec3f(vp.x, vp.y, vp.z + sgn.z);
+        tMax = d.vec3f(tMax.xy, tMax.z + tDelta.z);
+        vp = d.vec3f(vp.xy, vp.z + sgn.z);
         mask = d.vec3f(0, 0, 1);
       }
       if (tCur > tSpan) {

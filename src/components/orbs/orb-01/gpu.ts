@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { edgeFade, luma, rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -13,7 +15,6 @@ export const orb01Params = d.struct({
   anim: d.f32,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_alphaGain: d.f32,
   p_camDist: d.f32,
@@ -45,26 +46,6 @@ const layout = tgpu
   })
   .$idx(0);
 
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
-
 const dispersionRender = tgpu.fn(
   [d.vec2f, d.f32],
   d.vec3f
@@ -75,27 +56,31 @@ const dispersionRender = tgpu.fn(
   const spinAng = u.p_spin;
   const uv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
   const ro = d.vec3f(0, 0, u.p_camDist);
-  const rd = std.normalize(d.vec3f(uv.x, uv.y, -u.p_focal));
+  const rd = std.normalize(d.vec3f(uv, -u.p_focal));
 
   let acc = d.vec3f();
   let T = d.f32(1);
   let z = std.max(u.p_camDist - u.p_envRadius * 1.3, 0);
   const zEnd = u.p_camDist + u.p_envRadius * 1.3;
 
+  // Both rotations are constant for the whole march: build them once.
+  const spinMat = rot2(spinAng);
+  const tiltMat = rot2(u.p_tilt);
+
   for (const it of std.range(STEPS)) {
     const p = ro.add(rd.mul(z));
 
     let q = d.vec3f(p);
-    const spun = std.mul(rot2(spinAng), d.vec2f(q.x, q.z));
+    const spun = std.mul(spinMat, d.vec2f(q.x, q.z));
     q = d.vec3f(spun.x, q.y, spun.y);
-    const tilted = std.mul(rot2(u.p_tilt), d.vec2f(q.y, q.z));
-    q = d.vec3f(q.x, tilted.x, tilted.y);
+    const tilted = std.mul(tiltMat, d.vec2f(q.y, q.z));
+    q = d.vec3f(q.x, tilted);
 
     let a = d.vec3f(q);
     for (const j of std.range(TURB)) {
       const dj = d.f32(j) + 3;
       const wave = std.sin(a.mul(dj).add(animTime).add(d.f32(it)));
-      a = a.sub(d.vec3f(wave.y, wave.z, wave.x).mul(turb).div(dj));
+      a = a.sub(wave.yzx.mul(turb).div(dj));
     }
 
     const wall = std.abs(std.length(a) - u.p_envRadius);
@@ -121,7 +106,7 @@ const dispersionRender = tgpu.fn(
     w = w.add(u.p_fill).mul(env);
 
     acc = acc.add(w.mul(T));
-    T *= std.exp(-std.dot(w, d.vec3f(0.299, 0.587, 0.114)) * u.p_scatter);
+    T *= std.exp(-luma(w) * u.p_scatter);
 
     z += dist;
     if (T < 0.004 || z > zEnd) {
@@ -143,19 +128,19 @@ const orb01Fragment = tgpu
     const turb = u.p_turb * (1 + 0.5 * u.inputVol);
     const exposure = u.p_exposure * (1 - 0.35 * u.outputVol);
 
-    let col = tanh3(
+    let col = std.tanh(
       dispersionRender(fragCoord, turb).div(std.max(exposure, 1))
     );
     col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
-    const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+    const lum = luma(col);
     col = std.mix(d.vec3f(lum), col, u.p_saturation).mul(u.c_tint);
 
     const peak = std.max(col.x, std.max(col.y, col.z));
     let alpha = std.clamp(peak * u.p_alphaGain, 0, 1);
 
     const orbUv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
-    const mrd = std.normalize(d.vec3f(orbUv.x, orbUv.y, -u.p_focal));
+    const mrd = std.normalize(d.vec3f(orbUv, -u.p_focal));
     const closest = std.length(std.cross(d.vec3f(0, 0, u.p_camDist), mrd));
     const band = std.mix(0.35, 0.012, std.clamp(u.p_edge, 0, 1));
     const mask =
@@ -168,7 +153,7 @@ const orb01Fragment = tgpu
     col = col.mul(mask);
     alpha *= mask;
 
-    const fade = 1 - std.smoothstep(u.p_edgeFade, 1, std.length(orbUv));
+    const fade = edgeFade(u.p_edgeFade, std.length(orbUv));
     col = col.mul(fade);
     alpha *= fade;
 

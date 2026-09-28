@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { edgeFade, luma, rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -13,7 +15,6 @@ export const orb20Params = d.struct({
   anim: d.f32,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_alphaGain: d.f32,
   p_camDist: d.f32,
@@ -46,26 +47,6 @@ const layout = tgpu
   })
   .$idx(0);
 
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
-
 const fallsRender = tgpu.fn(
   [d.vec2f, d.f32],
   d.vec3f
@@ -77,7 +58,7 @@ const fallsRender = tgpu.fn(
 
   const uv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
   const ro = d.vec3f(0, 0, u.p_camDist);
-  const rd = std.normalize(d.vec3f(uv.x, uv.y, -u.p_focal));
+  const rd = std.normalize(d.vec3f(uv, -u.p_focal));
 
   const rShell = u.p_envRadius * 0.92;
 
@@ -90,12 +71,15 @@ const fallsRender = tgpu.fn(
   let z = std.max(u.p_camDist - u.p_envRadius * 1.3, 0);
   const zEnd = u.p_camDist + u.p_envRadius * 1.3;
 
+  // the tilt is static for the whole march: build the matrix once
+  const tiltMat = rot2(u.p_tilt);
+
   for (const it of std.range(STEPS)) {
     let c = ro.add(rd.mul(z));
 
     // a slight static tilt of the flow axis
-    const cTilt = std.mul(rot2(u.p_tilt), d.vec2f(c.y, c.z));
-    c = d.vec3f(c.x, cTilt.x, cTilt.y);
+    const cTilt = std.mul(tiltMat, d.vec2f(c.y, c.z));
+    c = d.vec3f(c.x, cTilt);
 
     /*
      * The fall grain: squash the vertical axis, then the five octaves with
@@ -159,7 +143,7 @@ const fallsRender = tgpu.fn(
     w = w.add(u.p_fill).mul(env);
 
     acc = acc.add(w.mul(T));
-    T *= std.exp(-std.dot(w, d.vec3f(0.299, 0.587, 0.114)) * u.p_scatter);
+    T *= std.exp(-luma(w) * u.p_scatter);
 
     if (T < 0.004 || z > zEnd) {
       break;
@@ -185,10 +169,10 @@ const orb20Fragment = tgpu
     const acc = fallsRender(fragCoord, fallsFoam);
 
     // tanh tone map per channel — the golfed /3e1 knee is a tunable here
-    let col = tanh3(acc.div(std.max(fallsExposure, 1)));
+    let col = std.tanh(acc.div(std.max(fallsExposure, 1)));
     col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
-    const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+    const lum = luma(col);
     col = std.mix(d.vec3f(lum), col, u.p_saturation);
     col = col.mul(u.c_tint);
 
@@ -198,7 +182,7 @@ const orb20Fragment = tgpu
     let a = std.clamp(peak * u.p_alphaGain, 0, 1);
 
     // Analytic silhouette — identical construction to orb-01
-    const mrd = std.normalize(d.vec3f(orbUv.x, orbUv.y, -u.p_focal));
+    const mrd = std.normalize(d.vec3f(orbUv, -u.p_focal));
     const closest = std.length(std.cross(d.vec3f(0, 0, u.p_camDist), mrd));
     const band = std.mix(0.35, 0.012, std.clamp(u.p_edge, 0, 1));
     const mask =
@@ -212,7 +196,7 @@ const orb20Fragment = tgpu
     a *= mask;
 
     const r2d = std.length(orbUv);
-    const fade = 1 - std.smoothstep(u.p_edgeFade, 1, r2d);
+    const fade = edgeFade(u.p_edgeFade, r2d);
     col = col.mul(fade);
     a *= fade;
 

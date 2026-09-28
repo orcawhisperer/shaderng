@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -16,7 +18,6 @@ export const orb08Params = d.struct({
   c_low: d.vec3f,
   c_sheen: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_beat: d.f32,
   p_bulge: d.f32,
@@ -46,26 +47,6 @@ const layout = tgpu
   })
   .$idx(0);
 
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
-
 /*
  * The listing's entire tone map: o = tanh(.2 / tan(x)); o *= o.
  *
@@ -77,7 +58,7 @@ const cotBands = tgpu.fn(
   d.vec3f
 )((x, k) => {
   "use gpu";
-  const b = tanh3(
+  const b = std.tanh(
     std
       .cos(x)
       .mul(k)
@@ -98,7 +79,7 @@ const nacreRender = tgpu.fn(
   // the dome: the front hemisphere of a unit ball, in screen space
   const pl = uv.div(R);
   const z = std.sqrt(std.max(1 - std.dot(pl, pl), 0));
-  const n = d.vec3f(pl.x, pl.y, z);
+  const n = d.vec3f(pl, z);
 
   // integrated clock: the boil
   const t = u.p_speed;

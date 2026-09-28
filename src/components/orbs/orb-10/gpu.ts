@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { edgeFade, luma } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -13,7 +15,6 @@ export const orb10Params = d.struct({
   anim: d.f32,
   c_tint: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_alphaGain: d.f32,
   p_camDist: d.f32,
@@ -49,16 +50,6 @@ const layout = tgpu
   })
   .$idx(0);
 
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
-
 const weaveRender = tgpu.fn(
   [d.vec2f, d.f32, d.f32],
   d.vec3f
@@ -67,7 +58,7 @@ const weaveRender = tgpu.fn(
   const u = layout.$.params;
   const uv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
   const ro = d.vec3f(0, 0, u.p_camDist);
-  const rd = std.normalize(d.vec3f(uv.x, uv.y, -u.p_focal));
+  const rd = std.normalize(d.vec3f(uv, -u.p_focal));
 
   // integrated clock: the warp
   const animTime = u.p_speed;
@@ -145,7 +136,7 @@ const weaveRender = tgpu.fn(
     w = w.add(u.p_fill).mul(env);
 
     acc = acc.add(w.mul(T));
-    T *= std.exp(-std.dot(w, d.vec3f(0.299, 0.587, 0.114)) * u.p_scatter);
+    T *= std.exp(-luma(w) * u.p_scatter);
 
     z += dist;
     if (T < 0.004 || z > zEnd) {
@@ -178,11 +169,11 @@ const orb10Fragment = tgpu
      * on a slider. The square is a contrast squarer, not a tone map.
      */
     const v = acc.div(d.f32(STEPS));
-    let col = tanh3(v.mul(v).div(std.max(weaveExposure, 0.0001)));
+    let col = std.tanh(v.mul(v).div(std.max(weaveExposure, 0.0001)));
     col = std.pow(std.clamp(col, d.vec3f(), d.vec3f(1)), d.vec3f(u.p_contrast));
 
     // saturation about luminance, then the tint
-    const lum = std.dot(col, d.vec3f(0.299, 0.587, 0.114));
+    const lum = luma(col);
     col = std.mix(d.vec3f(lum), col, u.p_saturation).mul(u.c_tint);
 
     // alpha from the brightest channel, not luminance — a deep blue thread
@@ -193,7 +184,7 @@ const orb10Fragment = tgpu
     // Analytic silhouette — identical construction to orb-01: exact
     // ray-to-centre distance against the radius, colour AND alpha.
     const orbUv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
-    const mrd = std.normalize(d.vec3f(orbUv.x, orbUv.y, -u.p_focal));
+    const mrd = std.normalize(d.vec3f(orbUv, -u.p_focal));
     const closest = std.length(std.cross(d.vec3f(0, 0, u.p_camDist), mrd));
     const band = std.mix(0.35, 0.012, std.clamp(u.p_edge, 0, 1));
     const mask =
@@ -207,7 +198,7 @@ const orb10Fragment = tgpu
     alpha *= mask;
 
     // safety taper at the frame boundary — colour as well as alpha
-    const fade = 1 - std.smoothstep(u.p_edgeFade, 1, std.length(orbUv));
+    const fade = edgeFade(u.p_edgeFade, std.length(orbUv));
     col = col.mul(fade);
     alpha *= fade;
 

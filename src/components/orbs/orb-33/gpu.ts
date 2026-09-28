@@ -1,5 +1,7 @@
 import { d, std, tgpu } from "typegpu";
 
+import { rot2 } from "@/lib/shader";
+
 /*
  * Shader by XorDev (https://x.com/XorDev), ported for Orbkit with the author's
  * permission. Non-commercial use only, with attribution to XorDev; keep this
@@ -15,7 +17,6 @@ export const orb33Params = d.struct({
   c_paper: d.vec3f,
   c_warm: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_banding: d.f32,
   p_bands: d.f32,
@@ -79,16 +80,6 @@ const grainNoise = tgpu.fn(
 )((gpix, frame, seed) =>
   hash(gpix.add(d.vec2f(frame * 13.71 + seed, frame * 7.37 - seed)))
 );
-
-const rot2 = tgpu.fn(
-  [d.f32],
-  d.mat2x2f
-)((angle) => {
-  "use gpu";
-  const c = std.cos(angle);
-  const s = std.sin(angle);
-  return d.mat2x2f(d.vec2f(c, -s), d.vec2f(s, c));
-});
 
 /*
  * One ink screen. Square dots on a grid at angle a, offset o (the

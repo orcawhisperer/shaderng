@@ -14,7 +14,6 @@ export const orb17Params = d.struct({
   c_low: d.vec3f,
   c_mid: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_bands: d.f32,
   p_churn: d.f32,
@@ -116,7 +115,7 @@ const orb17Fragment = tgpu
     const pl = uv.div(R);
     const r2 = std.dot(pl, pl);
     const z = std.sqrt(std.max(1 - r2, 0));
-    const n = d.vec3f(pl.x, pl.y, z);
+    const n = d.vec3f(pl, z);
 
     const cr = std.cos(u.p_spin);
     const sr = std.sin(u.p_spin);

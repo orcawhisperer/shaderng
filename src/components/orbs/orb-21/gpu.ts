@@ -15,7 +15,6 @@ export const orb21Params = d.struct({
   c_light: d.vec3f,
   c_shadow: d.vec3f,
   inputVol: d.f32,
-  mouse: d.vec2f,
   outputVol: d.f32,
   p_absorb: d.f32,
   p_alphaGain: d.f32,
@@ -44,16 +43,6 @@ const layout = tgpu
     params: { uniform: orb21Params },
   })
   .$idx(0);
-
-const tanh3 = tgpu.fn(
-  [d.vec3f],
-  d.vec3f
-)((x) => {
-  "use gpu";
-  const clamped = std.clamp(x, d.vec3f(-10), d.vec3f(10));
-  const e = std.exp(clamped.mul(2));
-  return e.sub(1).div(e.add(1));
-});
 
 /*
  * Density inside the sphere.
@@ -124,7 +113,7 @@ const nimbusRender = tgpu.fn(
 
   const uv = fragCoord.mul(2).sub(u.res).div(std.min(u.res.x, u.res.y));
   const ro = d.vec3f(0, 0, -u.p_camDist);
-  const rd = std.normalize(d.vec3f(uv.x, uv.y, u.p_focal));
+  const rd = std.normalize(d.vec3f(uv, u.p_focal));
 
   /*
    * Light direction, slowly orbiting so the shading is never static.
@@ -215,7 +204,7 @@ const orb21Fragment = tgpu
 
     const acc = nimbusRender(fragCoord, nimbusPower, nimbusDensity);
 
-    const col = tanh3(acc.xyz.mul(u.p_exposure));
+    const col = std.tanh(acc.xyz.mul(u.p_exposure));
     const a = std.clamp(acc.w * u.p_alphaGain, 0, 1);
 
     // Emitted/scattered light, so rgb is already premultiplied — do NOT multiply
